@@ -23,9 +23,9 @@ export default function TasksPage() {
               <th className="p-4 text-center">Ações</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {[1, 2, 3].map((i) => (
-              <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <tr key={i} className="hover:bg-gray-50 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🧹</span>
