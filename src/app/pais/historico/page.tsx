@@ -10,7 +10,7 @@ export default function HistoryPage() {
           <div className="bg-white px-4 py-2 rounded-full border-2 border-[#EEDCDF] flex items-center gap-2 font-bold text-[#5C4033]">
             <Trophy size={20} className="text-yellow-500" />
             Total: 1,250 pts
-          </div
+          </div>
         </div
       </div>
 

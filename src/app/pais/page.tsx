@@ -138,12 +138,12 @@ export default function ParentsDashboard() {
                       <span>• {new Date(instance.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </p>
                   </div>
-                </div
+                </div>
                 <div className="text-right">
                   <span className="block text-xs text-gray-400 font-bold uppercase">Pontos</span>
                   <span className="text-2xl font-black text-[#5C4033]">{instance.tasks.points} pts</span>
-                </div
-              </div
+                </div>
+              </div>
 
               <div className="flex gap-3 pt-2">
                 <button
@@ -160,10 +160,10 @@ export default function ParentsDashboard() {
                   <XCircle size={20} />
                   Devolver
                 </button>
-              </div
-            </div
+              </div>
+            </div>
           ))}
-        </div
+        </div>
       )}
     </div>
   )
