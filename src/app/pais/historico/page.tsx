@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Calendar, TrendingUp, Trophy, History } from 'lucide-react';
 
@@ -11,7 +12,7 @@ export default function HistoryPage() {
             <Trophy size={20} className="text-yellow-500" />
             Total: 1,250 pts
           </div>
-        </div
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -29,8 +30,8 @@ export default function HistoryPage() {
             <div className="flex items-center justify-center gap-1 text-green-600 font-bold text-sm">
               <TrendingUp size={16} />
               +20 pts esta semana
-            </div
-          </div
+            </div>
+          </div>
         ))}
       </div>
 
@@ -53,14 +54,14 @@ export default function HistoryPage() {
                   <span className="text-2xl">{item.status === 'approved' ? '✅' : '❌'}</span>
                   <span className="font-bold text-gray-700">{item.task}</span>
                   <span className="text-sm text-gray-500">• {item.child}</span>
-                </div
-              </div
+                </div>
+              </div>
               <span className={`font-bold ${item.status === 'approved' ? 'text-green-600' : 'text-red-400'}`}>
                 {item.status === 'approved' ? `+${item.points} pts` : '0 pts'}
               </span>
-            </div
+            </div>
           ))}
-        </div
+        </div>
       </div>
     </div>
   )
