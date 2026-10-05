@@ -30,7 +30,7 @@ export default function TasksPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🧹</span>
                     <span className="font-medium text-gray-800">Arrumar o quarto</span>
-                  </div
+                  </div>
                 </td>
                 <td className="p-4">
                   <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
@@ -42,7 +42,7 @@ export default function TasksPage() {
                   <div className="flex items-center gap-1 text-gray-500 text-sm">
                     <Calendar size={14} />
                     Diária
-                  </div
+                  </div>
                 </td>
                 <td className="p-4">
                   <div className="flex justify-center gap-2">
