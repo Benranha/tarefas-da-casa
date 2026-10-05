@@ -135,7 +135,7 @@ export default function TotemPage() {
           <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border-2 border-[#EEDCDF]">
             <span className="text-4xl">{selectedChild.avatar}</span>
             <span className="text-2xl font-bold text-[#5C4033]">{selectedChild.name}</span>
-          </div
+          </div>
           <div className="flex items-center gap-2 bg-yellow-100 px-6 py-3 rounded-full shadow-sm border-2 border-yellow-200">
             <Star className="text-yellow-600 fill-yellow-600" size={24} />
             <span className="text-2xl font-bold text-yellow-800">{selectedChild.points || 0} pts</span>
@@ -174,7 +174,7 @@ export default function TotemPage() {
                   }`}
                   onClick={() => instance.status === 'pending' && markTaskDone(instance.id)}
                 >
-                  <div className="text-5xl bg-white p-4 rounded-2xl shadow-Hsm">
+                  <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">
                     {instance.tasks.icon || '✨'}
                   </div
                   <div className="flex-1">
