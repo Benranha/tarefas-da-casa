@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { CheckCircle, XCircle, MessageCircle, AlertCircle } from 'lucide-react';
 import { colors } from '@/styles/theme';
-import { toast } from 'sonner';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);

@@ -139,8 +139,8 @@ export default function TotemPage() {
           <div className="flex items-center gap-2 bg-yellow-100 px-6 py-3 rounded-full shadow-sm border-2 border-yellow-200">
             <Star className="text-yellow-600 fill-yellow-600" size={24} />
             <span className="text-2xl font-bold text-yellow-800">{selectedChild.points || 0} pts</span>
-          </div
-        </div
+          </div>
+        </div>
       </header>
 
       <main className="flex-1">
@@ -148,19 +148,19 @@ export default function TotemPage() {
           <h2 className="text-4xl font-bold text-[#5C4033]">Minhas Tarefas de Hoje</h2>
           <div className="text-xl font-medium text-gray-500">
             {tasks.filter(t => t.status === 'approved').length} de {tasks.length} completas
-          </div
-        </div
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#5C4033]"></div>
-          </div
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tasks.length === 0 ? (
               <div className="col-span-full text-center py-20">
                 <p className="text-3xl text-gray-400 font-medium">Tudo limpo por aqui! 🎉</p>
-              </div
+              </div>
             ) : (
               tasks.map((instance) => (
                 <div
@@ -176,7 +176,7 @@ export default function TotemPage() {
                 >
                   <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">
                     {instance.tasks.icon || '✨'}
-                  </div
+                  </div>
                   <div className="flex-1">
                     <h3 className={`text-2xl font-bold ${instance.status === 'approved' ? 'text-green-800 line-through' : 'text-[#5C4033]'}`}>
                       {instance.tasks.title}
@@ -195,15 +195,15 @@ export default function TotemPage() {
                       {instance.status === 'pending' && (
                         <span className="text-gray-400 font-medium text-sm">Tocar para concluir</span>
                       )}
-                    </div
-                  </div
+                    </div>
+                  </div>
                   <div className="text-2xl font-black text-[#5C4033]">
                     {instance.tasks.points} pts
-                  </div
-                </div
+                  </div>
+                </div>
               ))
             )}
-          </div
+          </div>
         )}
       </main>
     </div>
