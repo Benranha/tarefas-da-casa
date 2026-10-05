@@ -52,7 +52,7 @@ export default function TasksPage() {
                     <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
                       <Trash2 size={18} />
                     </button>
-                  </div
+                  </div>
                 </td>
               </tr>
             ))}

@@ -176,7 +176,7 @@ export default function TotemPage() {
                 >
                   <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">
                     {instance.tasks.icon || '✨'}
-                  </div>
+                  </div
                   <div className="flex-1">
                     <h3 className={`text-2xl font-bold ${instance.status === 'approved' ? 'text-green-800 line-through' : 'text-[#5C4033]'}`}>
                       {instance.tasks.title}
