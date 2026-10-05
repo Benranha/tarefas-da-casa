@@ -1,8 +1,9 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { CheckCircle, XCircle, MessageCircle, AlertCircle } from 'lucide-react';
 import { colors } from '@/styles/theme';
-import { toast } from 'sonner'; // Vou sugerir a instalação do sonner para notificações
+import { toast } from 'sonner';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
@@ -12,7 +13,6 @@ export default function ParentsDashboard() {
   useEffect(() => {
     fetchPendingTasks();
 
-    // Setup Realtime para a fila de aprovação
     const channel = supabase
       .channel('approval-queue')
       .on(
@@ -46,10 +46,6 @@ export default function ParentsDashboard() {
   }
 
   async function handleApprove(instanceId: string, childId: string, points: number) {
-    // Transação simulada via sequencial:
-    // 1. Atualiza instância para 'approved'
-    // 2. Soma pontos à criança
-
     const { error: updateError } = await supabase
       .from('task_instances')
       .update({
@@ -63,8 +59,6 @@ export default function ParentsDashboard() {
       return;
     }
 
-    // Incremento de pontos usando RPC ou update simples
-    // Nota: O ideal seria um RPC no Supabase para atomicidade
     const { data: childData } = await supabase
       .from('children')
       .select('points')

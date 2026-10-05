@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { colors, Typography } from '@/styles/theme';
@@ -11,6 +12,7 @@ export default function TotemPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     if ('wakeLock' in navigator) {
@@ -39,7 +41,6 @@ export default function TotemPage() {
     setLoading(false);
   }
 
-  // Setup Realtime para o Totem atualizar quando o pai aprovar
   useEffect(() => {
     if (!selectedChild) return;
 
@@ -173,7 +174,7 @@ export default function TotemPage() {
                   }`}
                   onClick={() => instance.status === 'pending' && markTaskDone(instance.id)}
                 >
-                  <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">
+                  <div className="text-5xl bg-white p-4 rounded-2xl shadow-Hsm">
                     {instance.tasks.icon || '✨'}
                   </div
                   <div className="flex-1">
