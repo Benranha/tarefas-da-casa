@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { colors, Typography } from '@/styles/theme';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Circle, Clock, ArrowLeft, Star } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowLeft, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function TotemPage() {
@@ -11,10 +11,8 @@ export default function TotemPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
-  const router = useRouter();
 
   useEffect(() => {
-    // Wake Lock API para evitar que a tela apague no totem
     if ('wakeLock' in navigator) {
       requestWakeLock();
     }
@@ -23,15 +21,9 @@ export default function TotemPage() {
   async function requestWakeLock() {
     try {
       await (navigator as any).wakeLock.request('screen');
-      console.log('Wake Lock ativo');
     } catch (err) {
       console.error(`Wake Lock erro: ${err}`);
     }
-  }
-
-  async function fetchChildren() {
-    const { data } = await supabase.from('children').select('*');
-    return data || [];
   }
 
   async function fetchTasks(childId: string) {
@@ -46,6 +38,31 @@ export default function TotemPage() {
     setTasks(data || []);
     setLoading(false);
   }
+
+  // Setup Realtime para o Totem atualizar quando o pai aprovar
+  useEffect(() => {
+    if (!selectedChild) return;
+
+    const channel = supabase
+      .channel('totem-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'task_instances',
+          filter: `child_id=eq.${selectedChild.id}`
+        },
+        () => {
+          fetchTasks(selectedChild.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedChild]);
 
   async function handleChildSelect(child: any) {
     setSelectedChild(child);
@@ -78,7 +95,6 @@ export default function TotemPage() {
         </h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-12 max-w-5xl w-full">
-          {/* Mock de crianças para demonstração rápida, será substituído pelo fetchChildren */}
           {[
             { id: '1', name: 'Lucas', avatar: '👦', color: '#3B82F6' },
             { id: '2', name: 'Julia', avatar: '👧', color: '#EC4899' },
@@ -167,12 +183,12 @@ export default function TotemPage() {
                     <div className="flex items-center gap-2 mt-1">
                       {instance.status === 'approved' && (
                         <span className="flex items-center gap-1 text-green-600 font-bold text-sm">
-                          <CheckCircle2 size={16} /> Aprovado!
+                        <CheckCircle2 size={16} /> Aprovado!
                         </span>
                       )}
                       {instance.status === 'awaiting_approval' && (
                         <span className="flex items-center gap-1 text-yellow-600 font-bold text-sm">
-                          <Clock size={16} /> Aguardando papais...
+                        <Clock size={16} /> Aguardando papais...
                         </span>
                       )}
                       {instance.status === 'pending' && (
