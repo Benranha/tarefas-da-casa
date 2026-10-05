@@ -1,0 +1,22 @@
+{
+  "name": "Tarefas da Casa",
+  "short_name": "Tarefas",
+  "description": "Controle de tarefas domésticas para crianças",
+  "start_url": "/totem",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FDFBFA",
+  "theme_color": "#5C4033",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

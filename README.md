@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏠 Tarefas da Casa
 
-## Getting Started
+Web App PWA para controle de tarefas domésticas gamificadas para crianças.
 
-First, run the development server:
+## 🚀 Stack Técnica
+- **Next.js 14 (App Router)** + TypeScript + Tailwind CSS
+- **Supabase**: Postgres, Auth, Realtime e RLS.
+- **Deploy**: Vercel.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠️ Configuração do Projeto
+
+### 1. Supabase Setup
+1. Crie um projeto no [Supabase](https://supabase.com).
+2. No **SQL Editor**, execute o conteúdo de `supabase/seed.sql` para criar as tabelas e as políticas de segurança (RLS).
+3. Crie um usuário em **Authentication** para acessar o painel dos pais.
+
+### 2. Variáveis de Ambiente
+Crie um arquivo `.env.local` na raiz do projeto:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon-publica
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Instalação e Execução
+```bash
+npm install
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📱 Configuração do Totem (Tablet Android)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Para transformar o tablet em um totem de tarefas:
 
-## Learn More
+1. **Instalação do App**:
+   - Acesse a URL de deploy no Chrome do tablet.
+   - Clique nos três pontinhos $\rightarrow$ **Instalar App** (PWA).
+   - O app abrirá em modo standalone (sem barra de endereço).
 
-To learn more about Next.js, take a look at the following resources:
+2. **Configuração com Fully Kiosk Browser (Recomendado)**:
+   - Instale o [Fully Kiosk Browser](https://www.fully-kiosk.com/).
+   - Configure a **Start URL** para a URL do seu app.
+   - Ative as opções:
+     - **Kiosk Mode**: Bloqueia a saída do app.
+     - **Keep Screen On**: Impede que a tela apague.
+     - **Orientation**: Force `Landscape`.
+     - **Auto-Reload**: Configure para recarregar se houver queda de conexão.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Design e Cores
+- **Fundo**: Creme/Bege claro (`#FDFBFA`).
+- **Destaque**: Marrom suave (`#5C4033`).
+- **Estados**:
+  - ⚪ Pendente $\rightarrow$ Cinza
+  - 🟡 Aguardando $\rightarrow$ Amarelo
+  - 🟢 Aprovado $\rightarrow$ Verde
