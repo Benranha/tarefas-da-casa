@@ -1,6 +1,6 @@
 {
-  "name": "Tarefas da Casa",
-  "short_name": "Tarefas",
+  "name": "Tarefinha",
+  "short_name": "Tarefinha",
   "description": "Controle de tarefas domésticas para crianças",
   "start_url": "/totem",
   "display": "standalone",
