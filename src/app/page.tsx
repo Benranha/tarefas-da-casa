@@ -12,7 +12,7 @@ export default async function Home() {
     <div className="min-h-screen bg-[#FDFBFA] flex items-center justify-center p-6">
       <main className="max-w-md w-full bg-white p-10 rounded-[32px] shadow-sm border-2 border-[#EEDCDF] text-center space-y-6">
         <div className="text-6xl">🏠</div>
-        <h1 className="text-3xl font-bold text-[#5C4033]">Tarefas da Casa</h1>
+        <h1 className="text-3xl font-bold text-[#5C4033]">Tarefinha</h1>
         <p className="text-gray-500">
           Tarefas domésticas em forma de jogo: as crianças ganham pontos e os pais aprovam.
         </p>

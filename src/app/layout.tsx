@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tarefas da Casa",
+  title: "Tarefinha",
   description: "Controle de tarefas domésticas para crianças",
   manifest: "/manifest.json",
 };
