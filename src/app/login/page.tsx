@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import GoogleButton from '@/components/GoogleButton'
 import { signIn } from './actions'
 
 export default function LoginPage() {
@@ -43,6 +44,12 @@ export default function LoginPage() {
             {pending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+        <div className="flex items-center gap-3 my-6 text-sm text-gray-400">
+          <div className="flex-1 h-px bg-gray-200" />
+          ou
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+        <GoogleButton label="Entrar com o Google" />
         <p className="mt-6 text-center text-sm text-gray-500">
           Primeira vez?{' '}
           <Link href="/cadastro" className="font-bold text-[#5C4033]">

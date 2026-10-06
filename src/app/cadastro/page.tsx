@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import GoogleButton from '@/components/GoogleButton'
 import { signUp } from '../login/actions'
 
 const input =
@@ -35,6 +36,12 @@ export default function SignUpPage() {
             {pending ? 'Criando...' : 'Criar conta'}
           </button>
         </form>
+        <div className="flex items-center gap-3 my-6 text-sm text-gray-400">
+          <div className="flex-1 h-px bg-gray-200" />
+          ou
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+        <GoogleButton label="Criar conta com o Google" />
         <p className="mt-6 text-center text-sm text-gray-500">
           Já tem conta?{' '}
           <Link href="/login" className="font-bold text-[#5C4033]">
