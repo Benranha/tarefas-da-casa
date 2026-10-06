@@ -4,6 +4,7 @@ import { Check, Undo2, Copy } from 'lucide-react';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
+  const [today, setToday] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totemUrl, setTotemUrl] = useState('');
   const [copied, setCopied] = useState(false);
@@ -31,12 +32,16 @@ export default function ParentsDashboard() {
 
   async function fetchPendingTasks(silent = false) {
     if (!silent) setLoading(true);
-    const res = await fetch('/api/pais/pending', { cache: 'no-store' });
+    const [res, todayRes] = await Promise.all([
+      fetch('/api/pais/pending', { cache: 'no-store' }),
+      fetch('/api/pais/today', { cache: 'no-store' }),
+    ]);
     if (res.ok) {
       setPendingTasks(await res.json());
     } else {
       console.error('Erro ao buscar tarefas:', res.status);
     }
+    if (todayRes.ok) setToday(await todayRes.json());
     if (!silent) setLoading(false);
   }
 
@@ -89,6 +94,56 @@ export default function ParentsDashboard() {
             {copied ? 'Copiado!' : 'Copiar link'}
           </button>
         </div>
+      )}
+
+      {today.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="font-display text-2xl font-semibold text-ink">Tarefas de hoje</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Object.values(
+              today.reduce((acc: Record<string, { child: any; items: any[] }>, t) => {
+                (acc[t.child.id] ||= { child: t.child, items: [] }).items.push(t);
+                return acc;
+              }, {}),
+            ).map(({ child, items }) => (
+              <article key={child.id} className="tf-card flex flex-col gap-3">
+                <h3 className="font-bold text-ink flex items-center gap-2">
+                  <span>{child.avatar}</span> {child.name}
+                  <span className="text-sm font-medium text-ink-muted">
+                    • {items.filter((i) => i.status === 'approved').length} de {items.length} feitas
+                  </span>
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {items.map((i) => (
+                    <li key={i.id} className="flex items-center gap-3">
+                      <span className="text-2xl">{i.tasks.icon || '✨'}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className={`font-bold ${i.status === 'approved' ? 'line-through text-ink-muted' : 'text-ink'}`}>
+                          {i.tasks.title}
+                        </span>
+                        {i.status === 'pending' && i.parent_note && (
+                          <span className="block text-xs text-returned-fg">Devolvida: {i.parent_note}</span>
+                        )}
+                      </span>
+                      <span className="text-sm text-ink-muted">{i.tasks.points} ⭐</span>
+                      <span
+                        className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                          i.status === 'approved'
+                            ? 'bg-approved-bg text-approved-fg border-approved-solid'
+                            : i.status === 'awaiting_approval'
+                              ? 'bg-waiting-bg text-waiting-fg border-waiting-border'
+                              : 'bg-pending-bg text-pending-fg border-pending-border'
+                        }`}
+                      >
+                        {i.status === 'approved' ? 'Aprovada' : i.status === 'awaiting_approval' ? 'Aguardando você' : 'A fazer'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
       {pendingTasks.length === 0 ? (
