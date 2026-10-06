@@ -57,21 +57,21 @@ export default function TasksPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold text-[#5C4033]">Tarefas</h1>
+      <h1 className="text-3xl font-bold text-ink">Tarefas</h1>
 
       {children.length === 0 ? (
-        <p className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-2xl">
+        <p className="bg-waiting-bg border border-waiting-border text-waiting-fg p-4 rounded-2xl">
           Cadastre uma criança primeiro, em &quot;Crianças&quot;.
         </p>
       ) : (
-        <form onSubmit={add} className="bg-white p-6 rounded-[24px] border-2 border-[#EEDCDF] space-y-4">
+        <form onSubmit={add} className="bg-surface-raised p-6 rounded-[24px] border-2 border-line space-y-4">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
             maxLength={80}
             placeholder="Ex.: Arrumar o quarto"
-            className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none"
+            className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
           />
           <div className="flex flex-wrap gap-2">
             {ICONS.map((i) => (
@@ -79,7 +79,7 @@ export default function TasksPage() {
                 type="button"
                 key={i}
                 onClick={() => setIcon(i)}
-                className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-[#5C4033] bg-gray-50' : 'border-transparent'}`}
+                className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
               >
                 {i}
               </button>
@@ -89,7 +89,7 @@ export default function TasksPage() {
             <select
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
-              className="flex-1 p-3 rounded-2xl border-2 border-gray-200"
+              className="flex-1 p-3 rounded-2xl border-2 border-line"
             >
               {children.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -103,16 +103,16 @@ export default function TasksPage() {
               max={1000}
               value={points}
               onChange={(e) => setPoints(Number(e.target.value))}
-              className="md:w-32 p-3 rounded-2xl border-2 border-gray-200"
+              className="md:w-32 p-3 rounded-2xl border-2 border-line"
               aria-label="Pontos"
             />
           </div>
-          <p className="text-sm text-gray-500 flex items-center gap-1">
+          <p className="text-sm text-ink-muted flex items-center gap-1">
             <Calendar size={14} /> A tarefa aparece todos os dias no totem.
           </p>
           <button
             disabled={saving}
-            className="flex items-center gap-2 bg-[#5C4033] text-white px-5 py-3 rounded-2xl font-bold hover:bg-[#4A3329] disabled:opacity-60"
+            className="flex items-center gap-2 bg-brand text-on-brand px-5 py-3 rounded-2xl font-bold hover:bg-brand-hover disabled:opacity-60"
           >
             <Plus size={20} />
             Adicionar tarefa
@@ -121,14 +121,14 @@ export default function TasksPage() {
       )}
 
       {tasks.length > 0 && (
-        <div className="bg-white rounded-[24px] border-2 border-[#EEDCDF] divide-y divide-gray-100 shadow-sm">
+        <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {tasks.map((t) => (
             <div key={t.id} className="p-4 flex items-center gap-3">
               <span className="text-2xl">{t.icon}</span>
-              <span className="flex-1 font-medium text-gray-800">{t.title}</span>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">{t.child_name}</span>
-              <span className="font-bold text-[#5C4033]">{t.points} pts</span>
-              <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-gray-400 hover:text-red-500">
+              <span className="flex-1 font-medium text-ink">{t.title}</span>
+              <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold">{t.child_name}</span>
+              <span className="font-bold text-ink">{t.points} pts</span>
+              <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
                 <Trash2 size={18} />
               </button>
             </div>

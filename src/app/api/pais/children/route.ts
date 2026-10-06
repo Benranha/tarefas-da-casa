@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   const name = typeof body.name === 'string' ? body.name.trim().slice(0, 40) : ''
   const avatar = typeof body.avatar === 'string' ? body.avatar.trim().slice(0, 8) : '🧒'
-  const color = /^#[0-9a-fA-F]{6}$/.test(body.color ?? '') ? body.color : '#3B82F6'
+  const color = /^#[0-9a-fA-F]{6}$/.test(body.color ?? '') ? body.color : '#2F5BEA'
   if (!name) return badRequest('Informe o nome')
 
   const rows = await sql`
