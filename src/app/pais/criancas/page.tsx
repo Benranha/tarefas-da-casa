@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 
 const AVATARS = ['👦', '👧', '🧒', '👶', '🧑', '🐱', '🐶', '🦄']
-const COLORS = ['#3B82F6', '#EC4899', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444']
+const COLORS = ['#2F5BEA', '#C8266B', '#3F7D20', '#9A5B06', '#7A3FE0', '#0B7A85', '#C8362B']
 
 type Child = { id: string; name: string; avatar: string; color: string; points: number }
 
@@ -47,16 +47,16 @@ export default function ChildrenPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold text-[#5C4033]">Crianças</h1>
+      <h1 className="text-3xl font-bold text-ink">Crianças</h1>
 
-      <form onSubmit={add} className="bg-white p-6 rounded-[24px] border-2 border-[#EEDCDF] space-y-4">
+      <form onSubmit={add} className="bg-surface-raised p-6 rounded-[24px] border-2 border-line space-y-4">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
           maxLength={40}
           placeholder="Nome da criança"
-          className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none"
+          className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {AVATARS.map((a) => (
@@ -64,7 +64,7 @@ export default function ChildrenPage() {
               type="button"
               key={a}
               onClick={() => setAvatar(a)}
-              className={`text-3xl p-2 rounded-2xl border-2 ${avatar === a ? 'border-[#5C4033] bg-gray-50' : 'border-transparent'}`}
+              className={`text-3xl p-2 rounded-2xl border-2 ${avatar === a ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
             >
               {a}
             </button>
@@ -77,14 +77,14 @@ export default function ChildrenPage() {
               key={c}
               aria-label={`Cor ${c}`}
               onClick={() => setColor(c)}
-              className={`w-9 h-9 rounded-full border-4 ${color === c ? 'border-[#5C4033]' : 'border-white'} shadow`}
+              className={`w-9 h-9 rounded-full border-4 ${color === c ? 'border-brand' : 'border-surface-raised'} shadow`}
               style={{ background: c }}
             />
           ))}
         </div>
         <button
           disabled={saving}
-          className="flex items-center gap-2 bg-[#5C4033] text-white px-5 py-3 rounded-2xl font-bold hover:bg-[#4A3329] disabled:opacity-60"
+          className="tf-btn tf-btn--primary"
         >
           <Plus size={20} />
           Adicionar criança
@@ -92,22 +92,22 @@ export default function ChildrenPage() {
       </form>
 
       {children.length === 0 ? (
-        <p className="text-center text-gray-500">Nenhuma criança cadastrada ainda.</p>
+        <p className="text-center text-ink-muted">Nenhuma criança cadastrada ainda.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {children.map((c) => (
-            <div key={c.id} className="bg-white p-6 rounded-[24px] border-2 border-[#EEDCDF] flex items-center gap-4 shadow-sm">
+            <div key={c.id} className="bg-surface-raised p-6 rounded-[24px] border-2 border-line flex items-center gap-4 shadow-sm">
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl bg-white"
-                style={{ boxShadow: `0 0 0 4px ${c.color}` }}
+                className="tf-child"
+                style={{ '--kid': c.color, '--kid-soft': `color-mix(in srgb, ${c.color} 14%, var(--surface-raised))` } as React.CSSProperties}
               >
-                {c.avatar}
+                <span className="tf-child__avatar" style={{ ['--size' as string]: '64px', borderWidth: 4, boxShadow: 'none' }}>{c.avatar}</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-[#5C4033]">{c.name}</h3>
-                <p className="text-gray-500 text-sm">{c.points} pontos</p>
+                <h3 className="text-xl font-bold text-ink">{c.name}</h3>
+                <p className="text-ink-muted text-sm">{c.points} pontos</p>
               </div>
-              <button onClick={() => remove(c)} aria-label={`Remover ${c.name}`} className="p-2 text-gray-400 hover:text-red-500">
+              <button onClick={() => remove(c)} aria-label={`Remover ${c.name}`} className="p-2 text-ink-muted hover:text-returned-fg">
                 <Trash2 size={20} />
               </button>
             </div>

@@ -1,26 +1,143 @@
 @import "tailwindcss";
+@import "./tarefinha.css";
 
+/* Tokens da identidade Tarefinha (design system). Tema escuro só no painel dos pais: data-theme="dark". */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --surface: #fff8ef;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f7ebdd;
+  --line: #ebdccb;
+  --line-strong: #8c7767;
+  --ink: #3a2a22;
+  --ink-muted: #6a554a;
+  --on-brand: #ffffff;
+  --brand: #c0430e;
+  --brand-hover: #a33709;
+  --brand-soft: #ffe6d8;
+  --brand-ink: #9a3408;
+  --sun: #ffc93c;
+  --sun-soft: #fff1c7;
+  --on-sun: #3a2a22;
+  --pending-bg: #ffffff;
+  --pending-fg: #6a554a;
+  --pending-border: #d9c5b1;
+  --waiting-bg: #fff1c7;
+  --waiting-fg: #7a4a00;
+  --waiting-border: #b07a00;
+  --approved-bg: #dff5e5;
+  --approved-fg: #12602f;
+  --approved-solid: #15803d;
+  --on-approved: #ffffff;
+  --returned-bg: #ffe5e9;
+  --returned-fg: #9b2243;
+  --returned-border: #c04068;
+  --focus: #2f4bd0;
+  --on-kid: #ffffff;
+  --kid-azul: #2f5bea;
+  --kid-rosa: #c8266b;
+  --kid-verde: #3f7d20;
+  --kid-mostarda: #9a5b06;
+  --kid-roxo: #7a3fe0;
+  --kid-turquesa: #0b7a85;
+  --kid-tomate: #c8362b;
+  --kid-azul-soft: #e2e8fc;
+  --kid-rosa-soft: #f7e1ea;
+  --kid-verde-soft: #e4ede0;
+  --kid-mostarda-soft: #f1e8dc;
+  --kid-roxo-soft: #ece4fb;
+  --kid-turquesa-soft: #ddecee;
+  --kid-tomate-soft: #f7e3e1;
+}
+
+[data-theme="dark"] {
+  --surface: #1f1612;
+  --surface-raised: #2b201a;
+  --surface-sunken: #170f0c;
+  --line: #43342b;
+  --line-strong: #8f7b6b;
+  --ink: #fbefe3;
+  --ink-muted: #c9b5a5;
+  --on-brand: #2a1006;
+  --brand: #ff9466;
+  --brand-hover: #ffa982;
+  --brand-soft: #4a2515;
+  --brand-ink: #ffb08a;
+  --sun: #ffd25a;
+  --sun-soft: #4a3a10;
+  --on-sun: #2a1f06;
+  --pending-bg: #2b201a;
+  --pending-fg: #c9b5a5;
+  --pending-border: #5a4639;
+  --waiting-bg: #3e3010;
+  --waiting-fg: #ffd97a;
+  --waiting-border: #c99a1e;
+  --approved-bg: #153322;
+  --approved-fg: #7ee0a0;
+  --approved-solid: #5fd38a;
+  --on-approved: #10281a;
+  --returned-bg: #4a1d2a;
+  --returned-fg: #ffb3c4;
+  --returned-border: #e0708c;
+  --focus: #8fb0ff;
+  --on-kid: #1a110d;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-on-sun: var(--on-sun);
+  --color-pending-bg: var(--pending-bg);
+  --color-pending-fg: var(--pending-fg);
+  --color-pending-border: var(--pending-border);
+  --color-waiting-bg: var(--waiting-bg);
+  --color-waiting-fg: var(--waiting-fg);
+  --color-waiting-border: var(--waiting-border);
+  --color-approved-bg: var(--approved-bg);
+  --color-approved-fg: var(--approved-fg);
+  --color-approved-solid: var(--approved-solid);
+  --color-on-approved: var(--on-approved);
+  --color-returned-bg: var(--returned-bg);
+  --color-returned-fg: var(--returned-fg);
+  --color-returned-border: var(--returned-border);
+  --color-focus: var(--focus);
+  --color-on-kid: var(--on-kid);
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-fredoka), system-ui, sans-serif;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

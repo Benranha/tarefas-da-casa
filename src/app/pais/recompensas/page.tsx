@@ -71,29 +71,29 @@ export default function RewardsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold text-[#5C4033]">Recompensas</h1>
+      <h1 className="text-3xl font-bold text-ink">Recompensas</h1>
 
       {pending.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-[#5C4033]">Pedidos aguardando ({pending.length})</h2>
+          <h2 className="text-xl font-bold text-ink">Pedidos aguardando ({pending.length})</h2>
           {pending.map((p) => (
-            <div key={p.id} className="bg-white p-4 rounded-[24px] border-2 border-yellow-200 flex items-center gap-3">
+            <div key={p.id} className="bg-surface-raised p-4 rounded-[24px] border-2 border-waiting-border flex items-center gap-3">
               <span className="text-3xl">{p.icon || '🎁'}</span>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800">{p.title}</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-bold text-ink">{p.title}</p>
+                <p className="text-sm text-ink-muted">
                   {p.child_avatar} {p.child_name} • {p.cost_points} pts reservados
                 </p>
               </div>
               <button
                 onClick={() => resolve(p.id, 'deliver')}
-                className="flex items-center gap-1 px-4 py-2 bg-green-500 text-white rounded-2xl font-bold hover:bg-green-600"
+                className="flex items-center gap-1 px-4 py-2 bg-approved-solid text-on-approved rounded-2xl font-bold hover:opacity-90"
               >
                 <Check size={18} /> Entregue
               </button>
               <button
                 onClick={() => resolve(p.id, 'deny')}
-                className="flex items-center gap-1 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-2xl font-bold hover:bg-red-100"
+                className="flex items-center gap-1 px-4 py-2 bg-returned-bg text-returned-fg border border-returned-border rounded-2xl font-bold hover:opacity-90"
               >
                 <X size={18} /> Recusar
               </button>
@@ -102,14 +102,14 @@ export default function RewardsPage() {
         </section>
       )}
 
-      <form onSubmit={add} className="bg-white p-6 rounded-[24px] border-2 border-[#EEDCDF] space-y-4">
+      <form onSubmit={add} className="bg-surface-raised p-6 rounded-[24px] border-2 border-line space-y-4">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={80}
           placeholder="Ex.: Sorvete no fim de semana"
-          className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none"
+          className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {ICONS.map((i) => (
@@ -117,7 +117,7 @@ export default function RewardsPage() {
               type="button"
               key={i}
               onClick={() => setIcon(i)}
-              className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-[#5C4033] bg-gray-50' : 'border-transparent'}`}
+              className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
             >
               {i}
             </button>
@@ -130,14 +130,14 @@ export default function RewardsPage() {
             max={100000}
             value={cost}
             onChange={(e) => setCost(Number(e.target.value))}
-            className="w-32 p-3 rounded-2xl border-2 border-gray-200"
+            className="w-32 p-3 rounded-2xl border-2 border-line"
             aria-label="Custo em pontos"
           />
-          <span className="text-gray-500">pontos</span>
+          <span className="text-ink-muted">pontos</span>
         </div>
         <button
           disabled={saving}
-          className="flex items-center gap-2 bg-[#5C4033] text-white px-5 py-3 rounded-2xl font-bold hover:bg-[#4A3329] disabled:opacity-60"
+          className="flex items-center gap-2 bg-brand text-on-brand px-5 py-3 rounded-2xl font-bold hover:bg-brand-hover disabled:opacity-60"
         >
           <Plus size={20} />
           Adicionar prêmio
@@ -145,13 +145,13 @@ export default function RewardsPage() {
       </form>
 
       {rewards.length > 0 && (
-        <div className="bg-white rounded-[24px] border-2 border-[#EEDCDF] divide-y divide-gray-100 shadow-sm">
+        <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {rewards.map((r) => (
             <div key={r.id} className="p-4 flex items-center gap-3">
               <span className="text-2xl">{r.icon || '🎁'}</span>
-              <span className="flex-1 font-medium text-gray-800">{r.title}</span>
-              <span className="font-bold text-[#5C4033]">{r.cost_points} pts</span>
-              <button onClick={() => remove(r)} aria-label={`Remover ${r.title}`} className="p-2 text-gray-400 hover:text-red-500">
+              <span className="flex-1 font-medium text-ink">{r.title}</span>
+              <span className="font-bold text-ink">{r.cost_points} pts</span>
+              <button onClick={() => remove(r)} aria-label={`Remover ${r.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
                 <Trash2 size={18} />
               </button>
             </div>
@@ -161,15 +161,15 @@ export default function RewardsPage() {
 
       {done.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-xl font-bold text-[#5C4033]">Últimos pedidos</h2>
-          <div className="bg-white rounded-[24px] border-2 border-[#EEDCDF] divide-y divide-gray-100">
+          <h2 className="text-xl font-bold text-ink">Últimos pedidos</h2>
+          <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line">
             {done.map((p) => (
               <div key={p.id} className="p-4 flex items-center gap-3 text-sm">
                 <span className="text-xl">{p.icon || '🎁'}</span>
                 <span className="flex-1">
                   {p.title} • {p.child_avatar} {p.child_name}
                 </span>
-                <span className={p.status === 'delivered' ? 'text-green-600 font-bold' : 'text-gray-400'}>
+                <span className={p.status === 'delivered' ? 'text-approved-fg font-bold' : 'text-ink-muted'}>
                   {p.status === 'delivered' ? 'Entregue' : 'Recusado (pontos devolvidos)'}
                 </span>
               </div>

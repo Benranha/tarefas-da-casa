@@ -1,17 +1,15 @@
-import React from 'react';
-
 export const colors = {
-  background: 'bg-[#FDFBFA]', // Creme/Bege claro
-  primary: 'text-[#5C4033]', // Marrom suave para textos
+  background: 'bg-surface',
+  primary: 'text-ink',
   accent: {
-    pending: 'bg-gray-200 text-gray-600',
-    awaiting: 'bg-yellow-200 text-yellow-800',
-    approved: 'bg-green-200 text-green-800',
+    pending: 'bg-surface-sunken text-ink-muted',
+    awaiting: 'bg-waiting-bg text-waiting-fg',
+    approved: 'bg-approved-bg text-approved-fg',
   },
-  card: 'bg-white border-2 border-[#EEDC CF] rounded-[24px]',
+  card: 'bg-surface-raised border-2 border-line rounded-[24px]',
 };
 
 export const Typography = {
-  h1: 'text-4xl font-bold text-center rounded-full',
-  body: 'text-lg text-gray-700',
+  h1: 'font-display text-4xl font-semibold text-center',
+  body: 'text-lg text-ink-muted',
 };

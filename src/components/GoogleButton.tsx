@@ -27,11 +27,11 @@ export default function GoogleButton({ label }: { label: string }) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="w-full py-4 bg-white text-gray-700 font-bold rounded-2xl border-2 border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-60"
+        className="w-full py-4 bg-surface-raised text-ink-muted font-bold rounded-2xl border-2 border-line hover:bg-surface-sunken transition-colors disabled:opacity-60"
       >
         {loading ? 'Abrindo o Google...' : label}
       </button>
-      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+      {error && <p className="text-sm text-returned-fg text-center">{error}</p>}
     </div>
   )
 }
