@@ -87,13 +87,13 @@ export default function RewardsPage() {
               </div>
               <button
                 onClick={() => resolve(p.id, 'deliver')}
-                className="flex items-center gap-1 px-4 py-2 bg-approved-solid text-on-approved rounded-2xl font-bold hover:bg-green-600"
+                className="flex items-center gap-1 px-4 py-2 bg-approved-solid text-on-approved rounded-2xl font-bold hover:opacity-90"
               >
                 <Check size={18} /> Entregue
               </button>
               <button
                 onClick={() => resolve(p.id, 'deny')}
-                className="flex items-center gap-1 px-4 py-2 bg-returned-bg text-returned-fg border border-returned-border rounded-2xl font-bold hover:bg-red-100"
+                className="flex items-center gap-1 px-4 py-2 bg-returned-bg text-returned-fg border border-returned-border rounded-2xl font-bold hover:opacity-90"
               >
                 <X size={18} /> Recusar
               </button>
@@ -151,7 +151,7 @@ export default function RewardsPage() {
               <span className="text-2xl">{r.icon || '🎁'}</span>
               <span className="flex-1 font-medium text-ink">{r.title}</span>
               <span className="font-bold text-ink">{r.cost_points} pts</span>
-              <button onClick={() => remove(r)} aria-label={`Remover ${r.title}`} className="p-2 text-ink-muted hover:text-red-500">
+              <button onClick={() => remove(r)} aria-label={`Remover ${r.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
                 <Trash2 size={18} />
               </button>
             </div>
