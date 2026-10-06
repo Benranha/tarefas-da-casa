@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check } from 'lucide-react'
+import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check, EllipsisVertical } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 
@@ -30,6 +30,7 @@ export default function TasksPage() {
   const [description, setDescription] = useState('')
   const [dueTime, setDueTime] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
+  const [menuFor, setMenuFor] = useState<string | null>(null)
   const [editTime, setEditTime] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [saving, setSaving] = useState(false)
@@ -190,23 +191,51 @@ export default function TasksPage() {
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {tasks.map((t) => (
             <div key={t.id} className="p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <TfIcon name={t.icon} size={28} />
-                <span className="flex-1 min-w-0">
-                  <span className="font-medium text-ink block">{t.title}</span>
+              <div className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 md:flex md:items-center">
+                <span className="mt-0.5 md:mt-0 shrink-0"><TfIcon name={t.icon} size={28} /></span>
+                <span className="min-w-0 md:flex-1">
+                  <span className="font-medium text-ink block text-pretty">{t.title}</span>
                   {t.description && <span className="text-sm text-ink-muted block">{t.description}</span>}
                 </span>
-                {t.due_time && (
-                  <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
-                )}
-                <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold">{t.child_name}</span>
-                <span className="font-bold text-ink">{t.points} pts</span>
-                <button onClick={() => (editing === t.id ? setEditing(null) : startEdit(t))} aria-label={`Editar ${t.title}`} className="p-2 text-ink-muted hover:text-brand">
-                  <Pencil size={18} />
-                </button>
-                <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
-                  <Trash2 size={18} />
-                </button>
+                <span className="col-start-2 col-span-2 row-start-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 md:contents">
+                  {t.due_time && (
+                    <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
+                  )}
+                  <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold whitespace-nowrap">{t.child_name}</span>
+                  <span className="font-bold text-ink whitespace-nowrap">{t.points} pts</span>
+                </span>
+                <span className="relative col-start-3 row-start-1 shrink-0 -my-1 -mr-2 md:m-0">
+                  <button
+                    onClick={() => setMenuFor(menuFor === t.id ? null : t.id)}
+                    aria-label={`Ações de ${t.title}`}
+                    aria-haspopup="menu"
+                    aria-expanded={menuFor === t.id}
+                    className="size-11 grid place-items-center rounded-full text-ink-muted hover:text-brand"
+                  >
+                    <EllipsisVertical size={22} />
+                  </button>
+                  {menuFor === t.id && (
+                    <>
+                      <button type="button" aria-label="Fechar menu" tabIndex={-1} onClick={() => setMenuFor(null)} className="fixed inset-0 z-30 cursor-default" />
+                      <div role="menu" className="absolute right-2 top-11 z-40 min-w-40 p-1.5 rounded-2xl border-2 border-line bg-surface-raised shadow-pop">
+                        <button
+                          role="menuitem"
+                          onClick={() => { setMenuFor(null); if (editing === t.id) setEditing(null); else startEdit(t) }}
+                          className="w-full min-h-11 px-3 flex items-center gap-3 rounded-xl font-extrabold text-ink hover:bg-surface-sunken"
+                        >
+                          <Pencil size={18} /> Editar
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => { setMenuFor(null); remove(t) }}
+                          className="w-full min-h-11 px-3 flex items-center gap-3 rounded-xl font-extrabold text-returned-fg hover:bg-returned-bg"
+                        >
+                          <Trash2 size={18} /> Remover
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </span>
               </div>
               {editing === t.id && (
                 <div className="flex flex-col md:flex-row gap-3">
