@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check } from 'lucide-react'
+import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check, EllipsisVertical } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 
@@ -30,6 +30,7 @@ export default function TasksPage() {
   const [description, setDescription] = useState('')
   const [dueTime, setDueTime] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
+  const [menuFor, setMenuFor] = useState<string | null>(null)
   const [editTime, setEditTime] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [saving, setSaving] = useState(false)
@@ -203,13 +204,37 @@ export default function TasksPage() {
                   <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold whitespace-nowrap">{t.child_name}</span>
                   <span className="font-bold text-ink whitespace-nowrap">{t.points} pts</span>
                 </span>
-                <span className="col-start-3 row-start-1 flex shrink-0 -my-1 -mr-2 md:m-0">
-                  <button onClick={() => (editing === t.id ? setEditing(null) : startEdit(t))} aria-label={`Editar ${t.title}`} className="size-11 grid place-items-center text-ink-muted hover:text-brand">
-                    <Pencil size={18} />
+                <span className="relative col-start-3 row-start-1 shrink-0 -my-1 -mr-2 md:m-0">
+                  <button
+                    onClick={() => setMenuFor(menuFor === t.id ? null : t.id)}
+                    aria-label={`Ações de ${t.title}`}
+                    aria-haspopup="menu"
+                    aria-expanded={menuFor === t.id}
+                    className="size-11 grid place-items-center rounded-full text-ink-muted hover:text-brand"
+                  >
+                    <EllipsisVertical size={22} />
                   </button>
-                  <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="size-11 grid place-items-center text-ink-muted hover:text-returned-fg">
-                    <Trash2 size={18} />
-                  </button>
+                  {menuFor === t.id && (
+                    <>
+                      <button type="button" aria-label="Fechar menu" tabIndex={-1} onClick={() => setMenuFor(null)} className="fixed inset-0 z-30 cursor-default" />
+                      <div role="menu" className="absolute right-2 top-11 z-40 min-w-40 p-1.5 rounded-2xl border-2 border-line bg-surface-raised shadow-pop">
+                        <button
+                          role="menuitem"
+                          onClick={() => { setMenuFor(null); if (editing === t.id) setEditing(null); else startEdit(t) }}
+                          className="w-full min-h-11 px-3 flex items-center gap-3 rounded-xl font-extrabold text-ink hover:bg-surface-sunken"
+                        >
+                          <Pencil size={18} /> Editar
+                        </button>
+                        <button
+                          role="menuitem"
+                          onClick={() => { setMenuFor(null); remove(t) }}
+                          className="w-full min-h-11 px-3 flex items-center gap-3 rounded-xl font-extrabold text-returned-fg hover:bg-returned-bg"
+                        >
+                          <Trash2 size={18} /> Remover
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </span>
               </div>
               {editing === t.id && (
