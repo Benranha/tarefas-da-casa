@@ -39,7 +39,7 @@ export async function POST(
   const { id: childId, title, points } = rows[0] as { id: string; title: string; points: number }
   after(() =>
     notifyChild(childId, {
-      title: 'Tarefa aprovada! 🎉',
+      title: 'Tarefa aprovada!',
       body: `${title}${points ? ` (+${points} pontos)` : ''}`,
       url: '/filho',
       tag: `approved-${id}`,

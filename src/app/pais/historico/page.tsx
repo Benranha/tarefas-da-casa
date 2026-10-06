@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { TrendingUp, Trophy, History } from 'lucide-react'
+import { TrendingUp, Trophy, History, CheckCircle2, Undo2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 
 type Child = { id: string; name: string; avatar: string; color: string; points: number; week_points: number }
@@ -104,7 +104,11 @@ export default function HistoryPage() {
                 <div key={e.id} className="p-4 flex items-center justify-between gap-3 hover:bg-surface-sunken transition-colors">
                   <div className="flex items-center gap-4 min-w-0">
                     <span className="text-sm font-medium text-ink-muted w-16 shrink-0">{dayLabel(e.day)}</span>
-                    <span className="text-2xl">{approved ? '✅' : '↩️'}</span>
+                    {approved ? (
+                      <CheckCircle2 size={26} className="text-approved-solid shrink-0" aria-label="Aprovada" />
+                    ) : (
+                      <Undo2 size={26} className="text-returned-border shrink-0" aria-label="Devolvida" />
+                    )}
                     <div className="min-w-0">
                       <span className="font-bold text-ink-muted">
                         <TfIcon name={e.icon} size={20} className="mr-1" /> {e.title}

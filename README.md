@@ -1,4 +1,4 @@
-# 🏠 Tarefinha
+# Tarefinha
 
 Web App PWA para controle de tarefas domésticas gamificadas para crianças.
 

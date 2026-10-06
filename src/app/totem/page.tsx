@@ -452,7 +452,7 @@ export default function TotemPage() {
 
       {celebration && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 pointer-events-none" aria-live="polite">
-          <span className="tf-stamp"><Check size={40} /> Aprovado!</span>
+          <span className="tf-stamp"><TfIcon name="festa" size={40} color="var(--approved-solid)" /> Aprovado!</span>
           <div className="tf-seal tf-seal--pop" style={{ width: 128, height: 128, fontSize: 44 }}>+{celebration.points}</div>
         </div>
       )}
