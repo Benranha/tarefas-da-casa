@@ -1,6 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check } from 'lucide-react'
+import TfIcon from '@/components/TfIcon'
+import { TF_GROUPS } from '@/lib/tf-icons-data'
 
 type Child = { id: string; name: string; wake_time: string; bed_time: string }
 type Task = {
@@ -14,7 +16,7 @@ type Task = {
   assigned_child_id: string
 }
 
-const ICONS = ['🧹', '🛏️', '🍽️', '🪥', '📚', '🐾', '🧺', '🗑️']
+const ICONS = TF_GROUPS.tarefas
 
 const window_for = (children: Child[], id: string) => children.find((c) => c.id === id)
 
@@ -22,7 +24,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [children, setChildren] = useState<Child[]>([])
   const [title, setTitle] = useState('')
-  const [icon, setIcon] = useState(ICONS[0])
+  const [icon, setIcon] = useState<string>(ICONS[0])
   const [points, setPoints] = useState(10)
   const [childId, setChildId] = useState('')
   const [description, setDescription] = useState('')
@@ -126,9 +128,9 @@ export default function TasksPage() {
                 type="button"
                 key={i}
                 onClick={() => setIcon(i)}
-                className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
+                className={`p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
               >
-                {i}
+                <TfIcon name={i} size={34} />
               </button>
             ))}
           </div>
@@ -189,7 +191,7 @@ export default function TasksPage() {
           {tasks.map((t) => (
             <div key={t.id} className="p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{t.icon}</span>
+                <TfIcon name={t.icon} size={28} />
                 <span className="flex-1 min-w-0">
                   <span className="font-medium text-ink block">{t.title}</span>
                   {t.description && <span className="text-sm text-ink-muted block">{t.description}</span>}

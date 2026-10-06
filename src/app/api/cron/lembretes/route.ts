@@ -33,8 +33,8 @@ export async function GET(request: Request) {
   await Promise.all(
     due.map((d) =>
       notifyChild(d.child_id as string, {
-        title: 'Hora da tarefa! ⏰',
-        body: `${d.icon ?? ''} ${d.title}`.trim(),
+        title: 'Hora da tarefa!',
+        body: d.title as string,
         url: '/filho',
         tag: `due-${d.id}`,
       }),

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (!family) return unauthorized()
   const body = await request.json().catch(() => ({}))
   const title = typeof body.title === 'string' ? body.title.trim().slice(0, 80) : ''
-  const icon = typeof body.icon === 'string' ? body.icon.trim().slice(0, 8) : '🎁'
+  const icon = typeof body.icon === 'string' ? body.icon.trim().slice(0, 24) : 'presente'
   const cost = Number.isInteger(body.cost) ? body.cost : NaN
   if (!title || !(cost >= 1 && cost <= 100000)) return badRequest('Informe o prêmio e o custo em pontos')
 

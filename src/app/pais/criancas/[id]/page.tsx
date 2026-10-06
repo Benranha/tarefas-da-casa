@@ -2,6 +2,7 @@
 import React, { use, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlarmClock, ArrowLeft, Check, CheckCheck, ChevronDown, Moon, Undo2 } from 'lucide-react'
+import TfIcon from '@/components/TfIcon'
 
 type Status = 'pending' | 'awaiting_approval' | 'approved'
 type Instance = {
@@ -77,7 +78,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
       </Link>
 
       <header className="flex items-center gap-4" style={kid}>
-        <span className="tf-child__avatar" style={{ ['--size' as string]: '72px', borderWidth: 4, boxShadow: 'none' }}>{child.avatar}</span>
+        <span className="tf-child__avatar" style={{ ['--size' as string]: '72px', borderWidth: 4, boxShadow: 'none' }}><TfIcon name={child.avatar} size={47} color={child.color} /></span>
         <div className="flex-1 min-w-0">
           <h1 className="font-display text-3xl font-semibold text-ink">{child.name}</h1>
           <p className="text-sm text-ink-muted flex items-center gap-3 flex-wrap">
@@ -108,7 +109,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
                     aria-expanded={isOpen}
                     className="flex items-center gap-4 text-left w-full"
                   >
-                    <span className="tf-task__icon">{t.tasks.icon || '✨'}</span>
+                    <span className="tf-task__icon"><TfIcon name={t.tasks.icon} size={40} /></span>
                     <span className="flex-1 min-w-0">
                       <span className="tf-task__title block">{t.tasks.title}</span>
                       <span className="tf-task__status">{STATUS_LABEL[t.status]}</span>
@@ -121,7 +122,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
                       <dl className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <dt className="text-ink-muted">Pontos</dt>
-                          <dd className="font-bold text-ink">{t.tasks.points} ⭐</dd>
+                          <dd className="font-bold text-ink">{t.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></dd>
                         </div>
                         <div>
                           <dt className="text-ink-muted">Horário</dt>

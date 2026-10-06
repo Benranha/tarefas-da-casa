@@ -1,6 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { TrendingUp, Trophy, History } from 'lucide-react'
+import TfIcon from '@/components/TfIcon'
 
 type Child = { id: string; name: string; avatar: string; color: string; points: number; week_points: number }
 type Event = {
@@ -74,7 +75,7 @@ export default function HistoryPage() {
                 className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-sm font-bold mb-4 text-white"
                 style={{ background: c.color }}
               >
-                <span>{c.avatar}</span>
+                <TfIcon name={c.avatar} size={20} flat color="#fff" />
                 {c.name}
               </div>
               <div className="text-4xl font-black text-ink mb-2">{c.points} pts</div>
@@ -106,7 +107,7 @@ export default function HistoryPage() {
                     <span className="text-2xl">{approved ? '✅' : '↩️'}</span>
                     <div className="min-w-0">
                       <span className="font-bold text-ink-muted">
-                        {e.icon} {e.title}
+                        <TfIcon name={e.icon} size={20} className="mr-1" /> {e.title}
                       </span>
                       <span className="text-sm text-ink-muted"> • {e.child_name}</span>
                       {!approved && e.parent_note && (

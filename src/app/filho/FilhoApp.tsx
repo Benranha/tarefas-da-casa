@@ -3,8 +3,9 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
-import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, Moon, Star, Undo2 } from 'lucide-react'
+import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, Moon, Undo2 } from 'lucide-react'
 import PinForm from '@/components/PinForm'
+import TfIcon from '@/components/TfIcon'
 import PushToggle from '@/components/PushToggle'
 
 type Info = { name: string; avatar: string; color: string; has_pin: boolean }
@@ -133,7 +134,7 @@ function Filho() {
     if (res.ok) {
       const data = await res.json()
       setMe((m) => (m ? { ...m, points: data.points } : m))
-      setMessage(`Pedido enviado: ${r.title}! Avise os papais 🎉`)
+      setMessage(`Pedido enviado: ${r.title}! Avise os papais!`)
       confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, disableForReducedMotion: true })
     } else setMessage('Você ainda não tem pontos suficientes.')
   }
@@ -157,7 +158,7 @@ function Filho() {
       <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-6 p-6" style={kid}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-10" />
-        <span className="tf-child__avatar" style={{ ['--size' as string]: '110px' }}>{info.avatar}</span>
+        <span className="tf-child__avatar" style={{ ['--size' as string]: '110px' }}><TfIcon name={info.avatar} size={72} color={info.color} /></span>
         <h1 className="font-display text-3xl font-semibold text-ink text-center">Oi, {info.name}!</h1>
         <PinForm key={String(info.has_pin)} creating={!info.has_pin} onSubmit={submitPin} />
       </div>
@@ -171,7 +172,7 @@ function Filho() {
       <header className="flex items-center justify-between gap-3 px-5 py-4" style={{ background: 'var(--kid-soft)' }}>
         <div className="flex items-center gap-3 min-w-0">
           <span className="tf-child__avatar" style={{ ['--size' as string]: '56px', borderWidth: 4, boxShadow: 'none', background: 'var(--surface-raised)' }}>
-            {info.avatar}
+            <TfIcon name={info.avatar} size={36} color={info.color} />
           </span>
           <div className="min-w-0">
             <p className="font-display text-2xl font-semibold text-ink truncate">Oi, {info.name}!</p>
@@ -183,7 +184,7 @@ function Filho() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="tf-seal" style={{ width: 56, height: 56, fontSize: 18 }}><Star size={26} className="fill-current" /></div>
+          <div className="tf-seal" style={{ width: 56, height: 56, fontSize: 18 }}><TfIcon name="estrela" size={28} flat style={{ ['--ic-star' as string]: '#fff8ef' }} /></div>
           <div className="leading-none">
             <div className="font-display text-3xl font-bold text-ink">{me?.points ?? 0}</div>
             <div className="text-xs font-bold text-ink-muted">pontos</div>
@@ -195,7 +196,12 @@ function Filho() {
         <main className="flex-1 p-5 space-y-4">
           <button onClick={() => setView('tasks')} className="tf-btn tf-btn--secondary"><ArrowLeft className="tf-icon" /> Voltar</button>
           <h2 className="font-display text-3xl font-semibold text-ink">Recompensas</h2>
-          {message && <p className="text-lg font-bold text-ink">{message}</p>}
+          {message && (
+            <p className="text-lg font-bold text-ink">
+              {message}
+              {message.startsWith('Pedido enviado') && <> <TfIcon name="festa" size="1.2em" /></>}
+            </p>
+          )}
           {rewards.length === 0 && <p className="text-ink-muted">Os papais ainda não cadastraram recompensas.</p>}
           <div className="grid gap-4">
             {rewards.map((r) => {
@@ -204,8 +210,8 @@ function Filho() {
                 <button key={r.id} type="button" disabled={!can} onClick={() => redeem(r)}
                   className={`tf-task ${can ? 'tf-task--waiting' : ''} disabled:opacity-60`}>
                   <span className="tf-task__row">
-                    <span className="tf-task__icon">{r.icon || '🎁'}</span>
-                    <span className="tf-task__pts">{r.cost_points} ⭐</span>
+                    <span className="tf-task__icon"><TfIcon name={r.icon || 'presente'} size={40} /></span>
+                    <span className="tf-task__pts">{r.cost_points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
                   </span>
                   <span>
                     <p className="tf-task__title">{r.title}</p>
@@ -218,7 +224,7 @@ function Filho() {
         </main>
       ) : (
         <main className="flex-1 p-5 space-y-4">
-          {tasks.length === 0 && <p className="text-center font-display text-2xl text-ink-muted py-12">Tudo limpo por aqui! 🎉</p>}
+          {tasks.length === 0 && <p className="text-center font-display text-2xl text-ink-muted py-12">Tudo limpo por aqui! <TfIcon name="festa" size="1.2em" /></p>}
           <div className="grid gap-4">
             {tasks.map((i) => {
               const st = i.status
@@ -230,7 +236,7 @@ function Filho() {
                   className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
                   onClick={() => st === 'pending' && markDone(i.id)}
                 >
-                  <span className="tf-task__icon">{i.tasks.icon || '✨'}</span>
+                  <span className="tf-task__icon"><TfIcon name={i.tasks.icon} size={40} /></span>
                   <span className="flex-1 min-w-0">
                     <p className="tf-task__title">{i.tasks.title}</p>
                     {i.tasks.due_time && (
@@ -243,9 +249,9 @@ function Filho() {
                       {st === 'pending' && !returned && (<><Circle className="tf-icon" /> Toque quando terminar</>)}
                       {returned && (<><Undo2 className="tf-icon" /> Devolvida. Toque quando refizer</>)}
                     </span>
-                    {returned && <span className="tf-task__note !text-base">💬 Papais: {i.parent_note}</span>}
+                    {returned && <span className="tf-task__note !text-base"><TfIcon name="recado" size={30} color="var(--returned-border)" className="mr-2" /> Papais: {i.parent_note}</span>}
                   </span>
-                  <span className="tf-task__pts">+{i.tasks.points} ⭐</span>
+                  <span className="tf-task__pts">+{i.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
                 </button>
               )
             })}

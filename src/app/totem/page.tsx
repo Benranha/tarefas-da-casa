@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Check, Circle, Clock, ArrowLeft, Star, Gift, Undo2, AlarmClock, Moon } from 'lucide-react';
+import { Check, Circle, Clock, ArrowLeft, Gift, Undo2, AlarmClock, Moon } from 'lucide-react';
 import Link from 'next/link';
 import PinForm from '@/components/PinForm';
+import TfIcon from '@/components/TfIcon';
 
 export default function TotemPage() {
   const [step, setStep] = useState<'selection' | 'pin' | 'tasks' | 'rewards'>('selection');
@@ -168,7 +169,7 @@ export default function TotemPage() {
     if (res.ok) {
       const data = await res.json();
       setSelectedChild({ ...selectedChild, points: data.points });
-      setMessage(`Pedido enviado: ${reward.title}! Avise os papais 🎉`);
+      setMessage(`Pedido enviado: ${reward.title}! Avise os papais!`);
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, disableForReducedMotion: true });
     } else {
       setMessage('Você ainda não tem pontos suficientes.');
@@ -265,7 +266,7 @@ export default function TotemPage() {
           <div className="flex flex-wrap justify-center gap-16 max-w-5xl w-full">
             {children.map((child) => (
               <button key={child.id} onClick={() => handleChildSelect(child)} className="tf-child" style={kidStyle(child)}>
-                <span className="tf-child__avatar" style={{ ['--size' as string]: '180px' }}>{child.avatar}</span>
+                <span className="tf-child__avatar" style={{ ['--size' as string]: '180px' }}><TfIcon name={child.avatar} size={118} color={child.color} /></span>
                 {child.name}
                 <span
                   className={`text-xl font-extrabold px-4 py-1 rounded-full border-2 ${
@@ -279,7 +280,7 @@ export default function TotemPage() {
                   {child.todo_count > 0
                     ? `${child.todo_count} ${child.todo_count === 1 ? 'tarefa' : 'tarefas'} para fazer`
                     : child.tasks_today > 0
-                      ? 'Tudo feito! 🎉'
+                      ? <>Tudo feito! <TfIcon name="festa" size="1.2em" /></>
                       : 'Sem tarefas hoje'}
                 </span>
               </button>
@@ -293,7 +294,7 @@ export default function TotemPage() {
   if (step === 'pin' && selectedChild) {
     return (
       <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-8 p-8" style={kidStyle(selectedChild)}>
-        <span className="tf-child__avatar" style={{ ['--size' as string]: '140px' }}>{selectedChild.avatar}</span>
+        <span className="tf-child__avatar" style={{ ['--size' as string]: '140px' }}><TfIcon name={selectedChild.avatar} size={91} color={selectedChild.color} /></span>
         <h1 className="font-display text-4xl font-semibold text-ink text-center">Oi, {selectedChild.name}!</h1>
         <PinForm key={selectedChild.id + String(selectedChild.has_pin)} creating={!selectedChild.has_pin} onSubmit={submitPin} big />
         <button onClick={leaveChild} className="tf-btn tf-btn--secondary">
@@ -311,7 +312,7 @@ export default function TotemPage() {
             <ArrowLeft size={28} /> Voltar
           </button>
           <div className="flex items-center gap-4">
-            <div className="tf-seal"><Star size={44} className="fill-current" /></div>
+            <div className="tf-seal"><TfIcon name="estrela" size={46} flat style={{ ['--ic-star' as string]: '#fff8ef' }} /></div>
             <div>
               <div className="tf-points__value">{selectedChild.points || 0}</div>
               <div className="tf-points__unit">pontos</div>
@@ -320,7 +321,12 @@ export default function TotemPage() {
         </header>
         <main className="flex-1 px-10 py-8">
           <h2 className="font-display text-4xl font-semibold text-ink mb-6">Recompensas</h2>
-          {message && <p className="text-2xl font-bold text-ink mb-6">{message}</p>}
+          {message && (
+            <p className="text-2xl font-bold text-ink mb-6">
+              {message}
+              {message.startsWith('Pedido enviado') && <> <TfIcon name="festa" size="1.2em" /></>}
+            </p>
+          )}
           {rewards.length === 0 ? (
             <p className="text-2xl text-ink-muted">Os papais ainda não cadastraram recompensas.</p>
           ) : (
@@ -336,8 +342,8 @@ export default function TotemPage() {
                     className={`tf-task ${can ? 'tf-task--waiting' : ''} disabled:opacity-60 disabled:cursor-not-allowed`}
                   >
                     <span className="tf-task__row">
-                      <span className="tf-task__icon">{r.icon || '🎁'}</span>
-                      <span className="tf-task__pts">{r.cost_points} ⭐</span>
+                      <span className="tf-task__icon"><TfIcon name={r.icon || 'presente'} size={66} /></span>
+                      <span className="tf-task__pts">{r.cost_points}<TfIcon name="estrela" size={26} className="ml-1" /></span>
                     </span>
                     <span>
                       <p className="tf-task__title">{r.title}</p>
@@ -362,7 +368,7 @@ export default function TotemPage() {
       <header className="flex justify-between items-center px-10 py-6" style={{ background: 'var(--kid-soft)' }}>
         <div className="flex items-center gap-6">
           <span className="tf-child__avatar" style={{ ['--size' as string]: '96px', boxShadow: 'none', background: 'var(--surface-raised)' }}>
-            {selectedChild.avatar}
+            <TfIcon name={selectedChild.avatar} size={62} color={selectedChild.color} />
           </span>
           <div>
             <p className="font-display text-4xl font-semibold text-ink">Oi, {selectedChild.name}!</p>
@@ -375,7 +381,7 @@ export default function TotemPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="tf-seal"><Star size={44} className="fill-current" /></div>
+          <div className="tf-seal"><TfIcon name="estrela" size={46} flat style={{ ['--ic-star' as string]: '#fff8ef' }} /></div>
           <div>
             <div className="tf-points__value">{selectedChild.points || 0}</div>
             <div className="tf-points__unit">pontos</div>
@@ -392,7 +398,7 @@ export default function TotemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
             {tasks.length === 0 ? (
               <div className="col-span-full text-center py-20">
-                <p className="font-display text-3xl text-ink-muted">Tudo limpo por aqui! 🎉</p>
+                <p className="font-display text-3xl text-ink-muted">Tudo limpo por aqui! <TfIcon name="festa" size="1.2em" /></p>
               </div>
             ) : (
               tasks.map((instance) => {
@@ -407,8 +413,8 @@ export default function TotemPage() {
                     onClick={() => st === 'pending' && markTaskDone(instance.id)}
                   >
                     <span className="tf-task__row">
-                      <span className="tf-task__icon">{instance.tasks.icon || '✨'}</span>
-                      <span className="tf-task__pts">+{instance.tasks.points} ⭐</span>
+                      <span className="tf-task__icon"><TfIcon name={instance.tasks.icon} size={66} /></span>
+                      <span className="tf-task__pts">+{instance.tasks.points}<TfIcon name="estrela" size={26} className="ml-1" /></span>
                     </span>
                     <span>
                       <p className="tf-task__title">{instance.tasks.title}</p>
@@ -422,7 +428,7 @@ export default function TotemPage() {
                         {st === 'pending' && !returned && (<><Circle className="tf-icon" /> Toque quando terminar</>)}
                         {returned && (<><Undo2 className="tf-icon" /> Os papais devolveram. Toque quando refizer</>)}
                       </span>
-                      {returned && <span className="tf-task__note">💬 Papais: {instance.parent_note}</span>}
+                      {returned && <span className="tf-task__note"><TfIcon name="recado" size={30} color="var(--returned-border)" className="mr-2" /> Papais: {instance.parent_note}</span>}
                     </span>
                   </button>
                 );
