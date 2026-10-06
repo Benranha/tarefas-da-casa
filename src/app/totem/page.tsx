@@ -2,17 +2,19 @@
 import React, { useEffect, useState } from 'react';
 import { colors, Typography } from '@/styles/theme';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Clock, ArrowLeft, Star } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowLeft, Star, Gift } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function TotemPage() {
-  const [step, setStep] = useState<'selection' | 'tasks'>('selection');
+  const [step, setStep] = useState<'selection' | 'tasks' | 'rewards'>('selection');
   const [selectedChild, setSelectedChild] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [children, setChildren] = useState<any[]>([]);
   const [code, setCode] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,9 +61,44 @@ export default function TotemPage() {
   // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
   useEffect(() => {
     if (!selectedChild) return;
-    const timer = setInterval(() => fetchTasks(selectedChild.id, true), 5000);
+    const timer = setInterval(() => {
+      fetchTasks(selectedChild.id, true);
+      refreshPoints(selectedChild.id);
+    }, 5000);
     return () => clearInterval(timer);
   }, [selectedChild]);
+
+  async function refreshPoints(childId: string) {
+    const res = await fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const list = await res.json();
+    setChildren(list);
+    const me = list.find((c: any) => c.id === childId);
+    if (me) setSelectedChild((cur: any) => (cur && cur.points !== me.points ? { ...cur, points: me.points } : cur));
+  }
+
+  async function openRewards() {
+    setMessage(null);
+    const res = await fetch(`/api/totem/rewards?code=${code}`, { cache: 'no-store' });
+    setRewards(res.ok ? await res.json() : []);
+    setStep('rewards');
+  }
+
+  async function redeem(reward: any) {
+    const res = await fetch(`/api/totem/rewards/${reward.id}/redeem?code=${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: selectedChild.id }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSelectedChild({ ...selectedChild, points: data.points });
+      setMessage(`Pedido enviado: ${reward.title}! Avise os papais 🎉`);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    } else {
+      setMessage('Você ainda não tem pontos suficientes.');
+    }
+  }
 
   async function handleChildSelect(child: any) {
     setSelectedChild(child);
@@ -126,6 +163,54 @@ export default function TotemPage() {
     );
   }
 
+  if (step === 'rewards') {
+    return (
+      <div className={`min-h-screen ${colors.background} p-8 flex flex-col`}>
+        <header className="flex justify-between items-center mb-10">
+          <button
+            onClick={() => setStep('tasks')}
+            className="flex items-center gap-2 text-gray-500 font-bold text-xl hover:text-[#5C4033] transition-colors"
+          >
+            <ArrowLeft size={24} />
+            Voltar
+          </button>
+          <div className="flex items-center gap-2 bg-yellow-100 px-6 py-3 rounded-full shadow-sm border-2 border-yellow-200">
+            <Star className="text-yellow-600 fill-yellow-600" size={24} />
+            <span className="text-2xl font-bold text-yellow-800">{selectedChild.points || 0} pts</span>
+          </div>
+        </header>
+        <h2 className="text-4xl font-bold text-[#5C4033] mb-6">Recompensas</h2>
+        {message && <p className="text-2xl text-[#5C4033] mb-6">{message}</p>}
+        {rewards.length === 0 ? (
+          <p className="text-2xl text-gray-400">Os papais ainda não cadastraram recompensas.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rewards.map((r) => {
+              const can = (selectedChild.points || 0) >= r.cost_points;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => redeem(r)}
+                  disabled={!can}
+                  className={`p-6 rounded-[32px] border-4 flex items-center gap-6 text-left transition-all ${
+                    can ? 'bg-white border-yellow-300 shadow-sm active:scale-95' : 'bg-gray-50 border-gray-200 opacity-60'
+                  }`}
+                >
+                  <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">{r.icon || '🎁'}</div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-[#5C4033]">{r.title}</h3>
+                    <p className="text-gray-500 mt-1">{can ? 'Tocar para pedir' : `Faltam ${r.cost_points - (selectedChild.points || 0)} pts`}</p>
+                  </div>
+                  <div className="text-2xl font-black text-[#5C4033]">{r.cost_points} pts</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen ${colors.background} p-8 flex flex-col`}>
       <header className="flex justify-between items-center mb-10">
@@ -146,6 +231,13 @@ export default function TotemPage() {
             <Star className="text-yellow-600 fill-yellow-600" size={24} />
             <span className="text-2xl font-bold text-yellow-800">{selectedChild.points || 0} pts</span>
           </div>
+          <button
+            onClick={openRewards}
+            className="flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-sm border-2 border-[#EEDCDF] text-2xl font-bold text-[#5C4033] active:scale-95"
+          >
+            <Gift size={24} />
+            Prêmios
+          </button>
         </div>
       </header>
 

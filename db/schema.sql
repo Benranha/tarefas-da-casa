@@ -16,7 +16,7 @@ CREATE TABLE children (
     avatar TEXT,
     color TEXT,
     pin_hash TEXT,
-    points INTEGER NOT NULL DEFAULT 0,
+    points INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -56,6 +56,21 @@ CREATE TABLE rewards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
-    cost_points INTEGER NOT NULL,
+    icon TEXT,
+    cost_points INTEGER NOT NULL CHECK (cost_points > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Pedidos de prêmio. Os pontos são reservados no pedido e devolvidos se recusado.
+CREATE TABLE reward_redemptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reward_id UUID REFERENCES rewards(id) ON DELETE SET NULL,
+    child_id UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    icon TEXT,
+    cost_points INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','delivered','denied')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    resolved_at TIMESTAMPTZ
+);
+CREATE INDEX reward_redemptions_child_idx ON reward_redemptions (child_id, status);

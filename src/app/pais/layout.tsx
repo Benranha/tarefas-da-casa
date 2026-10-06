@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ListChecks, History } from 'lucide-react';
+import { User, ListChecks, History, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from '@/app/login/actions';
 
@@ -9,6 +9,7 @@ export default function ParentsLayout({ children }: { children: React.ReactNode 
     { name: 'Crianças', href: '/pais/criancas', icon: User },
     { name: 'Tarefas', href: '/pais/tarefas', icon: ListChecks },
     { name: 'Histórico', href: '/pais/historico', icon: History },
+    { name: 'Recompensas', href: '/pais/recompensas', icon: Gift },
   ];
 
   return (
