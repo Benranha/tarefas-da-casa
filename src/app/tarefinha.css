@@ -31,6 +31,9 @@
 .tf-task__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .tf-task--waiting { background: var(--waiting-bg); border-color: var(--waiting-border); }
 .tf-task--waiting .tf-task__status { color: var(--waiting-fg); }
+.tf-task--returned { background: var(--returned-bg); border-color: var(--returned-border); }
+.tf-task--returned .tf-task__status, .tf-task--returned .tf-task__note { color: var(--returned-fg); }
+.tf-task__note { display: block; margin-top: 10px; font: 800 20px/28px var(--font-nunito), system-ui, sans-serif; }
 .tf-task--approved { background: var(--approved-bg); border-color: var(--approved-solid); }
 .tf-task--approved .tf-task__title { text-decoration: line-through; text-decoration-thickness: 2px; }
 .tf-task--approved .tf-task__status { color: var(--approved-fg); }

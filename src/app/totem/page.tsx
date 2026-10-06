@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Check, Circle, Clock, ArrowLeft, Star, Gift } from 'lucide-react';
+import { Check, Circle, Clock, ArrowLeft, Star, Gift, Undo2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TotemPage() {
@@ -62,6 +62,19 @@ export default function TotemPage() {
     setCelebration({ points });
     setTimeout(() => setCelebration(null), 2800);
   }
+
+  // Na seleção de criança, mantém as contagens de tarefas atualizadas.
+  useEffect(() => {
+    if (step !== 'selection' || !code) return;
+    const refresh = () =>
+      fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => Array.isArray(data) && setChildren(data))
+        .catch(() => {});
+    refresh(); // ao voltar da lista de tarefas, atualiza já
+    const timer = setInterval(refresh, 8000);
+    return () => clearInterval(timer);
+  }, [step, code]);
 
   async function fetchTasks(childId: string, silent = false) {
     if (!silent) setLoading(true);
@@ -174,6 +187,21 @@ export default function TotemPage() {
               <button key={child.id} onClick={() => handleChildSelect(child)} className="tf-child" style={kidStyle(child)}>
                 <span className="tf-child__avatar" style={{ ['--size' as string]: '180px' }}>{child.avatar}</span>
                 {child.name}
+                <span
+                  className={`text-xl font-extrabold px-4 py-1 rounded-full border-2 ${
+                    child.todo_count > 0
+                      ? 'bg-waiting-bg text-waiting-fg border-waiting-border'
+                      : child.tasks_today > 0
+                        ? 'bg-approved-bg text-approved-fg border-approved-solid'
+                        : 'bg-pending-bg text-pending-fg border-pending-border'
+                  }`}
+                >
+                  {child.todo_count > 0
+                    ? `${child.todo_count} ${child.todo_count === 1 ? 'tarefa' : 'tarefas'} para fazer`
+                    : child.tasks_today > 0
+                      ? 'Tudo feito! 🎉'
+                      : 'Sem tarefas hoje'}
+                </span>
               </button>
             ))}
           </div>
@@ -271,11 +299,13 @@ export default function TotemPage() {
             ) : (
               tasks.map((instance) => {
                 const st = instance.status;
+                // Devolvida pelos pais: volta a "pending" com o recado em parent_note.
+                const returned = st === 'pending' && Boolean(instance.parent_note);
                 return (
                   <button
                     key={instance.id}
                     type="button"
-                    className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : ''}`}
+                    className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
                     onClick={() => st === 'pending' && markTaskDone(instance.id)}
                   >
                     <span className="tf-task__row">
@@ -287,8 +317,10 @@ export default function TotemPage() {
                       <span className="tf-task__status">
                         {st === 'approved' && (<><Check className="tf-icon" /> Aprovado!</>)}
                         {st === 'awaiting_approval' && (<><Clock className="tf-icon" /> Aguardando papais...</>)}
-                        {st === 'pending' && (<><Circle className="tf-icon" /> Toque quando terminar</>)}
+                        {st === 'pending' && !returned && (<><Circle className="tf-icon" /> Toque quando terminar</>)}
+                        {returned && (<><Undo2 className="tf-icon" /> Os papais devolveram. Toque quando refizer</>)}
                       </span>
+                      {returned && <span className="tf-task__note">💬 Papais: {instance.parent_note}</span>}
                     </span>
                   </button>
                 );
