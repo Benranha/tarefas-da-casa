@@ -1,7 +1,8 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, ListChecks, History, Inbox } from 'lucide-react';
+import { useEffect } from 'react';
+import { User, ListChecks, History, Inbox, Moon } from 'lucide-react';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
@@ -10,8 +11,30 @@ const items = [
   { name: 'Histórico', href: '/pais/historico', icon: History },
 ];
 
+const THEME_KEY = 'tarefinha-theme';
+
+function panel() {
+  return document.querySelector<HTMLElement>('.tf-painel');
+}
+
 export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
   const pathname = usePathname();
+
+  // Tema escuro só no painel dos pais: segue o sistema, ou a escolha salva no botão.
+  useEffect(() => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch {}
+    const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    panel()?.setAttribute('data-theme', dark ? 'dark' : 'light');
+  }, []);
+
+  function toggleTheme() {
+    const el = panel();
+    if (!el) return;
+    const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    el.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
+  }
   return (
     <nav
       aria-label="Principal"
@@ -19,7 +42,7 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
     >
       <div className="hidden md:block mb-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-10" />
+        <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-10 dark-invert" />
       </div>
       {items.map((item) => (
         <Link
@@ -32,7 +55,11 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
           <span>{item.name}</span>
         </Link>
       ))}
-      <form action={signOut} className="md:mt-auto">
+      <button type="button" onClick={toggleTheme} className="tf-nav__item md:flex-row md:justify-start md:gap-3 md:px-4 md:text-base md:mt-auto">
+        <Moon size={20} />
+        <span>Tema</span>
+      </button>
+      <form action={signOut} >
         <button className="tf-nav__item w-full md:flex-row md:justify-start md:px-4 md:text-base">Sair</button>
       </form>
     </nav>

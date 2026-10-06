@@ -67,3 +67,6 @@
 .tf-nav--side .tf-nav__item { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font: 800 16px/20px var(--font-nunito), system-ui, sans-serif; }
 
 @media (prefers-reduced-motion: reduce) { .tf-stamp, .tf-seal--pop, .tf-btn { animation: none; transition: none; } }
+
+/* Logo claro vira escuro no tema escuro do painel (as cores do SVG são fixas) */
+[data-theme="dark"] .dark-invert { content: url("/logo/tarefinha-horizontal-escuro.svg"); }
