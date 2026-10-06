@@ -7,10 +7,14 @@ export default function PinForm({
   creating,
   onSubmit,
   big = false,
+  label,
+  submitLabel,
 }: {
   creating: boolean
   onSubmit: (pin: string) => Promise<string | null>
   big?: boolean
+  label?: string
+  submitLabel?: string
 }) {
   const [pin, setPin] = useState('')
   const [again, setAgain] = useState('')
@@ -40,7 +44,7 @@ export default function PinForm({
     <form onSubmit={submit} className="w-full max-w-sm space-y-4">
       <label className="block">
         <span className={`block text-center font-extrabold text-ink mb-2 ${big ? 'text-2xl' : 'text-lg'}`}>
-          {creating ? 'Escolha seu código secreto' : 'Digite seu código'}
+          {label ?? (creating ? 'Escolha seu código secreto' : 'Digite seu código')}
         </span>
         <input
           type="password"
@@ -84,7 +88,7 @@ export default function PinForm({
         </p>
       )}
       <button disabled={busy} className={`tf-btn tf-btn--primary w-full ${big ? 'tf-btn--totem' : ''}`}>
-        {busy ? 'Entrando...' : creating ? 'Salvar e entrar' : 'Entrar'}
+        {busy ? 'Entrando...' : (submitLabel ?? (creating ? 'Salvar e entrar' : 'Entrar'))}
       </button>
     </form>
   )

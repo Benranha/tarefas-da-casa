@@ -79,6 +79,36 @@ export default function TotemPage() {
     return () => clearInterval(timer);
   }, [step, code]);
 
+  // "Trocar modo" é dos pais: se houver código parental, pede antes de abrir a reconfiguração.
+  const [parentalOpen, setParentalOpen] = useState(false);
+
+  function goSwitchMode(token: string) {
+    window.location.href = `/abrir?trocar=1&p=${encodeURIComponent(token)}`;
+  }
+
+  async function requestSwitchMode() {
+    const res = await fetch(`/api/totem/parental?code=${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: '' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.required === false) return goSwitchMode(data.token);
+    setParentalOpen(true);
+  }
+
+  async function submitParental(pin: string): Promise<string | null> {
+    const res = await fetch(`/api/totem/parental?code=${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return data.error || 'Não deu certo. Tente de novo.';
+    goSwitchMode(data.token);
+    return null;
+  }
+
   const auth = (): Record<string, string> => (token ? { 'x-child-token': token } : {});
 
   // Token vencido ou código redefinido pelos pais: volta para a escolha de criança.
@@ -207,12 +237,21 @@ export default function TotemPage() {
   if (step === 'selection') {
     return (
       <div className="tf-totem min-h-screen flex flex-col p-8">
+        {parentalOpen && (
+          <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 p-8 bg-surface">
+            <h2 className="font-display text-3xl font-semibold text-ink text-center">Só para os papais</h2>
+            <PinForm creating={false} onSubmit={submitParental} big label="Código parental" submitLabel="Abrir" />
+            <button onClick={() => setParentalOpen(false)} className="tf-btn tf-btn--secondary">
+              <ArrowLeft className="tf-icon" /> Voltar
+            </button>
+          </div>
+        )}
         <header className="flex justify-between items-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-16" />
-          <Link href="/abrir?trocar=1" className="text-sm text-ink-muted hover:text-brand">
+          <button onClick={requestSwitchMode} className="text-sm text-ink-muted hover:text-brand">
             Trocar modo
-          </Link>
+          </button>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-16">
           <h1 className="font-display text-5xl font-semibold text-ink text-center">

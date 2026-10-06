@@ -23,7 +23,7 @@ export function hashPin(pin: string) {
   return `${salt}:${scryptSync(pin, salt, 32).toString('hex')}`
 }
 
-function checkPin(pin: string, stored: string) {
+export function checkPin(pin: string, stored: string) {
   const [salt, hash] = stored.split(':')
   if (!salt || !hash) return false
   const given = scryptSync(pin, salt, 32)

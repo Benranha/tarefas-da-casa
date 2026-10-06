@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Copy, Link2, Plus, UserPlus } from 'lucide-react'
+import { Copy, KeyRound, Link2, Plus, UserPlus } from 'lucide-react'
 import PushToggle from '@/components/PushToggle'
 
 type Member = { id: string; name: string; email: string; is_owner: boolean }
@@ -13,6 +13,9 @@ export default function FamilyPage() {
   const [totemUrl, setTotemUrl] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [hasParental, setHasParental] = useState(false)
+  const [parentalPin, setParentalPin] = useState('')
+  const [parentalMsg, setParentalMsg] = useState<string | null>(null)
 
   async function load() {
     const res = await fetch('/api/pais/family', { cache: 'no-store' })
@@ -21,6 +24,7 @@ export default function FamilyPage() {
     setMembers(f.members)
     setInvites(f.invites)
     setMe(f.me)
+    setHasParental(Boolean(f.hasParentalCode))
     setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`)
   }
   useEffect(() => {
@@ -35,6 +39,33 @@ export default function FamilyPage() {
     setBusy(false)
     if (res.ok) await load()
     else alert('Não foi possível criar o convite.')
+  }
+
+  async function saveParental(e: React.FormEvent) {
+    e.preventDefault()
+    setParentalMsg(null)
+    const res = await fetch('/api/pais/family/parental-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: parentalPin }),
+    })
+    if (res.ok) {
+      setParentalPin('')
+      setParentalMsg('Código salvo.')
+      await load()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setParentalMsg(data.error || 'Não foi possível salvar.')
+    }
+  }
+
+  async function removeParental() {
+    if (!confirm('Remover o código parental? O "Trocar modo" do totem volta a abrir sem pedir código.')) return
+    const res = await fetch('/api/pais/family/parental-code', { method: 'DELETE' })
+    if (res.ok) {
+      setParentalMsg('Código removido.')
+      await load()
+    }
   }
 
   async function copy(key: string, text: string) {
@@ -106,6 +137,35 @@ export default function FamilyPage() {
           </div>
         </section>
       )}
+
+      <section className="tf-card space-y-3">
+        <h2 className="font-display text-2xl font-semibold text-ink flex items-center gap-2">
+          <KeyRound size={24} /> Código parental
+        </h2>
+        <p className="text-ink-muted">
+          Protege o botão &quot;Trocar modo&quot; do totem: sem o código, as crianças não conseguem reconfigurar o tablet.
+          {hasParental ? ' Você já definiu um código.' : ' Ainda não há código: o botão abre direto.'}
+        </p>
+        <form onSubmit={saveParental} className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            maxLength={8}
+            value={parentalPin}
+            onChange={(e) => setParentalPin(e.target.value.replace(/\D/g, ''))}
+            placeholder="4 a 8 números"
+            aria-label="Código parental"
+            className="flex-1 min-h-12 px-5 rounded-full border-2 border-line-strong"
+          />
+          <button className="tf-btn tf-btn--primary">{hasParental ? 'Trocar código' : 'Definir código'}</button>
+          {hasParental && (
+            <button type="button" onClick={removeParental} className="tf-btn tf-btn--secondary">Remover</button>
+          )}
+        </form>
+        {parentalMsg && <p role="status" className="text-sm font-bold text-ink">{parentalMsg}</p>}
+      </section>
 
       <section className="tf-card space-y-3">
         <h2 className="font-display text-2xl font-semibold text-ink">Notificações</h2>
