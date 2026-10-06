@@ -190,23 +190,27 @@ export default function TasksPage() {
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {tasks.map((t) => (
             <div key={t.id} className="p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <TfIcon name={t.icon} size={28} />
-                <span className="flex-1 min-w-0">
-                  <span className="font-medium text-ink block">{t.title}</span>
+              <div className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 md:flex md:items-center">
+                <span className="mt-0.5 md:mt-0 shrink-0"><TfIcon name={t.icon} size={28} /></span>
+                <span className="min-w-0 md:flex-1">
+                  <span className="font-medium text-ink block text-pretty">{t.title}</span>
                   {t.description && <span className="text-sm text-ink-muted block">{t.description}</span>}
                 </span>
-                {t.due_time && (
-                  <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
-                )}
-                <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold">{t.child_name}</span>
-                <span className="font-bold text-ink">{t.points} pts</span>
-                <button onClick={() => (editing === t.id ? setEditing(null) : startEdit(t))} aria-label={`Editar ${t.title}`} className="p-2 text-ink-muted hover:text-brand">
-                  <Pencil size={18} />
-                </button>
-                <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
-                  <Trash2 size={18} />
-                </button>
+                <span className="col-start-2 col-span-2 row-start-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 md:contents">
+                  {t.due_time && (
+                    <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
+                  )}
+                  <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold whitespace-nowrap">{t.child_name}</span>
+                  <span className="font-bold text-ink whitespace-nowrap">{t.points} pts</span>
+                </span>
+                <span className="col-start-3 row-start-1 flex shrink-0 -my-1 -mr-2 md:m-0">
+                  <button onClick={() => (editing === t.id ? setEditing(null) : startEdit(t))} aria-label={`Editar ${t.title}`} className="size-11 grid place-items-center text-ink-muted hover:text-brand">
+                    <Pencil size={18} />
+                  </button>
+                  <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="size-11 grid place-items-center text-ink-muted hover:text-returned-fg">
+                    <Trash2 size={18} />
+                  </button>
+                </span>
               </div>
               {editing === t.id && (
                 <div className="flex flex-col md:flex-row gap-3">
