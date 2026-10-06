@@ -68,6 +68,14 @@
 .tf-nav__item[aria-current="page"] { background: var(--brand-soft); color: var(--brand-ink); }
 .tf-nav--side { flex-direction: column; gap: 4px; width: 256px; border-top: 0; border-right: 2px solid var(--line); padding: 24px 16px; }
 .tf-nav--side .tf-nav__item { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font: 800 16px/20px var(--font-nunito), system-ui, sans-serif; }
+/* Desktop: o menu vira barra lateral. */
+@media (min-width: 768px) {
+  .tf-nav { position: static; flex-direction: column; gap: 4px; width: 256px; flex: none; border-top: 0; border-right: 2px solid var(--line); padding: 24px 16px; }
+  .tf-nav .tf-nav__item { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font: 800 16px/20px var(--font-nunito), system-ui, sans-serif; }
+  .tf-nav .tf-nav__item:hover { background: var(--surface-sunken); }
+  .tf-nav .tf-nav__item[aria-current="page"]:hover { background: var(--brand-soft); }
+  .tf-nav__spacer { margin-top: auto; }
+}
 
 @media (prefers-reduced-motion: reduce) { .tf-stamp, .tf-seal--pop, .tf-btn { animation: none; transition: none; } }
 
