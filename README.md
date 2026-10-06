@@ -12,7 +12,7 @@ Web App PWA para controle de tarefas domésticas gamificadas para crianças.
 ### 1. Banco e Auth (Neon)
 1. No Vercel, em **Storage**, crie um banco **Neon** e conecte ao projeto (injeta `DATABASE_URL` e `NEON_AUTH_BASE_URL`).
 2. Rode `db/schema.sql` no banco (Neon SQL Editor).
-3. Crie o usuário dos pais no Neon Auth e mantenha o cadastro público desativado.
+3. Cada responsável cria a própria conta em `/cadastro`, cadastra os filhos e as tarefas, e copia o link do totem no Dashboard para abrir no tablet.
 
 ### 2. Variáveis de Ambiente
 ```env

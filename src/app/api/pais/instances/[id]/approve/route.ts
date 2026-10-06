@@ -1,29 +1,27 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { getParent } from '@/lib/auth/server'
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { getFamily } from '@/lib/auth/server'
+import { UUID, badRequest, unauthorized } from '@/lib/http'
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const parent = await getParent()
-  if (!parent) {
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-  }
+  const family = await getFamily()
+  if (!family) return unauthorized()
   const { id } = await params
-  if (!UUID.test(id)) {
-    return NextResponse.json({ error: 'id inválido' }, { status: 400 })
-  }
+  if (!UUID.test(id)) return badRequest()
 
-  // Aprova e credita os pontos numa única instrução (atômico, sem dupla contagem).
+  // Aprova e credita os pontos numa única instrução (atômico), só da própria família.
   const rows = await sql`
     WITH approved AS (
-      UPDATE task_instances
-      SET status = 'approved', approved_at = now(), approved_by = ${parent.id}::uuid
-      WHERE id = ${id}::uuid AND status = 'awaiting_approval'
-      RETURNING child_id, task_id
+      UPDATE task_instances ti
+      SET status = 'approved', approved_at = now(), approved_by = ${family.ownerId}::uuid
+      FROM children c
+      WHERE ti.id = ${id}::uuid AND c.id = ti.child_id
+        AND c.owner_id = ${family.ownerId}::uuid
+        AND ti.status = 'awaiting_approval'
+      RETURNING ti.child_id, ti.task_id
     )
     UPDATE children c
     SET points = c.points + t.points

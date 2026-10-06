@@ -6,6 +6,20 @@ import { colors } from '@/styles/theme';
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totemUrl, setTotemUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/pais/family')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((f) => f && setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`));
+  }, []);
+
+  async function copyTotemUrl() {
+    await navigator.clipboard.writeText(totemUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   useEffect(() => {
     fetchPendingTasks();
@@ -58,6 +72,21 @@ export default function ParentsDashboard() {
           {pendingTasks.length} tarefas pendentes
         </div>
       </div>
+
+      {totemUrl && (
+        <div className="bg-white p-5 rounded-[24px] border-2 border-[#EEDCDF] flex flex-col md:flex-row md:items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[#5C4033]">Link do totem (tablet das crianças)</p>
+            <p className="text-sm text-gray-500 truncate">{totemUrl}</p>
+          </div>
+          <button
+            onClick={copyTotemUrl}
+            className="px-4 py-2 bg-[#5C4033] text-white rounded-2xl font-bold hover:bg-[#4A3329]"
+          >
+            {copied ? 'Copiado!' : 'Copiar link'}
+          </button>
+        </div>
+      )}
 
       {pendingTasks.length === 0 ? (
         <div className="bg-white p-12 rounded-[32px] border-2 border-dashed border-gray-200 text-center space-y-4">

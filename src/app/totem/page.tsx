@@ -11,6 +11,8 @@ export default function TotemPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [children, setChildren] = useState<any[]>([]);
+  const [code, setCode] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,15 +29,28 @@ export default function TotemPage() {
     }
   }
 
+  // O link do totem traz ?c=CÓDIGO. Guardamos no aparelho para o app instalado (PWA) abrir direto.
   useEffect(() => {
-    fetch('/api/children')
-      .then((r) => r.json())
-      .then((data) => setChildren(Array.isArray(data) ? data : []));
+    const fromUrl = new URLSearchParams(window.location.search).get('c');
+    let c = fromUrl;
+    try {
+      if (fromUrl) localStorage.setItem('totemCode', fromUrl);
+      else c = localStorage.getItem('totemCode');
+    } catch {}
+    if (!c) {
+      setInvalid(true);
+      return;
+    }
+    setCode(c);
+    fetch(`/api/totem/children?code=${c}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => setChildren(Array.isArray(data) ? data : []))
+      .catch(() => setInvalid(true));
   }, []);
 
   async function fetchTasks(childId: string, silent = false) {
     if (!silent) setLoading(true);
-    const res = await fetch(`/api/totem/tasks?childId=${childId}`, { cache: 'no-store' });
+    const res = await fetch(`/api/totem/tasks?code=${code}&childId=${childId}`, { cache: 'no-store' });
     const data = res.ok ? await res.json() : [];
     setTasks(data);
     if (!silent) setLoading(false);
@@ -55,7 +70,7 @@ export default function TotemPage() {
   }
 
   async function markTaskDone(instanceId: string) {
-    const res = await fetch(`/api/totem/tasks/${instanceId}/done`, { method: 'POST' });
+    const res = await fetch(`/api/totem/tasks/${instanceId}/done?code=${code}`, { method: 'POST' });
 
     if (res.ok) {
       confetti({
@@ -68,6 +83,16 @@ export default function TotemPage() {
     }
   }
 
+  if (invalid) {
+    return (
+      <div className={`min-h-screen ${colors.background} flex items-center justify-center p-8`}>
+        <p className="text-2xl text-center text-[#5C4033] max-w-lg">
+          Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
+        </p>
+      </div>
+    );
+  }
+
   if (step === 'selection') {
     return (
       <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center p-8`}>
@@ -75,6 +100,11 @@ export default function TotemPage() {
           Quem está fazendo as tarefas hoje?
         </h1>
 
+        {children.length === 0 && (
+          <p className="text-xl text-gray-500 text-center -mt-8 mb-8">
+            Nenhuma criança cadastrada ainda. Peça aos pais para cadastrar no painel.
+          </p>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-12 max-w-5xl w-full">
           {children.map((child) => (
             <button

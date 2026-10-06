@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import Link from 'next/link'
 import { signIn } from './actions'
 
 export default function LoginPage() {
@@ -43,7 +44,10 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-500">
-          Problemas com o acesso? Entre em contato com o administrador.
+          Primeira vez?{' '}
+          <Link href="/cadastro" className="font-bold text-[#5C4033]">
+            Criar conta
+          </Link>
         </p>
       </div>
     </div>

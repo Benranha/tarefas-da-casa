@@ -1,6 +1,7 @@
 import React from 'react';
-import { Plus, User, ListChecks, History, Gift } from 'lucide-react';
+import { User, ListChecks, History } from 'lucide-react';
 import Link from 'next/link';
+import { signOut } from '@/app/login/actions';
 
 export default function ParentsLayout({ children }: { children: React.ReactNode }) {
   const menuItems = [
@@ -8,7 +9,6 @@ export default function ParentsLayout({ children }: { children: React.ReactNode 
     { name: 'Crianças', href: '/pais/criancas', icon: User },
     { name: 'Tarefas', href: '/pais/tarefas', icon: ListChecks },
     { name: 'Histórico', href: '/pais/historico', icon: History },
-    { name: 'Recompensas', href: '/pais/recompensas', icon: Gift },
   ];
 
   return (
@@ -30,6 +30,11 @@ export default function ParentsLayout({ children }: { children: React.ReactNode 
             </Link>
           ))}
         </div>
+        <form action={signOut} className="md:mt-auto">
+          <button className="p-3 text-xs md:text-base text-gray-500 hover:text-[#5C4033] font-medium">
+            Sair
+          </button>
+        </form>
       </nav>
 
       <main className="flex-1 p-4 md:p-10 pb-24 md:pb-10">

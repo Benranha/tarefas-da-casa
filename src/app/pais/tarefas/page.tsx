@@ -1,64 +1,140 @@
-import React from 'react';
-import { Plus, Trash2, Edit2, Calendar } from 'lucide-react';
+'use client'
+import React, { useEffect, useState } from 'react'
+import { Plus, Trash2, Calendar } from 'lucide-react'
+
+type Child = { id: string; name: string }
+type Task = { id: string; title: string; icon: string; points: number; child_name: string }
+
+const ICONS = ['🧹', '🛏️', '🍽️', '🪥', '📚', '🐾', '🧺', '🗑️']
 
 export default function TasksPage() {
-  return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-[#5C4033]">Gestão de Tarefas</h1>
-        <button className="flex items-center gap-2 bg-[#5C4033] text-white px-4 py-2 rounded-2xl font-bold hover:bg-[#4A3329] transition-all">
-          <Plus size={20} />
-          Nova Tarefa
-        </button>
-      </div>
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [children, setChildren] = useState<Child[]>([])
+  const [title, setTitle] = useState('')
+  const [icon, setIcon] = useState(ICONS[0])
+  const [points, setPoints] = useState(10)
+  const [childId, setChildId] = useState('')
+  const [saving, setSaving] = useState(false)
 
-      <div className="overflow-x-auto bg-white rounded-[24px] border-2 border-[#EEDCDF] shadow-sm">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b-2 border-[#EEDCDF] bg-gray-50 text-[#5C4033] font-bold">
-              <th className="p-4">Tarefa</th>
-              <th className="p-4">Criança</th>
-              <th className="p-4">Pontos</th>
-              <th className="p-4">Recorrência</th>
-              <th className="p-4 text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {[1, 2, 3].map((i) => (
-              <tr key={i} className="hover:bg-gray-50 transition-colors">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🧹</span>
-                    <span className="font-medium text-gray-800">Arrumar o quarto</span>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
-                    Criança 1
-                  </span>
-                </td>
-                <td className="p-4 font-bold text-[#5C4033]">10 pts</td>
-                <td className="p-4">
-                  <div className="flex items-center gap-1 text-gray-500 text-sm">
-                    <Calendar size={14} />
-                    Diária
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="flex justify-center gap-2">
-                    <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
-                      <Edit2 size={18} />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+  async function load() {
+    const [t, c] = await Promise.all([
+      fetch('/api/pais/tasks', { cache: 'no-store' }),
+      fetch('/api/pais/children', { cache: 'no-store' }),
+    ])
+    if (t.ok) setTasks(await t.json())
+    if (c.ok) {
+      const list: Child[] = await c.json()
+      setChildren(list)
+      setChildId((cur) => cur || list[0]?.id || '')
+    }
+  }
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    const res = await fetch('/api/pais/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, icon, points, childId }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setTitle('')
+      await load()
+    } else {
+      alert('Não foi possível cadastrar a tarefa.')
+    }
+  }
+
+  async function remove(t: Task) {
+    if (!confirm(`Remover a tarefa "${t.title}"?`)) return
+    const res = await fetch(`/api/pais/tasks/${t.id}`, { method: 'DELETE' })
+    if (res.ok) await load()
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-8">
+      <h1 className="text-3xl font-bold text-[#5C4033]">Tarefas</h1>
+
+      {children.length === 0 ? (
+        <p className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-2xl">
+          Cadastre uma criança primeiro, em &quot;Crianças&quot;.
+        </p>
+      ) : (
+        <form onSubmit={add} className="bg-white p-6 rounded-[24px] border-2 border-[#EEDCDF] space-y-4">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            maxLength={80}
+            placeholder="Ex.: Arrumar o quarto"
+            className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none"
+          />
+          <div className="flex flex-wrap gap-2">
+            {ICONS.map((i) => (
+              <button
+                type="button"
+                key={i}
+                onClick={() => setIcon(i)}
+                className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-[#5C4033] bg-gray-50' : 'border-transparent'}`}
+              >
+                {i}
+              </button>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-3">
+            <select
+              value={childId}
+              onChange={(e) => setChildId(e.target.value)}
+              className="flex-1 p-3 rounded-2xl border-2 border-gray-200"
+            >
+              {children.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min={0}
+              max={1000}
+              value={points}
+              onChange={(e) => setPoints(Number(e.target.value))}
+              className="md:w-32 p-3 rounded-2xl border-2 border-gray-200"
+              aria-label="Pontos"
+            />
+          </div>
+          <p className="text-sm text-gray-500 flex items-center gap-1">
+            <Calendar size={14} /> A tarefa aparece todos os dias no totem.
+          </p>
+          <button
+            disabled={saving}
+            className="flex items-center gap-2 bg-[#5C4033] text-white px-5 py-3 rounded-2xl font-bold hover:bg-[#4A3329] disabled:opacity-60"
+          >
+            <Plus size={20} />
+            Adicionar tarefa
+          </button>
+        </form>
+      )}
+
+      {tasks.length > 0 && (
+        <div className="bg-white rounded-[24px] border-2 border-[#EEDCDF] divide-y divide-gray-100 shadow-sm">
+          {tasks.map((t) => (
+            <div key={t.id} className="p-4 flex items-center gap-3">
+              <span className="text-2xl">{t.icon}</span>
+              <span className="flex-1 font-medium text-gray-800">{t.title}</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">{t.child_name}</span>
+              <span className="font-bold text-[#5C4033]">{t.points} pts</span>
+              <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-gray-400 hover:text-red-500">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
