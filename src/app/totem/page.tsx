@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { colors, Typography } from '@/styles/theme';
 import confetti from 'canvas-confetti';
 import { CheckCircle2, Clock, ArrowLeft, Star } from 'lucide-react';
@@ -11,7 +10,9 @@ export default function TotemPage() {
   const [selectedChild, setSelectedChild] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [children, setChildren] = useState<any[]>([]);
+  const [code, setCode] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,41 +29,38 @@ export default function TotemPage() {
     }
   }
 
-  async function fetchTasks(childId: string) {
-    setLoading(true);
-    const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-      .from('task_instances')
-      .select('*, tasks(*)')
-      .eq('child_id', childId)
-      .eq('date', today);
+  // O link do totem traz ?c=CÓDIGO. Guardamos no aparelho para o app instalado (PWA) abrir direto.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('c');
+    let c = fromUrl;
+    try {
+      if (fromUrl) localStorage.setItem('totemCode', fromUrl);
+      else c = localStorage.getItem('totemCode');
+    } catch {}
+    if (!c) {
+      setInvalid(true);
+      return;
+    }
+    setCode(c);
+    fetch(`/api/totem/children?code=${c}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => setChildren(Array.isArray(data) ? data : []))
+      .catch(() => setInvalid(true));
+  }, []);
 
-    setTasks(data || []);
-    setLoading(false);
+  async function fetchTasks(childId: string, silent = false) {
+    if (!silent) setLoading(true);
+    const res = await fetch(`/api/totem/tasks?code=${code}&childId=${childId}`, { cache: 'no-store' });
+    const data = res.ok ? await res.json() : [];
+    setTasks(data);
+    if (!silent) setLoading(false);
   }
 
+  // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
   useEffect(() => {
     if (!selectedChild) return;
-
-    const channel = supabase
-      .channel('totem-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'task_instances',
-          filter: `child_id=eq.${selectedChild.id}`
-        },
-        () => {
-          fetchTasks(selectedChild.id);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const timer = setInterval(() => fetchTasks(selectedChild.id, true), 5000);
+    return () => clearInterval(timer);
   }, [selectedChild]);
 
   async function handleChildSelect(child: any) {
@@ -72,12 +70,9 @@ export default function TotemPage() {
   }
 
   async function markTaskDone(instanceId: string) {
-    const { error } = await supabase
-      .from('task_instances')
-      .update({ status: 'awaiting_approval', completed_at: new Date().toISOString() })
-      .eq('id', instanceId);
+    const res = await fetch(`/api/totem/tasks/${instanceId}/done?code=${code}`, { method: 'POST' });
 
-    if (!error) {
+    if (res.ok) {
       confetti({
         particleCount: 150,
         spread: 70,
@@ -88,6 +83,16 @@ export default function TotemPage() {
     }
   }
 
+  if (invalid) {
+    return (
+      <div className={`min-h-screen ${colors.background} flex items-center justify-center p-8`}>
+        <p className="text-2xl text-center text-[#5C4033] max-w-lg">
+          Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
+        </p>
+      </div>
+    );
+  }
+
   if (step === 'selection') {
     return (
       <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center p-8`}>
@@ -95,12 +100,13 @@ export default function TotemPage() {
           Quem está fazendo as tarefas hoje?
         </h1>
 
+        {children.length === 0 && (
+          <p className="text-xl text-gray-500 text-center -mt-8 mb-8">
+            Nenhuma criança cadastrada ainda. Peça aos pais para cadastrar no painel.
+          </p>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-12 max-w-5xl w-full">
-          {[
-            { id: '1', name: 'Lucas', avatar: '👦', color: '#3B82F6' },
-            { id: '2', name: 'Julia', avatar: '👧', color: '#EC4899' },
-            { id: '3', name: 'Téo', avatar: '🧒', color: '#10B981' },
-          ].map((child) => (
+          {children.map((child) => (
             <button
               key={child.id}
               onClick={() => handleChildSelect(child)}
@@ -139,8 +145,8 @@ export default function TotemPage() {
           <div className="flex items-center gap-2 bg-yellow-100 px-6 py-3 rounded-full shadow-sm border-2 border-yellow-200">
             <Star className="text-yellow-600 fill-yellow-600" size={24} />
             <span className="text-2xl font-bold text-yellow-800">{selectedChild.points || 0} pts</span>
-          </div
-        </div
+          </div>
+        </div>
       </header>
 
       <main className="flex-1">
@@ -148,19 +154,19 @@ export default function TotemPage() {
           <h2 className="text-4xl font-bold text-[#5C4033]">Minhas Tarefas de Hoje</h2>
           <div className="text-xl font-medium text-gray-500">
             {tasks.filter(t => t.status === 'approved').length} de {tasks.length} completas
-          </div
-        </div
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#5C4033]"></div>
-          </div
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tasks.length === 0 ? (
               <div className="col-span-full text-center py-20">
                 <p className="text-3xl text-gray-400 font-medium">Tudo limpo por aqui! 🎉</p>
-              </div
+              </div>
             ) : (
               tasks.map((instance) => (
                 <div
@@ -176,7 +182,7 @@ export default function TotemPage() {
                 >
                   <div className="text-5xl bg-white p-4 rounded-2xl shadow-sm">
                     {instance.tasks.icon || '✨'}
-                  </div
+                  </div>
                   <div className="flex-1">
                     <h3 className={`text-2xl font-bold ${instance.status === 'approved' ? 'text-green-800 line-through' : 'text-[#5C4033]'}`}>
                       {instance.tasks.title}
@@ -195,15 +201,15 @@ export default function TotemPage() {
                       {instance.status === 'pending' && (
                         <span className="text-gray-400 font-medium text-sm">Tocar para concluir</span>
                       )}
-                    </div
-                  </div
+                    </div>
+                  </div>
                   <div className="text-2xl font-black text-[#5C4033]">
                     {instance.tasks.points} pts
-                  </div
-                </div
+                  </div>
+                </div>
               ))
             )}
-          </div
+          </div>
         )}
       </main>
     </div>

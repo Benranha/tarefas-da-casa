@@ -1,96 +1,63 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { CheckCircle, XCircle, MessageCircle, AlertCircle } from 'lucide-react';
 import { colors } from '@/styles/theme';
-import { toast } from 'sonner';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [totemUrl, setTotemUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/pais/family')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((f) => f && setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`));
+  }, []);
+
+  async function copyTotemUrl() {
+    await navigator.clipboard.writeText(totemUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   useEffect(() => {
     fetchPendingTasks();
-
-    const channel = supabase
-      .channel('approval-queue')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'task_instances' },
-        () => {
-          fetchPendingTasks();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Sem Realtime no Neon: atualiza a fila a cada 10s.
+    const timer = setInterval(() => fetchPendingTasks(true), 10000);
+    return () => clearInterval(timer);
   }, []);
 
-  async function fetchPendingTasks() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('task_instances')
-      .select('*, tasks(*), children(*)')
-      .eq('status', 'awaiting_approval')
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Erro ao buscar tarefas:', error);
+  async function fetchPendingTasks(silent = false) {
+    if (!silent) setLoading(true);
+    const res = await fetch('/api/pais/pending', { cache: 'no-store' });
+    if (res.ok) {
+      setPendingTasks(await res.json());
     } else {
-      setPendingTasks(data || []);
+      console.error('Erro ao buscar tarefas:', res.status);
     }
-    setLoading(false);
+    if (!silent) setLoading(false);
   }
 
-  async function handleApprove(instanceId: string, childId: string, points: number) {
-    const { error: updateError } = await supabase
-      .from('task_instances')
-      .update({
-        status: 'approved',
-        approved_at: new Date().toISOString()
-      })
-      .eq('id', instanceId);
-
-    if (updateError) {
+  async function handleApprove(instanceId: string) {
+    const res = await fetch(`/api/pais/instances/${instanceId}/approve`, { method: 'POST' });
+    if (!res.ok) {
       alert('Erro ao aprovar tarefa');
-      return;
     }
-
-    const { data: childData } = await supabase
-      .from('children')
-      .select('points')
-      .eq('id', childId)
-      .single();
-
-    if (childData) {
-      await supabase
-        .from('children')
-        .update({ points: (childData.points || 0) + points })
-        .eq('id', childId);
-    }
-
     await fetchPendingTasks();
   }
 
   async function handleReject(instanceId: string) {
     const note = prompt('Motivo da devolução (opcional):');
-
-    const { error } = await supabase
-      .from('task_instances')
-      .update({
-        status: 'pending',
-        parent_note: note || 'Tarefa precisa de melhorias'
-      })
-      .eq('id', instanceId);
-
-    if (error) {
+    const res = await fetch(`/api/pais/instances/${instanceId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    });
+    if (!res.ok) {
       alert('Erro ao devolver tarefa');
-    } else {
-      await fetchPendingTasks();
     }
+    await fetchPendingTasks();
   }
 
   if (loading && pendingTasks.length === 0) {
@@ -105,6 +72,21 @@ export default function ParentsDashboard() {
           {pendingTasks.length} tarefas pendentes
         </div>
       </div>
+
+      {totemUrl && (
+        <div className="bg-white p-5 rounded-[24px] border-2 border-[#EEDCDF] flex flex-col md:flex-row md:items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[#5C4033]">Link do totem (tablet das crianças)</p>
+            <p className="text-sm text-gray-500 truncate">{totemUrl}</p>
+          </div>
+          <button
+            onClick={copyTotemUrl}
+            className="px-4 py-2 bg-[#5C4033] text-white rounded-2xl font-bold hover:bg-[#4A3329]"
+          >
+            {copied ? 'Copiado!' : 'Copiar link'}
+          </button>
+        </div>
+      )}
 
       {pendingTasks.length === 0 ? (
         <div className="bg-white p-12 rounded-[32px] border-2 border-dashed border-gray-200 text-center space-y-4">
@@ -141,7 +123,7 @@ export default function ParentsDashboard() {
 
               <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => handleApprove(instance.id, instance.child_id, instance.tasks.points)}
+                  onClick={() => handleApprove(instance.id)}
                   className="flex-1 py-4 bg-green-500 text-white rounded-2xl font-bold hover:bg-green-600 transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
                 >
                   <CheckCircle size={20} />

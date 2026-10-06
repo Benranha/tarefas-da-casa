@@ -3,22 +3,22 @@
 Web App PWA para controle de tarefas domésticas gamificadas para crianças.
 
 ## 🚀 Stack Técnica
-- **Next.js 14 (App Router)** + TypeScript + Tailwind CSS
-- **Supabase**: Postgres, Auth, Realtime e RLS.
-- **Deploy**: Vercel.
+- **Next.js 16 (App Router)** + TypeScript + Tailwind CSS
+- **Neon**: Postgres (`@neondatabase/serverless`) e Auth (Managed Better Auth).
+- **Deploy**: Vercel (integração Neon do Marketplace).
 
 ## 🛠️ Configuração do Projeto
 
-### 1. Supabase Setup
-1. Crie um projeto no [Supabase](https://supabase.com).
-2. No **SQL Editor**, execute o conteúdo de `supabase/seed.sql` para criar as tabelas e as políticas de segurança (RLS).
-3. Crie um usuário em **Authentication** para acessar o painel dos pais.
+### 1. Banco e Auth (Neon)
+1. No Vercel, em **Storage**, crie um banco **Neon** e conecte ao projeto (injeta `DATABASE_URL` e `NEON_AUTH_BASE_URL`).
+2. Rode `db/schema.sql` no banco (Neon SQL Editor).
+3. Cada responsável cria a própria conta em `/cadastro`, cadastra os filhos e as tarefas, e copia o link do totem no Dashboard para abrir no tablet.
 
 ### 2. Variáveis de Ambiente
-Crie um arquivo `.env.local` na raiz do projeto:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon-publica
+DATABASE_URL=...            # injetada pela integração Neon
+NEON_AUTH_BASE_URL=...      # injetada pela integração Neon
+NEON_AUTH_COOKIE_SECRET=... # openssl rand -base64 32 (mínimo 32 caracteres)
 ```
 
 ### 3. Instalação e Execução
