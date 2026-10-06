@@ -1,9 +1,16 @@
 'use client'
 
-import { useActionState } from 'react'
+import { Suspense, useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signIn } from './actions'
+
+function ResetNotice() {
+  const params = useSearchParams()
+  if (params.get('senha') !== 'redefinida') return null
+  return <p className="text-sm text-green-700 text-center bg-green-50 rounded-2xl p-3 mb-6">Senha alterada! Entre com a nova senha.</p>
+}
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(signIn, null)
@@ -14,6 +21,9 @@ export default function LoginPage() {
         <h1 className="text-3xl font-bold text-center text-[#5C4033] mb-8">
           Login dos Pais
         </h1>
+        <Suspense fallback={null}>
+          <ResetNotice />
+        </Suspense>
         <form className="space-y-6" action={action}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
@@ -34,6 +44,11 @@ export default function LoginPage() {
               className="w-full p-3 rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none transition-all"
               placeholder="••••••••"
             />
+          </div>
+          <div className="text-right -mt-3">
+            <Link href="/esqueci-senha" className="text-sm font-bold text-[#5C4033]">
+              Esqueci a senha
+            </Link>
           </div>
           {state?.error && <p className="text-sm text-red-600 text-center">{state.error}</p>}
           <button
