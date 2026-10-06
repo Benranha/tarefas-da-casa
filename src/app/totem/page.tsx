@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { colors, Typography } from '@/styles/theme';
 import confetti from 'canvas-confetti';
 import { CheckCircle2, Clock, ArrowLeft, Star } from 'lucide-react';
@@ -11,7 +10,7 @@ export default function TotemPage() {
   const [selectedChild, setSelectedChild] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [children, setChildren] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,41 +27,25 @@ export default function TotemPage() {
     }
   }
 
-  async function fetchTasks(childId: string) {
-    setLoading(true);
-    const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-      .from('task_instances')
-      .select('*, tasks(*)')
-      .eq('child_id', childId)
-      .eq('date', today);
+  useEffect(() => {
+    fetch('/api/children')
+      .then((r) => r.json())
+      .then((data) => setChildren(Array.isArray(data) ? data : []));
+  }, []);
 
-    setTasks(data || []);
-    setLoading(false);
+  async function fetchTasks(childId: string, silent = false) {
+    if (!silent) setLoading(true);
+    const res = await fetch(`/api/totem/tasks?childId=${childId}`, { cache: 'no-store' });
+    const data = res.ok ? await res.json() : [];
+    setTasks(data);
+    if (!silent) setLoading(false);
   }
 
+  // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
   useEffect(() => {
     if (!selectedChild) return;
-
-    const channel = supabase
-      .channel('totem-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'task_instances',
-          filter: `child_id=eq.${selectedChild.id}`
-        },
-        () => {
-          fetchTasks(selectedChild.id);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const timer = setInterval(() => fetchTasks(selectedChild.id, true), 5000);
+    return () => clearInterval(timer);
   }, [selectedChild]);
 
   async function handleChildSelect(child: any) {
@@ -72,12 +55,9 @@ export default function TotemPage() {
   }
 
   async function markTaskDone(instanceId: string) {
-    const { error } = await supabase
-      .from('task_instances')
-      .update({ status: 'awaiting_approval', completed_at: new Date().toISOString() })
-      .eq('id', instanceId);
+    const res = await fetch(`/api/totem/tasks/${instanceId}/done`, { method: 'POST' });
 
-    if (!error) {
+    if (res.ok) {
       confetti({
         particleCount: 150,
         spread: 70,
@@ -96,11 +76,7 @@ export default function TotemPage() {
         </h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-12 max-w-5xl w-full">
-          {[
-            { id: '1', name: 'Lucas', avatar: '👦', color: '#3B82F6' },
-            { id: '2', name: 'Julia', avatar: '👧', color: '#EC4899' },
-            { id: '3', name: 'Téo', avatar: '🧒', color: '#10B981' },
-          ].map((child) => (
+          {children.map((child) => (
             <button
               key={child.id}
               onClick={() => handleChildSelect(child)}
