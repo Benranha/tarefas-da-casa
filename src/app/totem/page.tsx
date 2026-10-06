@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { Check, Circle, Clock, ArrowLeft, Star, Gift } from 'lucide-react';
+import Link from 'next/link';
 
 export default function TotemPage() {
   const [step, setStep] = useState<'selection' | 'tasks' | 'rewards'>('selection');
@@ -138,10 +139,13 @@ export default function TotemPage() {
 
   if (invalid) {
     return (
-      <div className="tf-totem min-h-screen flex items-center justify-center p-8">
+      <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-6 p-8">
         <p className="text-2xl text-center text-ink max-w-lg">
           Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
         </p>
+        <Link href="/abrir?trocar=1" className="text-xl font-bold text-brand underline">
+          Configurar este aparelho
+        </Link>
       </div>
     );
   }
@@ -152,6 +156,9 @@ export default function TotemPage() {
         <header className="flex justify-between items-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-16" />
+          <Link href="/abrir?trocar=1" className="text-sm text-ink-muted hover:text-brand">
+            Trocar modo
+          </Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center gap-16">
           <h1 className="font-display text-5xl font-semibold text-ink text-center">
