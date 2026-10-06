@@ -1,16 +1,18 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Check, Circle, Clock, ArrowLeft, Star } from 'lucide-react';
+import { Check, Circle, Clock, ArrowLeft, Star, Gift } from 'lucide-react';
 
 export default function TotemPage() {
-  const [step, setStep] = useState<'selection' | 'tasks'>('selection');
+  const [step, setStep] = useState<'selection' | 'tasks' | 'rewards'>('selection');
   const [selectedChild, setSelectedChild] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [children, setChildren] = useState<any[]>([]);
   const [code, setCode] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<{ points: number } | null>(null);
   const prevStatus = useRef<Map<string, string>>(new Map());
 
@@ -56,7 +58,6 @@ export default function TotemPage() {
       disableForReducedMotion: true,
       colors: [selectedChild?.color || '#C0430E', '#15803D', '#FFC93C', '#2F5BEA', '#C8266B'],
     });
-    setSelectedChild((c: any) => (c ? { ...c, points: (c.points || 0) + points } : c));
     setCelebration({ points });
     setTimeout(() => setCelebration(null), 2800);
   }
@@ -76,9 +77,44 @@ export default function TotemPage() {
   // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
   useEffect(() => {
     if (!selectedChild) return;
-    const timer = setInterval(() => fetchTasks(selectedChild.id, true), 5000);
+    const timer = setInterval(() => {
+      fetchTasks(selectedChild.id, true);
+      refreshPoints(selectedChild.id);
+    }, 5000);
     return () => clearInterval(timer);
   }, [selectedChild]);
+
+  async function refreshPoints(childId: string) {
+    const res = await fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const list = await res.json();
+    setChildren(list);
+    const me = list.find((c: any) => c.id === childId);
+    if (me) setSelectedChild((cur: any) => (cur && cur.points !== me.points ? { ...cur, points: me.points } : cur));
+  }
+
+  async function openRewards() {
+    setMessage(null);
+    const res = await fetch(`/api/totem/rewards?code=${code}`, { cache: 'no-store' });
+    setRewards(res.ok ? await res.json() : []);
+    setStep('rewards');
+  }
+
+  async function redeem(reward: any) {
+    const res = await fetch(`/api/totem/rewards/${reward.id}/redeem?code=${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: selectedChild.id }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSelectedChild({ ...selectedChild, points: data.points });
+      setMessage(`Pedido enviado: ${reward.title}! Avise os papais 🎉`);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, disableForReducedMotion: true });
+    } else {
+      setMessage('Você ainda não tem pontos suficientes.');
+    }
+  }
 
   async function handleChildSelect(child: any) {
     setSelectedChild(child);
@@ -135,6 +171,58 @@ export default function TotemPage() {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (step === 'rewards') {
+    return (
+      <div className="tf-totem min-h-screen flex flex-col" style={kidStyle(selectedChild)}>
+        <header className="flex justify-between items-center px-10 py-6" style={{ background: 'var(--kid-soft)' }}>
+          <button onClick={() => setStep('tasks')} className="tf-btn tf-btn--totem tf-btn--secondary">
+            <ArrowLeft size={28} /> Voltar
+          </button>
+          <div className="flex items-center gap-4">
+            <div className="tf-seal"><Star size={44} className="fill-current" /></div>
+            <div>
+              <div className="tf-points__value">{selectedChild.points || 0}</div>
+              <div className="tf-points__unit">pontos</div>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 px-10 py-8">
+          <h2 className="font-display text-4xl font-semibold text-ink mb-6">Recompensas</h2>
+          {message && <p className="text-2xl font-bold text-ink mb-6">{message}</p>}
+          {rewards.length === 0 ? (
+            <p className="text-2xl text-ink-muted">Os papais ainda não cadastraram recompensas.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+              {rewards.map((r) => {
+                const can = (selectedChild.points || 0) >= r.cost_points;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => redeem(r)}
+                    disabled={!can}
+                    className={`tf-task ${can ? 'tf-task--waiting' : ''} disabled:opacity-60 disabled:cursor-not-allowed`}
+                  >
+                    <span className="tf-task__row">
+                      <span className="tf-task__icon">{r.icon || '🎁'}</span>
+                      <span className="tf-task__pts">{r.cost_points} ⭐</span>
+                    </span>
+                    <span>
+                      <p className="tf-task__title">{r.title}</p>
+                      <span className="tf-task__status">
+                        {can ? 'Toque para pedir' : `Faltam ${r.cost_points - (selectedChild.points || 0)} pts`}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </main>
       </div>
     );
   }
@@ -205,9 +293,14 @@ export default function TotemPage() {
 
       <footer className="flex items-center justify-between px-10 pb-8">
         <span className="text-xl font-bold text-ink-muted">{approvedCount} de {tasks.length} aprovadas</span>
-        <button onClick={() => setStep('selection')} className="tf-btn tf-btn--totem tf-btn--secondary">
-          <ArrowLeft size={28} /> Trocar de criança
-        </button>
+        <div className="flex gap-4">
+          <button onClick={openRewards} className="tf-btn tf-btn--totem tf-btn--primary">
+            <Gift size={28} /> Prêmios
+          </button>
+          <button onClick={() => setStep('selection')} className="tf-btn tf-btn--totem tf-btn--secondary">
+            <ArrowLeft size={28} /> Trocar de criança
+          </button>
+        </div>
       </footer>
 
       {celebration && (

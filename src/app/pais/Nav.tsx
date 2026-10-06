@@ -2,13 +2,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { User, ListChecks, History, Inbox, Moon } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift } from 'lucide-react';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
   { name: 'Crianças', href: '/pais/criancas', icon: User },
   { name: 'Tarefas', href: '/pais/tarefas', icon: ListChecks },
   { name: 'Histórico', href: '/pais/historico', icon: History },
+  { name: 'Recompensas', href: '/pais/recompensas', icon: Gift },
 ];
 
 const THEME_KEY = 'tarefinha-theme';
