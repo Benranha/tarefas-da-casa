@@ -12,7 +12,7 @@ export default async function ParentsLayout({ children }: { children: React.Reac
   return (
     <div className="tf-painel min-h-screen bg-surface flex flex-col md:flex-row">
       <Nav signOut={signOut} />
-      <main className="flex-1 p-4 md:p-10 pb-24 md:pb-10">{children}</main>
+      <main className="tf-main flex-1 min-w-0 px-5 pt-3 md:p-10">{children}</main>
     </div>
   );
 }
