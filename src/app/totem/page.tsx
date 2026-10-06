@@ -1,9 +1,7 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { colors, Typography } from '@/styles/theme';
+import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Clock, ArrowLeft, Star } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Check, Circle, Clock, ArrowLeft, Star } from 'lucide-react';
 
 export default function TotemPage() {
   const [step, setStep] = useState<'selection' | 'tasks'>('selection');
@@ -13,7 +11,8 @@ export default function TotemPage() {
   const [children, setChildren] = useState<any[]>([]);
   const [code, setCode] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
-  const router = useRouter();
+  const [celebration, setCelebration] = useState<{ points: number } | null>(null);
+  const prevStatus = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     if ('wakeLock' in navigator) {
@@ -48,10 +47,28 @@ export default function TotemPage() {
       .catch(() => setInvalid(true));
   }, []);
 
+  // Momento de conquista: acontece quando os pais aprovam (carimbo, selo de pontos e confete).
+  function celebrate(points: number) {
+    confetti({
+      particleCount: 120,
+      spread: 75,
+      origin: { y: 0.55 },
+      disableForReducedMotion: true,
+      colors: [selectedChild?.color || '#C0430E', '#15803D', '#FFC93C', '#2F5BEA', '#C8266B'],
+    });
+    setSelectedChild((c: any) => (c ? { ...c, points: (c.points || 0) + points } : c));
+    setCelebration({ points });
+    setTimeout(() => setCelebration(null), 2800);
+  }
+
   async function fetchTasks(childId: string, silent = false) {
     if (!silent) setLoading(true);
     const res = await fetch(`/api/totem/tasks?code=${code}&childId=${childId}`, { cache: 'no-store' });
     const data = res.ok ? await res.json() : [];
+    for (const t of data) {
+      if (prevStatus.current.get(t.id) === 'awaiting_approval' && t.status === 'approved') celebrate(t.tasks?.points ?? 0);
+    }
+    prevStatus.current = new Map(data.map((t: any) => [t.id, t.status]));
     setTasks(data);
     if (!silent) setLoading(false);
   }
@@ -73,19 +90,19 @@ export default function TotemPage() {
     const res = await fetch(`/api/totem/tasks/${instanceId}/done?code=${code}`, { method: 'POST' });
 
     if (res.ok) {
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: [selectedChild.color || '#C0430E', '#15803D', '#FFC93C']
-      });
       await fetchTasks(selectedChild.id);
     }
   }
 
+  const kidStyle = (c: any) =>
+    ({
+      '--kid': c.color,
+      '--kid-soft': `color-mix(in srgb, ${c.color} 14%, var(--surface-raised))`,
+    }) as React.CSSProperties;
+
   if (invalid) {
     return (
-      <div className={`min-h-screen ${colors.background} flex items-center justify-center p-8`}>
+      <div className="tf-totem min-h-screen flex items-center justify-center p-8">
         <p className="text-2xl text-center text-ink max-w-lg">
           Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
         </p>
@@ -95,123 +112,110 @@ export default function TotemPage() {
 
   if (step === 'selection') {
     return (
-      <div className={`min-h-screen ${colors.background} flex flex-col items-center justify-center p-8`}>
-        <h1 className={`text-5xl font-bold text-ink mb-16 text-center ${Typography.h1}`}>
-          Quem está fazendo as tarefas hoje?
-        </h1>
-
-        {children.length === 0 && (
-          <p className="text-xl text-ink-muted text-center -mt-8 mb-8">
-            Nenhuma criança cadastrada ainda. Peça aos pais para cadastrar no painel.
-          </p>
-        )}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-12 max-w-5xl w-full">
-          {children.map((child) => (
-            <button
-              key={child.id}
-              onClick={() => handleChildSelect(child)}
-              className="group flex flex-col items-center gap-6 transition-transform active:scale-95"
-            >
-              <div
-                className="w-40 h-40 rounded-full bg-surface-raised border-8 border-surface-raised shadow-xl flex items-center justify-center text-8xl transition-all group-hover:shadow-2xl"
-                style={{ boxShadow: `0 0 0 8px ${child.color}` }}
-              >
-                {child.avatar}
-              </div>
-              <span className="text-3xl font-bold text-ink">{child.name}</span>
-            </button>
-          ))}
+      <div className="tf-totem min-h-screen flex flex-col p-8">
+        <header className="flex justify-between items-center mb-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-16" />
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center gap-16">
+          <h1 className="font-display text-5xl font-semibold text-ink text-center">
+            Quem está fazendo as tarefas hoje?
+          </h1>
+          {children.length === 0 && (
+            <p className="text-xl text-ink-muted text-center -mt-8">
+              Nenhuma criança cadastrada ainda. Peça aos pais para cadastrar no painel.
+            </p>
+          )}
+          <div className="flex flex-wrap justify-center gap-16 max-w-5xl w-full">
+            {children.map((child) => (
+              <button key={child.id} onClick={() => handleChildSelect(child)} className="tf-child" style={kidStyle(child)}>
+                <span className="tf-child__avatar" style={{ ['--size' as string]: '180px' }}>{child.avatar}</span>
+                {child.name}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className={`min-h-screen ${colors.background} p-8 flex flex-col`}>
-      <header className="flex justify-between items-center mb-10">
-        <button
-          onClick={() => setStep('selection')}
-          className="flex items-center gap-2 text-ink-muted font-bold text-xl hover:text-ink transition-colors"
-        >
-          <ArrowLeft size={24} />
-            Trocar Criança
-        </button>
+  const approvedCount = tasks.filter((t) => t.status === 'approved').length;
 
+  return (
+    <div className="tf-totem min-h-screen flex flex-col" style={kidStyle(selectedChild)}>
+      <header className="flex justify-between items-center px-10 py-6" style={{ background: 'var(--kid-soft)' }}>
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 bg-surface-raised px-6 py-3 rounded-full shadow-sm border-2 border-line">
-            <span className="text-4xl">{selectedChild.avatar}</span>
-            <span className="text-2xl font-bold text-ink">{selectedChild.name}</span>
+          <span className="tf-child__avatar" style={{ ['--size' as string]: '96px', boxShadow: 'none', background: 'var(--surface-raised)' }}>
+            {selectedChild.avatar}
+          </span>
+          <div>
+            <p className="font-display text-4xl font-semibold text-ink">Oi, {selectedChild.name}!</p>
+            <p className="text-xl font-bold text-ink-muted">Minhas tarefas de hoje</p>
           </div>
-          <div className="flex items-center gap-2 bg-waiting-bg px-6 py-3 rounded-full shadow-sm border-2 border-waiting-border">
-            <Star className="text-waiting-fg fill-waiting-fg" size={24} />
-            <span className="text-2xl font-bold text-waiting-fg">{selectedChild.points || 0} pts</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="tf-seal"><Star size={44} className="fill-current" /></div>
+          <div>
+            <div className="tf-points__value">{selectedChild.points || 0}</div>
+            <div className="tf-points__unit">pontos</div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-4xl font-bold text-ink">Minhas Tarefas de Hoje</h2>
-          <div className="text-xl font-medium text-ink-muted">
-            {tasks.filter(t => t.status === 'approved').length} de {tasks.length} completas
-          </div>
-        </div>
-
+      <main className="flex-1 px-10 py-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-brand"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
             {tasks.length === 0 ? (
               <div className="col-span-full text-center py-20">
-                <p className="text-3xl text-ink-muted font-medium">Tudo limpo por aqui! 🎉</p>
+                <p className="font-display text-3xl text-ink-muted">Tudo limpo por aqui! 🎉</p>
               </div>
             ) : (
-              tasks.map((instance) => (
-                <div
-                  key={instance.id}
-                  className={`p-6 rounded-[32px] border-4 transition-all flex items-center gap-6 cursor-pointer active:scale-95 ${
-                    instance.status === 'approved'
-                      ? 'bg-approved-bg border-approved-solid opacity-80'
-                      : instance.status === 'awaiting_approval'
-                      ? 'bg-waiting-bg border-waiting-border'
-                      : 'bg-surface-raised border-line shadow-sm'
-                  }`}
-                  onClick={() => instance.status === 'pending' && markTaskDone(instance.id)}
-                >
-                  <div className="text-5xl bg-surface-raised p-4 rounded-2xl shadow-sm">
-                    {instance.tasks.icon || '✨'}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className={`text-2xl font-bold ${instance.status === 'approved' ? 'text-approved-fg line-through' : 'text-ink'}`}>
-                      {instance.tasks.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      {instance.status === 'approved' && (
-                        <span className="flex items-center gap-1 text-approved-fg font-bold text-sm">
-                        <CheckCircle2 size={16} /> Aprovado!
-                        </span>
-                      )}
-                      {instance.status === 'awaiting_approval' && (
-                        <span className="flex items-center gap-1 text-waiting-fg font-bold text-sm">
-                        <Clock size={16} /> Aguardando papais...
-                        </span>
-                      )}
-                      {instance.status === 'pending' && (
-                        <span className="text-ink-muted font-medium text-sm">Tocar para concluir</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-2xl font-black text-ink">
-                    {instance.tasks.points} pts
-                  </div>
-                </div>
-              ))
+              tasks.map((instance) => {
+                const st = instance.status;
+                return (
+                  <button
+                    key={instance.id}
+                    type="button"
+                    className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : ''}`}
+                    onClick={() => st === 'pending' && markTaskDone(instance.id)}
+                  >
+                    <span className="tf-task__row">
+                      <span className="tf-task__icon">{instance.tasks.icon || '✨'}</span>
+                      <span className="tf-task__pts">+{instance.tasks.points} ⭐</span>
+                    </span>
+                    <span>
+                      <p className="tf-task__title">{instance.tasks.title}</p>
+                      <span className="tf-task__status">
+                        {st === 'approved' && (<><Check className="tf-icon" /> Aprovado!</>)}
+                        {st === 'awaiting_approval' && (<><Clock className="tf-icon" /> Aguardando papais...</>)}
+                        {st === 'pending' && (<><Circle className="tf-icon" /> Toque quando terminar</>)}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })
             )}
           </div>
         )}
       </main>
+
+      <footer className="flex items-center justify-between px-10 pb-8">
+        <span className="text-xl font-bold text-ink-muted">{approvedCount} de {tasks.length} aprovadas</span>
+        <button onClick={() => setStep('selection')} className="tf-btn tf-btn--totem tf-btn--secondary">
+          <ArrowLeft size={28} /> Trocar de criança
+        </button>
+      </footer>
+
+      {celebration && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 pointer-events-none" aria-live="polite">
+          <span className="tf-stamp"><Check size={40} /> Aprovado!</span>
+          <div className="tf-seal tf-seal--pop" style={{ width: 128, height: 128, fontSize: 44 }}>+{celebration.points}</div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

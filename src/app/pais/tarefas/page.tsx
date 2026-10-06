@@ -112,7 +112,7 @@ export default function TasksPage() {
           </p>
           <button
             disabled={saving}
-            className="flex items-center gap-2 bg-brand text-on-brand px-5 py-3 rounded-2xl font-bold hover:bg-brand-hover disabled:opacity-60"
+            className="tf-btn tf-btn--primary"
           >
             <Plus size={20} />
             Adicionar tarefa

@@ -1,13 +1,14 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, MessageCircle, AlertCircle } from 'lucide-react';
-import { colors } from '@/styles/theme';
+import { Check, Undo2, Copy } from 'lucide-react';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totemUrl, setTotemUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     fetch('/api/pais/family')
@@ -48,7 +49,6 @@ export default function ParentsDashboard() {
   }
 
   async function handleReject(instanceId: string) {
-    const note = prompt('Motivo da devolução (opcional):');
     const res = await fetch(`/api/pais/instances/${instanceId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,6 +57,8 @@ export default function ParentsDashboard() {
     if (!res.ok) {
       alert('Erro ao devolver tarefa');
     }
+    setRejectingId(null);
+    setNote('');
     await fetchPendingTasks();
   }
 
@@ -67,22 +69,23 @@ export default function ParentsDashboard() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-ink">Fila de Aprovação</h1>
+        <h1 className="font-display text-3xl font-semibold text-ink">Fila de aprovação</h1>
         <div className="bg-waiting-bg text-waiting-fg px-4 py-2 rounded-full font-bold text-sm border border-waiting-border">
           {pendingTasks.length} tarefas pendentes
         </div>
       </div>
 
       {totemUrl && (
-        <div className="bg-surface-raised p-5 rounded-[24px] border-2 border-line flex flex-col md:flex-row md:items-center gap-3">
+        <div className="tf-card flex flex-col md:flex-row md:items-center gap-3 !bg-sun-soft">
           <div className="flex-1 min-w-0">
             <p className="font-bold text-ink">Link do totem (tablet das crianças)</p>
             <p className="text-sm text-ink-muted truncate">{totemUrl}</p>
           </div>
           <button
             onClick={copyTotemUrl}
-            className="px-4 py-2 bg-brand text-on-brand rounded-2xl font-bold hover:bg-brand-hover"
+            className="tf-btn tf-btn--primary"
           >
+            <Copy size={18} />
             {copied ? 'Copiado!' : 'Copiar link'}
           </button>
         </div>
@@ -91,53 +94,60 @@ export default function ParentsDashboard() {
       {pendingTasks.length === 0 ? (
         <div className="bg-surface-raised p-12 rounded-[32px] border-2 border-dashed border-line text-center space-y-4">
           <div className="flex justify-center text-line-strong">
-            <CheckCircle size={64} />
+            <Check size={64} />
           </div>
           <p className="text-xl text-ink-muted font-medium">Tudo em dia! Não há tarefas aguardando aprovação.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pendingTasks.map((instance) => (
-            <div
-              key={instance.id}
-              className="bg-surface-raised p-6 rounded-[32px] border-2 border-waiting-border shadow-sm flex flex-col gap-4 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-2 h-full bg-waiting-border" />
-
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
-                  <span className="text-4xl bg-surface-sunken p-3 rounded-2xl">{instance.tasks.icon || '✨'}</span>
-                  <div>
-                    <h3 className="font-bold text-xl text-ink">{instance.tasks.title}</h3>
-                    <p className="text-ink-muted flex items-center gap-1">
-                      <span className="font-bold text-ink">{instance.children.name}</span>
-                      <span>• {new Date(instance.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    </p>
-                  </div>
+            <article key={instance.id} className="tf-card flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <span className="tf-task__icon">{instance.tasks.icon || '✨'}</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="tf-task__title">{instance.tasks.title}</h3>
+                  <p className="text-sm text-ink-muted flex items-center gap-2">
+                    <span
+                      className="tf-child tf-child--sm"
+                      style={{ '--kid': instance.children.color, '--kid-soft': `color-mix(in srgb, ${instance.children.color} 14%, var(--surface-raised))` } as React.CSSProperties}
+                    >
+                      <span className="tf-child__avatar" style={{ ['--size' as string]: '24px', borderWidth: 2, fontSize: 13 }}>{instance.children.avatar}</span>
+                    </span>
+                    <span className="font-bold text-ink">{instance.children.name}</span>
+                    <span>• hoje, {new Date(instance.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  </p>
                 </div>
-                <div className="text-right">
-                  <span className="block text-xs text-ink-muted font-bold uppercase">Pontos</span>
-                  <span className="text-2xl font-black text-ink">{instance.tasks.points} pts</span>
-                </div>
+                <span className="tf-task__pts">+{instance.tasks.points} ⭐</span>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handleApprove(instance.id)}
-                  className="flex-1 py-4 bg-approved-solid text-on-approved rounded-2xl font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
-                >
-                  <CheckCircle size={20} />
-                  Aprovar
-                </button>
-                <button
-                  onClick={() => handleReject(instance.id)}
-                  className="flex-1 py-4 bg-returned-bg text-returned-fg rounded-2xl font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-95 border border-red-100"
-                >
-                  <XCircle size={20} />
-                  Devolver
-                </button>
+              {rejectingId === instance.id && (
+                <label className="flex flex-col gap-2">
+                  <span className="font-extrabold text-ink">Recado para {instance.children.name} (opcional)</span>
+                  <input
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    maxLength={140}
+                    autoFocus
+                    placeholder="Ex.: falta a língua!"
+                    className="min-h-12 px-5 rounded-full border-2 border-line-strong bg-surface-raised text-ink"
+                  />
+                </label>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {rejectingId === instance.id ? (
+                  <>
+                    <button onClick={() => { setRejectingId(null); setNote(''); }} className="tf-btn tf-btn--secondary">Cancelar</button>
+                    <button onClick={() => handleReject(instance.id)} className="tf-btn tf-btn--return"><Undo2 className="tf-icon" /> Devolver</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => handleApprove(instance.id)} className="tf-btn tf-btn--approve"><Check className="tf-icon" /> Aprovar</button>
+                    <button onClick={() => { setRejectingId(instance.id); setNote(''); }} className="tf-btn tf-btn--return"><Undo2 className="tf-icon" /> Devolver</button>
+                  </>
+                )}
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

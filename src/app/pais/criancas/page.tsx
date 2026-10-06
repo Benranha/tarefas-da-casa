@@ -84,7 +84,7 @@ export default function ChildrenPage() {
         </div>
         <button
           disabled={saving}
-          className="flex items-center gap-2 bg-brand text-on-brand px-5 py-3 rounded-2xl font-bold hover:bg-brand-hover disabled:opacity-60"
+          className="tf-btn tf-btn--primary"
         >
           <Plus size={20} />
           Adicionar criança
@@ -98,10 +98,10 @@ export default function ChildrenPage() {
           {children.map((c) => (
             <div key={c.id} className="bg-surface-raised p-6 rounded-[24px] border-2 border-line flex items-center gap-4 shadow-sm">
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl bg-surface-raised"
-                style={{ boxShadow: `0 0 0 4px ${c.color}` }}
+                className="tf-child"
+                style={{ '--kid': c.color, '--kid-soft': `color-mix(in srgb, ${c.color} 14%, var(--surface-raised))` } as React.CSSProperties}
               >
-                {c.avatar}
+                <span className="tf-child__avatar" style={{ ['--size' as string]: '64px', borderWidth: 4, boxShadow: 'none' }}>{c.avatar}</span>
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-ink">{c.name}</h3>
