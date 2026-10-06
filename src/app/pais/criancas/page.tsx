@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Copy, KeyRound, ListChecks, Moon, Plus, Smartphone, Sun, Trash2 } from 'lucide-react'
+import TfIcon from '@/components/TfIcon'
+import { TF_GROUPS } from '@/lib/tf-icons-data'
 
-const AVATARS = ['👦', '👧', '🧒', '👶', '🧑', '🐱', '🐶', '🦄']
+const AVATARS = TF_GROUPS.avatares
 const COLORS = ['#2F5BEA', '#C8266B', '#3F7D20', '#9A5B06', '#7A3FE0', '#0B7A85', '#C8362B']
 
 type Child = {
@@ -24,7 +26,7 @@ const timeInput = 'min-h-11 px-3 rounded-2xl border-2 border-line-strong'
 export default function ChildrenPage() {
   const [children, setChildren] = useState<Child[]>([])
   const [name, setName] = useState('')
-  const [avatar, setAvatar] = useState(AVATARS[0])
+  const [avatar, setAvatar] = useState<string>(AVATARS[0])
   const [color, setColor] = useState(COLORS[0])
   const [wake, setWake] = useState('07:00')
   const [bed, setBed] = useState('21:00')
@@ -108,9 +110,9 @@ export default function ChildrenPage() {
               type="button"
               key={a}
               onClick={() => setAvatar(a)}
-              className={`text-3xl p-2 rounded-2xl border-2 ${avatar === a ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
+              className={`p-2 rounded-2xl border-2 ${avatar === a ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
             >
-              {a}
+              <TfIcon name={a} size={40} color={color} />
             </button>
           ))}
         </div>
@@ -162,7 +164,7 @@ export default function ChildrenPage() {
                   className="tf-child"
                   style={{ '--kid': c.color, '--kid-soft': `color-mix(in srgb, ${c.color} 14%, var(--surface-raised))` } as React.CSSProperties}
                 >
-                  <span className="tf-child__avatar" style={{ ['--size' as string]: '64px', borderWidth: 4, boxShadow: 'none' }}>{c.avatar}</span>
+                  <span className="tf-child__avatar" style={{ ['--size' as string]: '64px', borderWidth: 4, boxShadow: 'none' }}><TfIcon name={c.avatar} size={42} color={c.color} /></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-bold text-ink">{c.name}</h3>

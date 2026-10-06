@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
+import TfIcon from '@/components/TfIcon';
 
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
@@ -110,7 +111,7 @@ export default function ParentsDashboard() {
               <article key={child.id} className="tf-card flex flex-col gap-3">
                 <h3 className="font-bold text-ink flex items-center gap-2">
                   <Link href={`/pais/criancas/${child.id}`} className="flex items-center gap-2 underline decoration-dotted underline-offset-4">
-                    <span>{child.avatar}</span> {child.name}
+                    <TfIcon name={child.avatar} size={28} color={child.color} /> {child.name}
                   </Link>
                   <span className="text-sm font-medium text-ink-muted">
                     • {items.filter((i) => i.status === 'approved').length} de {items.length} feitas
@@ -119,7 +120,7 @@ export default function ParentsDashboard() {
                 <ul className="flex flex-col gap-2">
                   {items.map((i) => (
                     <li key={i.id} className="flex items-center gap-3">
-                      <span className="text-2xl">{i.tasks.icon || '✨'}</span>
+                      <TfIcon name={i.tasks.icon} size={28} />
                       <span className="flex-1 min-w-0">
                         <span className={`font-bold ${i.status === 'approved' ? 'line-through text-ink-muted' : 'text-ink'}`}>
                           {i.tasks.title}
@@ -128,7 +129,7 @@ export default function ParentsDashboard() {
                           <span className="block text-xs text-returned-fg">Devolvida: {i.parent_note}</span>
                         )}
                       </span>
-                      <span className="text-sm text-ink-muted">{i.tasks.points} ⭐</span>
+                      <span className="text-sm text-ink-muted">{i.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
                       <span
                         className={`text-xs font-bold px-3 py-1 rounded-full border ${
                           i.status === 'approved'
@@ -161,7 +162,7 @@ export default function ParentsDashboard() {
           {pendingTasks.map((instance) => (
             <article key={instance.id} className="tf-card flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <span className="tf-task__icon">{instance.tasks.icon || '✨'}</span>
+                <span className="tf-task__icon"><TfIcon name={instance.tasks.icon} size={40} /></span>
                 <div className="flex-1 min-w-0">
                   <h3 className="tf-task__title">{instance.tasks.title}</h3>
                   <p className="text-sm text-ink-muted flex items-center gap-2">
@@ -169,13 +170,13 @@ export default function ParentsDashboard() {
                       className="tf-child tf-child--sm"
                       style={{ '--kid': instance.children.color, '--kid-soft': `color-mix(in srgb, ${instance.children.color} 14%, var(--surface-raised))` } as React.CSSProperties}
                     >
-                      <span className="tf-child__avatar" style={{ ['--size' as string]: '24px', borderWidth: 2, fontSize: 13 }}>{instance.children.avatar}</span>
+                      <span className="tf-child__avatar" style={{ ['--size' as string]: '24px', borderWidth: 2 }}><TfIcon name={instance.children.avatar} size={16} flat color={instance.children.color} /></span>
                     </span>
                     <span className="font-bold text-ink">{instance.children.name}</span>
                     <span>• hoje, {new Date(instance.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </p>
                 </div>
-                <span className="tf-task__pts">+{instance.tasks.points} ⭐</span>
+                <span className="tf-task__pts">+{instance.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
               </div>
 
               {rejectingId === instance.id && (

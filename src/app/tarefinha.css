@@ -24,7 +24,7 @@
 .tf-icon { width: 1.25em; height: 1.25em; flex: none; }
 
 .tf-task { display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid var(--pending-border); border-radius: 24px; background: var(--pending-bg); color: var(--ink); box-shadow: var(--shadow-card); text-align: left; }
-.tf-task__icon { width: 56px; height: 56px; border-radius: 16px; background: var(--surface-sunken); display: grid; place-items: center; font-size: 32px; flex: none; }
+.tf-task__icon { width: 56px; height: 56px; border-radius: 16px; background: var(--surface-sunken); display: grid; place-items: center; flex: none; }
 .tf-task__title { font: 800 18px/24px var(--font-nunito), system-ui, sans-serif; margin: 0; }
 .tf-task__status { display: inline-flex; align-items: center; gap: 8px; font: 700 14px/20px var(--font-nunito), system-ui, sans-serif; color: var(--pending-fg); }
 .tf-task__pts { font: 700 18px/1 var(--font-fredoka), system-ui, sans-serif; background: var(--sun-soft); color: var(--ink); border-radius: 999px; padding: 8px 12px; white-space: nowrap; }
@@ -42,7 +42,7 @@
 .tf-totem { background: var(--surface); }
 .tf-totem .tf-task { flex-direction: column; align-items: stretch; gap: 16px; padding: 32px; border-width: 3px; border-radius: 32px; box-shadow: var(--shadow-pop); min-height: 88px; cursor: pointer; width: 100%; }
 .tf-totem .tf-task:active { transform: translateY(3px); box-shadow: var(--shadow-sticker); }
-.tf-totem .tf-task__icon { width: 96px; height: 96px; font-size: 56px; border-radius: 24px; }
+.tf-totem .tf-task__icon { width: 96px; height: 96px; border-radius: 24px; }
 .tf-totem .tf-task__title { font: 600 28px/34px var(--font-fredoka), system-ui, sans-serif; }
 .tf-totem .tf-task__status { font: 700 22px/30px var(--font-nunito), system-ui, sans-serif; }
 .tf-totem .tf-task__pts { font-size: 26px; padding: 8px 16px; }
@@ -73,3 +73,16 @@
 
 /* Logo claro vira escuro no tema escuro do painel (as cores do SVG são fixas) */
 [data-theme="dark"] .dark-invert { content: url("/logo/tarefinha-horizontal-escuro.svg"); }
+
+/* Ícones próprios (componente TfIcon). Cores: --ic-b (marca), --ic-d (creme), --ic-k (tom escuro), --ic-border. */
+.tf-ic { display: inline-block; line-height: 0; vertical-align: middle; flex: none; }
+.tf-ic svg { display: block; overflow: visible; }
+.tf-ic .f { fill: var(--ic-b, #C0430E); stroke: var(--ic-b, #C0430E); }
+.tf-ic .w { fill: var(--ic-border, #fff); stroke: var(--ic-border, #fff); }
+.tf-ic .s { fill: #3a2a22; stroke: #3a2a22; }
+.tf-ic .b { fill: var(--ic-b, #C0430E); }
+.tf-ic .d { fill: var(--ic-d, #FFF8EF); }
+.tf-ic .k { fill: var(--ic-k, color-mix(in srgb, var(--ic-b, #C0430E) 62%, #2a1006)); }
+.tf-ic .sd, .tf-ic .sk { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.tf-ic .sd { stroke: var(--ic-d, #FFF8EF); }
+.tf-ic .sk { stroke: var(--ic-k, color-mix(in srgb, var(--ic-b, #C0430E) 62%, #2a1006)); }

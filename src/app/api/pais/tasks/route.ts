@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   const title = typeof body.title === 'string' ? body.title.trim().slice(0, 80) : ''
   const description = typeof body.description === 'string' ? body.description.trim().slice(0, 500) : ''
-  const icon = typeof body.icon === 'string' ? body.icon.trim().slice(0, 8) : '✨'
+  const icon = typeof body.icon === 'string' ? body.icon.trim().slice(0, 24) : 'brilho'
   const points = Number.isInteger(body.points) ? body.points : NaN
   const childId = typeof body.childId === 'string' ? body.childId : ''
   const dueTime = typeof body.dueTime === 'string' && body.dueTime ? body.dueTime : null
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   const rows = await sql`
     INSERT INTO tasks (title, description, icon, points, assigned_child_id, recurrence, due_time)
-    VALUES (${title}, ${description || null}, ${icon || '✨'}, ${points}, ${childId}::uuid, 'daily', ${dueTime}::time)
+    VALUES (${title}, ${description || null}, ${icon || 'brilho'}, ${points}, ${childId}::uuid, 'daily', ${dueTime}::time)
     RETURNING id
   `
   return NextResponse.json(rows[0], { status: 201 })

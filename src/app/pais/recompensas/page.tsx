@@ -1,6 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Plus, Trash2, Check, X } from 'lucide-react'
+import TfIcon from '@/components/TfIcon'
+import { TF_GROUPS } from '@/lib/tf-icons-data'
 
 type Reward = { id: string; title: string; icon: string; cost_points: number }
 type Redemption = {
@@ -13,13 +15,13 @@ type Redemption = {
   child_avatar: string
 }
 
-const ICONS = ['🎁', '🍦', '🎮', '🎬', '🍕', '🧸', '🚲', '📖']
+const ICONS = TF_GROUPS.recompensas
 
 export default function RewardsPage() {
   const [rewards, setRewards] = useState<Reward[]>([])
   const [redemptions, setRedemptions] = useState<Redemption[]>([])
   const [title, setTitle] = useState('')
-  const [icon, setIcon] = useState(ICONS[0])
+  const [icon, setIcon] = useState<string>(ICONS[0])
   const [cost, setCost] = useState(50)
   const [saving, setSaving] = useState(false)
 
@@ -78,11 +80,11 @@ export default function RewardsPage() {
           <h2 className="text-xl font-bold text-ink">Pedidos aguardando ({pending.length})</h2>
           {pending.map((p) => (
             <div key={p.id} className="bg-surface-raised p-4 rounded-[24px] border-2 border-waiting-border flex items-center gap-3">
-              <span className="text-3xl">{p.icon || '🎁'}</span>
+              <TfIcon name={p.icon || 'presente'} size={32} />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-ink">{p.title}</p>
                 <p className="text-sm text-ink-muted">
-                  {p.child_avatar} {p.child_name} • {p.cost_points} pts reservados
+                  <TfIcon name={p.child_avatar} size={18} flat /> {p.child_name} • {p.cost_points} pts reservados
                 </p>
               </div>
               <button
@@ -117,9 +119,9 @@ export default function RewardsPage() {
               type="button"
               key={i}
               onClick={() => setIcon(i)}
-              className={`text-2xl p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
+              className={`p-2 rounded-2xl border-2 ${icon === i ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
             >
-              {i}
+              <TfIcon name={i} size={34} />
             </button>
           ))}
         </div>
@@ -148,7 +150,7 @@ export default function RewardsPage() {
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {rewards.map((r) => (
             <div key={r.id} className="p-4 flex items-center gap-3">
-              <span className="text-2xl">{r.icon || '🎁'}</span>
+              <TfIcon name={r.icon || 'presente'} size={28} />
               <span className="flex-1 font-medium text-ink">{r.title}</span>
               <span className="font-bold text-ink">{r.cost_points} pts</span>
               <button onClick={() => remove(r)} aria-label={`Remover ${r.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
@@ -165,9 +167,9 @@ export default function RewardsPage() {
           <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line">
             {done.map((p) => (
               <div key={p.id} className="p-4 flex items-center gap-3 text-sm">
-                <span className="text-xl">{p.icon || '🎁'}</span>
+                <TfIcon name={p.icon || 'presente'} size={24} />
                 <span className="flex-1">
-                  {p.title} • {p.child_avatar} {p.child_name}
+                  {p.title} • <TfIcon name={p.child_avatar} size={18} flat /> {p.child_name}
                 </span>
                 <span className={p.status === 'delivered' ? 'text-approved-fg font-bold' : 'text-ink-muted'}>
                   {p.status === 'delivered' ? 'Entregue' : 'Recusado (pontos devolvidos)'}
