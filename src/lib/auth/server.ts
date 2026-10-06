@@ -9,13 +9,23 @@ export const auth = createNeonAuth({
 })
 
 // Família do usuário logado (cria o registro na primeira vez) ou null.
-// Todo dado do painel dos pais é filtrado por este ownerId.
+// Todo dado do painel dos pais é filtrado por este ownerId: o id de quem criou a família.
+// Quem entrou por convite (family_members) enxerga a mesma família do criador.
 export async function getFamily() {
   const { data: session } = await auth.getSession()
   const user = session?.user
   if (!user) return null
 
-  await sql`INSERT INTO families (owner_id) VALUES (${user.id}::uuid) ON CONFLICT DO NOTHING`
-  const rows = await sql`SELECT totem_code FROM families WHERE owner_id = ${user.id}::uuid`
-  return { ownerId: user.id as string, totemCode: rows[0].totem_code as string }
+  const member = await sql`SELECT family_owner_id FROM family_members WHERE user_id = ${user.id}::uuid`
+  const ownerId = (member[0]?.family_owner_id as string | undefined) ?? (user.id as string)
+  if (!member.length) {
+    await sql`INSERT INTO families (owner_id) VALUES (${ownerId}::uuid) ON CONFLICT DO NOTHING`
+  }
+  const rows = await sql`SELECT totem_code FROM families WHERE owner_id = ${ownerId}::uuid`
+  return {
+    userId: user.id as string,
+    userName: (user.name as string | undefined) ?? '',
+    ownerId,
+    totemCode: rows[0].totem_code as string,
+  }
 }

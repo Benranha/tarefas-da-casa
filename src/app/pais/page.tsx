@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 
 export default function ParentsDashboard() {
@@ -108,7 +109,9 @@ export default function ParentsDashboard() {
             ).map(({ child, items }) => (
               <article key={child.id} className="tf-card flex flex-col gap-3">
                 <h3 className="font-bold text-ink flex items-center gap-2">
-                  <span>{child.avatar}</span> {child.name}
+                  <Link href={`/pais/criancas/${child.id}`} className="flex items-center gap-2 underline decoration-dotted underline-offset-4">
+                    <span>{child.avatar}</span> {child.name}
+                  </Link>
                   <span className="text-sm font-medium text-ink-muted">
                     • {items.filter((i) => i.status === 'approved').length} de {items.length} feitas
                   </span>
