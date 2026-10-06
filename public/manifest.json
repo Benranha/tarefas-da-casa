@@ -2,9 +2,11 @@
   "name": "Tarefinha",
   "short_name": "Tarefinha",
   "description": "Controle de tarefas domésticas para crianças",
-  "start_url": "/totem",
+  "id": "/",
+  "start_url": "/abrir",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#FFF8EF",
   "theme_color": "#C0430E",
   "icons": [
