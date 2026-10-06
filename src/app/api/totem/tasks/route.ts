@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { sql } from '@/lib/db'
 import { CODE, UUID, badRequest, notFound } from '@/lib/http'
+import { ensureTodayInstances } from '@/lib/instances'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,21 +18,7 @@ export async function GET(request: NextRequest) {
   `
   if (owned.length === 0) return notFound()
 
-  await sql`
-    INSERT INTO task_instances (task_id, child_id, date)
-    SELECT t.id, t.assigned_child_id, (now() at time zone 'America/Manaus')::date
-    FROM tasks t
-    WHERE t.active
-      AND t.assigned_child_id = ${childId}::uuid
-      AND (
-        t.recurrence = 'daily'
-        OR (
-          t.recurrence = 'weekly'
-          AND lower(to_char(now() at time zone 'America/Manaus', 'Dy')) = ANY (t.recurrence_days)
-        )
-      )
-    ON CONFLICT (task_id, child_id, date) DO NOTHING
-  `
+  await ensureTodayInstances({ childId })
 
   const rows = await sql`
     SELECT ti.id, ti.status, ti.completed_at, ti.parent_note,
