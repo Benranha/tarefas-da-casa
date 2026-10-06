@@ -1,11 +1,22 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Plus, Trash2, Calendar } from 'lucide-react'
+import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check } from 'lucide-react'
 
-type Child = { id: string; name: string }
-type Task = { id: string; title: string; icon: string; points: number; child_name: string }
+type Child = { id: string; name: string; wake_time: string; bed_time: string }
+type Task = {
+  id: string
+  title: string
+  description: string | null
+  icon: string
+  points: number
+  due_time: string | null
+  child_name: string
+  assigned_child_id: string
+}
 
 const ICONS = ['🧹', '🛏️', '🍽️', '🪥', '📚', '🐾', '🧺', '🗑️']
+
+const window_for = (children: Child[], id: string) => children.find((c) => c.id === id)
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -14,6 +25,11 @@ export default function TasksPage() {
   const [icon, setIcon] = useState(ICONS[0])
   const [points, setPoints] = useState(10)
   const [childId, setChildId] = useState('')
+  const [description, setDescription] = useState('')
+  const [dueTime, setDueTime] = useState('')
+  const [editing, setEditing] = useState<string | null>(null)
+  const [editTime, setEditTime] = useState('')
+  const [editDescription, setEditDescription] = useState('')
   const [saving, setSaving] = useState(false)
 
   async function load() {
@@ -38,14 +54,38 @@ export default function TasksPage() {
     const res = await fetch('/api/pais/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, icon, points, childId }),
+      body: JSON.stringify({ title, icon, points, childId, description, dueTime }),
     })
     setSaving(false)
     if (res.ok) {
       setTitle('')
+      setDescription('')
+      setDueTime('')
       await load()
     } else {
-      alert('Não foi possível cadastrar a tarefa.')
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Não foi possível cadastrar a tarefa.')
+    }
+  }
+
+  function startEdit(t: Task) {
+    setEditing(t.id)
+    setEditTime(t.due_time ?? '')
+    setEditDescription(t.description ?? '')
+  }
+
+  async function saveEdit(t: Task) {
+    const res = await fetch(`/api/pais/tasks/${t.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dueTime: editTime, description: editDescription }),
+    })
+    if (res.ok) {
+      setEditing(null)
+      await load()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Não foi possível salvar.')
     }
   }
 
@@ -71,6 +111,13 @@ export default function TasksPage() {
             required
             maxLength={80}
             placeholder="Ex.: Arrumar o quarto"
+            className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
+          />
+          <input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={500}
+            placeholder="Detalhes (opcional): o que precisa ser feito"
             className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
           />
           <div className="flex flex-wrap gap-2">
@@ -106,9 +153,26 @@ export default function TasksPage() {
               className="md:w-32 p-3 rounded-2xl border-2 border-line"
               aria-label="Pontos"
             />
+            <label className="flex items-center gap-2 font-bold text-ink">
+              <AlarmClock size={18} /> Horário
+              <input
+                type="time"
+                value={dueTime}
+                min={window_for(children, childId)?.wake_time}
+                max={window_for(children, childId)?.bed_time}
+                onChange={(e) => setDueTime(e.target.value)}
+                className="min-h-11 px-3 rounded-2xl border-2 border-line"
+              />
+            </label>
           </div>
+          {window_for(children, childId) && (
+            <p className="text-sm text-ink-muted">
+              {window_for(children, childId)!.name} acorda às {window_for(children, childId)!.wake_time} e dorme às{' '}
+              {window_for(children, childId)!.bed_time}. O horário da tarefa fica entre os dois (opcional).
+            </p>
+          )}
           <p className="text-sm text-ink-muted flex items-center gap-1">
-            <Calendar size={14} /> A tarefa aparece todos os dias no totem.
+            <Calendar size={14} /> A tarefa aparece todos os dias, no totem e no aparelho da criança.
           </p>
           <button
             disabled={saving}
@@ -123,14 +187,44 @@ export default function TasksPage() {
       {tasks.length > 0 && (
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
           {tasks.map((t) => (
-            <div key={t.id} className="p-4 flex items-center gap-3">
-              <span className="text-2xl">{t.icon}</span>
-              <span className="flex-1 font-medium text-ink">{t.title}</span>
-              <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold">{t.child_name}</span>
-              <span className="font-bold text-ink">{t.points} pts</span>
-              <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
-                <Trash2 size={18} />
-              </button>
+            <div key={t.id} className="p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{t.icon}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="font-medium text-ink block">{t.title}</span>
+                  {t.description && <span className="text-sm text-ink-muted block">{t.description}</span>}
+                </span>
+                {t.due_time && (
+                  <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
+                )}
+                <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold">{t.child_name}</span>
+                <span className="font-bold text-ink">{t.points} pts</span>
+                <button onClick={() => (editing === t.id ? setEditing(null) : startEdit(t))} aria-label={`Editar ${t.title}`} className="p-2 text-ink-muted hover:text-brand">
+                  <Pencil size={18} />
+                </button>
+                <button onClick={() => remove(t)} aria-label={`Remover ${t.title}`} className="p-2 text-ink-muted hover:text-returned-fg">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+              {editing === t.id && (
+                <div className="flex flex-col md:flex-row gap-3">
+                  <input
+                    type="time"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                    aria-label="Horário"
+                    className="min-h-11 px-3 rounded-2xl border-2 border-line"
+                  />
+                  <input
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    maxLength={500}
+                    placeholder="Detalhes"
+                    className="flex-1 p-3 rounded-2xl border-2 border-line"
+                  />
+                  <button onClick={() => saveEdit(t)} className="tf-btn tf-btn--primary !min-h-11"><Check className="tf-icon" /> Salvar</button>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users } from 'lucide-react';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
@@ -10,6 +10,7 @@ const items = [
   { name: 'Tarefas', href: '/pais/tarefas', icon: ListChecks },
   { name: 'Histórico', href: '/pais/historico', icon: History },
   { name: 'Recompensas', href: '/pais/recompensas', icon: Gift },
+  { name: 'Família', href: '/pais/familia', icon: Users },
 ];
 
 const THEME_KEY = 'tarefinha-theme';
@@ -49,7 +50,7 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
         <Link
           key={item.href}
           href={item.href}
-          aria-current={pathname === item.href ? 'page' : undefined}
+          aria-current={pathname === item.href || (item.href !== '/pais' && pathname.startsWith(item.href + '/')) ? 'page' : undefined}
           className="tf-nav__item md:flex-row md:justify-start md:gap-3 md:px-4 md:text-base md:font-extrabold"
         >
           <item.icon size={20} />

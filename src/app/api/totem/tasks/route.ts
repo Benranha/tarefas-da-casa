@@ -1,33 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { sql } from '@/lib/db'
-import { CODE, UUID, badRequest, notFound } from '@/lib/http'
+import { unauthorized } from '@/lib/http'
 import { ensureTodayInstances } from '@/lib/instances'
+import { childForTotem, todayTasks } from '@/lib/kid'
 
 export const dynamic = 'force-dynamic'
 
-// Tarefas de hoje de uma criança (da família do código). Cria as ocorrências
+// Tarefas de hoje da criança que entrou com o código dela. Cria as ocorrências
 // do dia a partir das tarefas ativas (diárias, ou semanais no dia de hoje).
 export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get('code') ?? ''
-  const childId = request.nextUrl.searchParams.get('childId') ?? ''
-  if (!CODE.test(code) || !UUID.test(childId)) return badRequest()
-
-  const owned = await sql`
-    SELECT c.id FROM children c JOIN families f ON f.owner_id = c.owner_id
-    WHERE c.id = ${childId}::uuid AND f.totem_code = ${code}
-  `
-  if (owned.length === 0) return notFound()
-
-  await ensureTodayInstances({ childId })
-
-  const rows = await sql`
-    SELECT ti.id, ti.status, ti.completed_at, ti.parent_note,
-           json_build_object('title', t.title, 'icon', t.icon, 'points', t.points) AS tasks
-    FROM task_instances ti
-    JOIN tasks t ON t.id = ti.task_id
-    WHERE ti.child_id = ${childId}::uuid
-      AND ti.date = (now() at time zone 'America/Manaus')::date
-    ORDER BY t.created_at
-  `
-  return NextResponse.json(rows)
+  const child = await childForTotem(request)
+  if (!child) return unauthorized()
+  await ensureTodayInstances({ childId: child.id })
+  return NextResponse.json(await todayTasks(child.id))
 }

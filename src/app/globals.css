@@ -141,3 +141,42 @@ h2 {
     transition: none !important;
   }
 }
+
+/* Campos de formulário: texto sempre legível. O iOS usa cores do sistema nos inputs, que ficam
+   claro-no-claro quando o tema do app é diferente do tema do aparelho. Aqui o texto, o fundo e o
+   esquema de cores seguem os tokens: texto escuro no tema claro e texto claro no tema escuro. */
+:root {
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+@layer base {
+  input,
+  select,
+  textarea {
+    color: var(--ink);
+    -webkit-text-fill-color: var(--ink);
+    background-color: var(--surface-raised);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-muted);
+    -webkit-text-fill-color: var(--ink-muted);
+    opacity: 1;
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.6;
+  }
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--ink);
+    box-shadow: 0 0 0 1000px var(--surface-raised) inset;
+  }
+  option {
+    color: var(--ink);
+    background-color: var(--surface-raised);
+  }
+}

@@ -1,11 +1,14 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Check, Circle, Clock, ArrowLeft, Star, Gift, Undo2 } from 'lucide-react';
+import { Check, Circle, Clock, ArrowLeft, Star, Gift, Undo2, AlarmClock, Moon } from 'lucide-react';
 import Link from 'next/link';
+import PinForm from '@/components/PinForm';
 
 export default function TotemPage() {
-  const [step, setStep] = useState<'selection' | 'tasks' | 'rewards'>('selection');
+  const [step, setStep] = useState<'selection' | 'pin' | 'tasks' | 'rewards'>('selection');
+  // Código da criança que está usando o totem agora: vale só para ela e some ao trocar de criança.
+  const [token, setToken] = useState<string | null>(null);
   const [selectedChild, setSelectedChild] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,9 +79,19 @@ export default function TotemPage() {
     return () => clearInterval(timer);
   }, [step, code]);
 
+  const auth = (): Record<string, string> => (token ? { 'x-child-token': token } : {});
+
+  // Token vencido ou código redefinido pelos pais: volta para a escolha de criança.
+  function leaveChild() {
+    setToken(null);
+    setSelectedChild(null);
+    setStep('selection');
+  }
+
   async function fetchTasks(childId: string, silent = false) {
     if (!silent) setLoading(true);
-    const res = await fetch(`/api/totem/tasks?code=${code}&childId=${childId}`, { cache: 'no-store' });
+    const res = await fetch(`/api/totem/tasks?code=${code}`, { cache: 'no-store', headers: auth() });
+    if (res.status === 401) return leaveChild();
     const data = res.ok ? await res.json() : [];
     for (const t of data) {
       if (prevStatus.current.get(t.id) === 'awaiting_approval' && t.status === 'approved') celebrate(t.tasks?.points ?? 0);
@@ -90,13 +103,14 @@ export default function TotemPage() {
 
   // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
   useEffect(() => {
-    if (!selectedChild) return;
+    if (!selectedChild || !token) return;
     const timer = setInterval(() => {
       fetchTasks(selectedChild.id, true);
       refreshPoints(selectedChild.id);
     }, 5000);
     return () => clearInterval(timer);
-  }, [selectedChild]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChild, token]);
 
   async function refreshPoints(childId: string) {
     const res = await fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' });
@@ -117,9 +131,10 @@ export default function TotemPage() {
   async function redeem(reward: any) {
     const res = await fetch(`/api/totem/rewards/${reward.id}/redeem?code=${code}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...auth() },
       body: JSON.stringify({ childId: selectedChild.id }),
     });
+    if (res.status === 401) return leaveChild();
     if (res.ok) {
       const data = await res.json();
       setSelectedChild({ ...selectedChild, points: data.points });
@@ -130,14 +145,40 @@ export default function TotemPage() {
     }
   }
 
-  async function handleChildSelect(child: any) {
+  // Antes de ver as tarefas, a criança digita o código dela (ou cria, na primeira vez).
+  function handleChildSelect(child: any) {
     setSelectedChild(child);
+    setToken(null);
+    setStep('pin');
+  }
+
+  async function submitPin(pin: string): Promise<string | null> {
+    const res = await fetch(`/api/totem/pin?code=${code}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: selectedChild.id, pin }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 409) setSelectedChild({ ...selectedChild, has_pin: true });
+      return data.error || 'Não deu certo. Tente de novo.';
+    }
+    setToken(data.token);
+    setSelectedChild((c: any) => ({ ...c, has_pin: true }));
     setStep('tasks');
-    await fetchTasks(child.id);
+    // O token ainda não está no estado neste instante: busca as tarefas já com ele.
+    setLoading(true);
+    const r = await fetch(`/api/totem/tasks?code=${code}`, { cache: 'no-store', headers: { 'x-child-token': data.token } });
+    const list = r.ok ? await r.json() : [];
+    prevStatus.current = new Map(list.map((t: any) => [t.id, t.status]));
+    setTasks(list);
+    setLoading(false);
+    return null;
   }
 
   async function markTaskDone(instanceId: string) {
-    const res = await fetch(`/api/totem/tasks/${instanceId}/done?code=${code}`, { method: 'POST' });
+    const res = await fetch(`/api/totem/tasks/${instanceId}/done?code=${code}`, { method: 'POST', headers: auth() });
+    if (res.status === 401) return leaveChild();
 
     if (res.ok) {
       await fetchTasks(selectedChild.id);
@@ -210,6 +251,19 @@ export default function TotemPage() {
     );
   }
 
+  if (step === 'pin' && selectedChild) {
+    return (
+      <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-8 p-8" style={kidStyle(selectedChild)}>
+        <span className="tf-child__avatar" style={{ ['--size' as string]: '140px' }}>{selectedChild.avatar}</span>
+        <h1 className="font-display text-4xl font-semibold text-ink text-center">Oi, {selectedChild.name}!</h1>
+        <PinForm key={selectedChild.id + String(selectedChild.has_pin)} creating={!selectedChild.has_pin} onSubmit={submitPin} big />
+        <button onClick={leaveChild} className="tf-btn tf-btn--secondary">
+          <ArrowLeft className="tf-icon" /> Não sou eu
+        </button>
+      </div>
+    );
+  }
+
   if (step === 'rewards') {
     return (
       <div className="tf-totem min-h-screen flex flex-col" style={kidStyle(selectedChild)}>
@@ -274,6 +328,11 @@ export default function TotemPage() {
           <div>
             <p className="font-display text-4xl font-semibold text-ink">Oi, {selectedChild.name}!</p>
             <p className="text-xl font-bold text-ink-muted">Minhas tarefas de hoje</p>
+            {selectedChild.bed_time && (
+              <p className="text-lg font-bold text-ink-muted flex items-center gap-2">
+                <Moon className="tf-icon" /> Hora de dormir: {selectedChild.bed_time}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -314,6 +373,10 @@ export default function TotemPage() {
                     </span>
                     <span>
                       <p className="tf-task__title">{instance.tasks.title}</p>
+                      {instance.tasks.due_time && (
+                        <span className="tf-task__status"><AlarmClock className="tf-icon" /> Às {instance.tasks.due_time}</span>
+                      )}
+                      {instance.tasks.description && <p className="text-lg text-ink-muted mt-1">{instance.tasks.description}</p>}
                       <span className="tf-task__status">
                         {st === 'approved' && (<><Check className="tf-icon" /> Aprovado!</>)}
                         {st === 'awaiting_approval' && (<><Clock className="tf-icon" /> Aguardando papais...</>)}
@@ -336,7 +399,7 @@ export default function TotemPage() {
           <button onClick={openRewards} className="tf-btn tf-btn--totem tf-btn--primary">
             <Gift size={28} /> Prêmios
           </button>
-          <button onClick={() => setStep('selection')} className="tf-btn tf-btn--totem tf-btn--secondary">
+          <button onClick={leaveChild} className="tf-btn tf-btn--totem tf-btn--secondary">
             <ArrowLeft size={28} /> Trocar de criança
           </button>
         </div>
