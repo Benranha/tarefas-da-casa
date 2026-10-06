@@ -25,7 +25,8 @@ export async function signIn(
 
 export async function signOut() {
   await auth.signOut()
-  redirect('/login')
+  // Volta para a escolha de modo (app ou painel); o /abrir cuida de pedir o login se for app.
+  redirect('/abrir?trocar=1')
 }
 
 export async function signUp(

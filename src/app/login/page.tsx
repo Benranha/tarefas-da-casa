@@ -71,6 +71,12 @@ export default function LoginPage() {
             Criar conta
           </Link>
         </p>
+        <p className="mt-3 text-center text-sm text-ink-muted">
+          Este aparelho é o tablet das crianças?{' '}
+          <Link href="/abrir?trocar=1" className="font-bold text-ink">
+            Usar como painel
+          </Link>
+        </p>
       </div>
     </div>
   )

@@ -14,6 +14,7 @@ const items = [
 ];
 
 const THEME_KEY = 'tarefinha-theme';
+const MODE_KEY = 'tarefinhaMode';
 
 function panel() {
   return document.querySelector<HTMLElement>('.tf-painel');
@@ -61,7 +62,15 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
         <Moon size={20} />
         <span>Tema</span>
       </button>
-      <form action={signOut} >
+      {/* Ao sair, esquece o modo "app" deste aparelho para ele poder virar painel de novo. */}
+      <form
+        action={signOut}
+        onSubmit={() => {
+          try {
+            if (localStorage.getItem(MODE_KEY) === 'app') localStorage.removeItem(MODE_KEY);
+          } catch {}
+        }}
+      >
         <button className="tf-nav__item w-full md:flex-row md:justify-start md:px-4 md:text-base">Sair</button>
       </form>
     </nav>
