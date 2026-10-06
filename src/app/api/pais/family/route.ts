@@ -10,7 +10,7 @@ export async function GET() {
   const family = await getFamily()
   if (!family) return unauthorized()
 
-  const [members, invites] = await Promise.all([
+  const [members, invites, parental] = await Promise.all([
     sql`
       SELECT u.id, u.name, u.email, (u.id = ${family.ownerId}::uuid) AS is_owner
       FROM neon_auth."user" u
@@ -23,6 +23,13 @@ export async function GET() {
       WHERE family_owner_id = ${family.ownerId}::uuid AND used_at IS NULL AND expires_at > now()
       ORDER BY created_at DESC
     `,
+    sql`SELECT (parental_pin_hash IS NOT NULL) AS has FROM families WHERE owner_id = ${family.ownerId}::uuid`,
   ])
-  return NextResponse.json({ totemCode: family.totemCode, me: family.userId, members, invites })
+  return NextResponse.json({
+    totemCode: family.totemCode,
+    me: family.userId,
+    hasParentalCode: Boolean(parental[0]?.has),
+    members,
+    invites,
+  })
 }

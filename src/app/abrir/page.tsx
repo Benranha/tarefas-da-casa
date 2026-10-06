@@ -26,7 +26,9 @@ function extractCode(input: string) {
 
 function Launcher() {
   const router = useRouter()
-  const change = useSearchParams().get('trocar') === '1'
+  const params = useSearchParams()
+  const change = params.get('trocar') === '1'
+  const parentalToken = params.get('p') ?? ''
   const [ready, setReady] = useState(false)
   const [step, setStep] = useState<'choose' | 'panel'>('choose')
   const [link, setLink] = useState('')
@@ -35,13 +37,22 @@ function Launcher() {
 
   // Abre direto no modo já escolhido, a menos que o usuário tenha pedido para trocar.
   useEffect(() => {
+    // Reconfigurar um tablet já em modo totem exige o código parental (se os pais definiram um).
+    const savedCode = read(CODE_KEY)
+    if (change && read(MODE_KEY) === 'totem' && savedCode) {
+      fetch(`/api/totem/parental?code=${savedCode}&t=${encodeURIComponent(parentalToken)}`, { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => (d.ok === false ? router.replace('/totem') : setReady(true)))
+        .catch(() => router.replace('/totem'))
+      return
+    }
     if (!change) {
       const mode = read(MODE_KEY)
       if (mode === 'app') return void router.replace('/pais')
       if (mode === 'totem' && read(CODE_KEY)) return void router.replace('/totem')
     }
     setReady(true)
-  }, [change, router])
+  }, [change, parentalToken, router])
 
   function chooseApp() {
     try {

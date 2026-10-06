@@ -121,3 +121,9 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 CREATE INDEX IF NOT EXISTS push_subscriptions_user_idx ON push_subscriptions (user_id);
 CREATE INDEX IF NOT EXISTS push_subscriptions_child_idx ON push_subscriptions (child_id);
+
+-- Versão 3: código parental do totem (db/migrations/003_codigo_parental.sql).
+ALTER TABLE families
+    ADD COLUMN IF NOT EXISTS parental_pin_hash TEXT,
+    ADD COLUMN IF NOT EXISTS parental_attempts INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS parental_locked_until TIMESTAMPTZ;
