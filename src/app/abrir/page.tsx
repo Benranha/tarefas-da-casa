@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 const MODE_KEY = 'tarefinhaMode'
 const CODE_KEY = 'totemCode'
+const CHILD_KEY = 'filhoCode'
 
 function read(key: string) {
   try {
@@ -14,7 +15,7 @@ function read(key: string) {
   }
 }
 
-// Aceita o link completo do totem (…/totem?c=CÓDIGO) ou só o código.
+// Aceita o link completo (…/totem?c=CÓDIGO ou …/filho?c=CÓDIGO) ou só o código.
 function extractCode(input: string) {
   const text = input.trim()
   try {
@@ -30,7 +31,7 @@ function Launcher() {
   const change = params.get('trocar') === '1'
   const parentalToken = params.get('p') ?? ''
   const [ready, setReady] = useState(false)
-  const [step, setStep] = useState<'choose' | 'panel'>('choose')
+  const [step, setStep] = useState<'choose' | 'panel' | 'child'>('choose')
   const [link, setLink] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [checking, setChecking] = useState(false)
@@ -49,6 +50,8 @@ function Launcher() {
     if (!change) {
       const mode = read(MODE_KEY)
       if (mode === 'app') return void router.replace('/pais')
+      const child = read(CHILD_KEY)
+      if (mode === 'filho' && child) return void router.replace(`/filho?c=${child}`)
       if (mode === 'totem' && read(CODE_KEY)) return void router.replace('/totem')
     }
     setReady(true)
@@ -80,6 +83,24 @@ function Launcher() {
     }
   }
 
+  async function saveChild(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    const code = extractCode(link)
+    if (!code) return setError('Cole o link que seus pais mandaram para você.')
+    setChecking(true)
+    try {
+      const res = await fetch(`/api/filho/info?c=${code}`, { cache: 'no-store' })
+      if (!res.ok) throw new Error()
+      localStorage.setItem(CHILD_KEY, code)
+      localStorage.setItem(MODE_KEY, 'filho')
+      router.replace(`/filho?c=${code}`)
+    } catch {
+      setError('Não encontramos esse link. Peça aos seus pais para copiar de novo, em Crianças.')
+      setChecking(false)
+    }
+  }
+
   if (!ready) return null
 
   const card =
@@ -104,7 +125,35 @@ function Launcher() {
               <div className="text-2xl font-bold text-ink">🖥️ Usar como painel</div>
               <p className="text-ink-muted mt-1">Para o tablet das crianças: elas marcam as tarefas e pedem prêmios.</p>
             </button>
+            <button onClick={() => { setLink(''); setError(null); setStep('child') }} className={`${card} border-brand`}>
+              <div className="text-2xl font-bold text-ink">🧒 Sou criança</div>
+              <p className="text-ink-muted mt-1">Tenho o link que meus pais me mandaram: vejo minhas tarefas neste aparelho.</p>
+            </button>
           </div>
+        ) : step === 'child' ? (
+          <form onSubmit={saveChild} className="bg-surface-raised p-6 rounded-[32px] border-2 border-line space-y-4">
+            <h2 className="text-xl font-bold text-ink">Meu link</h2>
+            <p className="text-sm text-ink-muted">
+              Cole aqui o link que seus pais mandaram para você (o que tem <strong>/filho</strong> no meio).
+            </p>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://…/filho?c=…"
+              autoFocus
+              className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none"
+            />
+            {error && <p className="text-sm text-returned-fg">{error}</p>}
+            <button
+              disabled={checking}
+              className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover disabled:opacity-60"
+            >
+              {checking ? 'Verificando...' : 'Começar'}
+            </button>
+            <button type="button" onClick={() => { setError(null); setStep('choose') }} className="w-full text-sm font-bold text-ink">
+              Voltar
+            </button>
+          </form>
         ) : (
           <form onSubmit={savePanel} className="bg-surface-raised p-6 rounded-[32px] border-2 border-line space-y-4">
             <h2 className="text-xl font-bold text-ink">Link do totem</h2>
