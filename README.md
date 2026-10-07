@@ -25,7 +25,13 @@ VAPID_PUBLIC_KEY=...        # npx web-push generate-vapid-keys
 VAPID_PRIVATE_KEY=...
 VAPID_SUBJECT=mailto:voce@exemplo.com
 CRON_SECRET=...             # protege /api/cron/lembretes
+
+# Painel admin do dono do produto (/admin): e-mails autorizados, separados por vírgula
+ADMIN_EMAILS=voce@exemplo.com
 ```
+
+**Painel admin:** rode `db/migrations/005_assinaturas.sql` e defina `ADMIN_EMAILS`. Quem não estiver na lista recebe 404 em `/admin`.
+A tabela `subscriptions` deve ser alimentada pelos webhooks do gateway de pagamento (ainda não integrado).
 
 **Lembretes de horário:** chame `GET /api/cron/lembretes` com `Authorization: Bearer $CRON_SECRET` a cada ~5 minutos
 (Vercel Cron em plano Pro, ou qualquer agendador externo). Ele avisa a criança das tarefas cujo horário chegou,

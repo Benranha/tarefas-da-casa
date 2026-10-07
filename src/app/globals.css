@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./tarefinha.css";
+@import "./admin.css";
 
 /* Tokens da identidade Tarefinha (design system). Tema escuro só no painel dos pais: data-theme="dark". */
 :root {
