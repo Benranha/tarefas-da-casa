@@ -129,3 +129,18 @@ ALTER TABLE families
     ADD COLUMN IF NOT EXISTS parental_pin_hash TEXT,
     ADD COLUMN IF NOT EXISTS parental_attempts INTEGER NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS parental_locked_until TIMESTAMPTZ;
+
+-- Versão 5: assinaturas para o painel admin (db/migrations/005_assinaturas.sql).
+CREATE TABLE IF NOT EXISTS subscriptions (
+    family_id UUID PRIMARY KEY REFERENCES families(owner_id) ON DELETE CASCADE,
+    status TEXT NOT NULL CHECK (status IN ('trialing','active','past_due','canceled','expired')),
+    plan_price_cents INTEGER NOT NULL DEFAULT 1990 CHECK (plan_price_cents >= 0),
+    current_period_end TIMESTAMPTZ,
+    canceled_at TIMESTAMPTZ,
+    last_payment_failed_at TIMESTAMPTZ,
+    provider_customer_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS subscriptions_status_idx ON subscriptions (status);
+CREATE INDEX IF NOT EXISTS task_instances_approved_at_idx ON task_instances (approved_at) WHERE status = 'approved';
