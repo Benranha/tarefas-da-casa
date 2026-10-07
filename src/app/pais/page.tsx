@@ -9,6 +9,7 @@ export default function ParentsDashboard() {
   const [today, setToday] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totemUrl, setTotemUrl] = useState('');
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -16,7 +17,11 @@ export default function ParentsDashboard() {
   useEffect(() => {
     fetch('/api/pais/family')
       .then((r) => (r.ok ? r.json() : null))
-      .then((f) => f && setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`));
+      .then((f) => {
+        if (!f) return;
+        setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`);
+        setTrialDaysLeft(f.trialDaysLeft ?? null);
+      });
   }, []);
 
   async function copyTotemUrl() {
@@ -83,6 +88,14 @@ export default function ParentsDashboard() {
           {pendingTasks.length === 0 ? 'Nada pendente' : `${pendingTasks.length} aguardando você`}
         </div>
       </div>
+
+      {trialDaysLeft !== null && (
+        <div className="order-1 md:order-1 tf-card !bg-sun-soft !py-3 !px-5 font-extrabold text-[15px] text-ink">
+          {trialDaysLeft > 0
+            ? `Teste grátis: ${trialDaysLeft} ${trialDaysLeft === 1 ? 'dia restante' : 'dias restantes'} dos 30 dias.`
+            : 'Seu teste grátis de 30 dias terminou.'}
+        </div>
+      )}
 
       {totemUrl && (
         <div className="order-4 md:order-2 tf-card flex items-center gap-3 !bg-sun-soft !py-3 !pr-3 !pl-5">

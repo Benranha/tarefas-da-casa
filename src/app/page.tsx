@@ -257,10 +257,10 @@ export default async function Home() {
         <TfIcon name="festa" size={96} style={{ ['--ic-b' as string]: '#ffc93c', ['--ic-k' as string]: '#8a2e06' }} />
         <h2 className="font-display font-bold text-[40px] md:text-[56px] leading-[1.05] text-balance">Bora começar hoje?</h2>
         <p className="max-w-[560px] text-[19px] font-bold leading-normal">
-          Grátis durante a fase de teste. Abra no navegador e toque em “Instalar app” — sem loja.
+          Teste grátis por 30 dias, sem cartão. Abra no navegador e toque em “Instalar app” — sem loja.
         </p>
         <Link href="/cadastro" className={CTA_SUN}>
-          Criar conta grátis
+          Começar 30 dias grátis
         </Link>
         <Link href="/login" className="font-extrabold underline underline-offset-4">
           Já tenho conta
