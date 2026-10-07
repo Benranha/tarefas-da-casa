@@ -55,6 +55,11 @@ export default function PushToggle({
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(key),
+      }).catch(() => {
+        // O navegador recusou cadastrar o aparelho no serviço de push (mensagem dele vem em inglês).
+        throw new Error(
+          'Seu navegador não conseguiu ativar as notificações. No Brave, ligue "Use Google services for push messaging" em brave://settings/privacy e reinicie; ou tente em outro navegador (Chrome).',
+        )
       })
       const res = await fetch(endpoint, {
         method: 'POST',
