@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, Moon, Undo2 } from 'lucide-react'
@@ -55,6 +56,9 @@ function Filho() {
           localStorage.removeItem(tokenKey(code))
         } catch {}
         setToken(null)
+        // O código pode ter sido redefinido pelos pais: confere de novo se precisa criar um novo.
+        const fresh = await fetch(`/api/filho/info?c=${code}`, { cache: 'no-store' }).catch(() => null)
+        if (fresh?.ok) setInfo(await fresh.json())
         setState('pin')
         return
       }
@@ -147,6 +151,7 @@ function Filho() {
         <p className="mt-32 text-xl text-center text-ink max-w-sm">
           Este link não funciona (ou foi desativado). Peça aos pais para mandar o link da sua tela de novo.
         </p>
+        <Link href="/abrir?trocar=1" className="tf-btn tf-btn--secondary mt-6">Trocar de modo</Link>
       </Screen>
     )
   }

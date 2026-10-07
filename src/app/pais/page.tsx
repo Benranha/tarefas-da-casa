@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 
+// Tarefas com aprovar/devolver em andamento: um segundo toque (ou clique) não manda de novo.
+const inFlight = new Set<string>();
+
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
   const [today, setToday] = useState<any[]>([]);
@@ -55,25 +58,28 @@ export default function ParentsDashboard() {
   }
 
   async function handleApprove(instanceId: string) {
-    const res = await fetch(`/api/pais/instances/${instanceId}/approve`, { method: 'POST' });
-    if (!res.ok) {
-      alert('Erro ao aprovar tarefa');
-    }
+    if (inFlight.has(instanceId)) return;
+    inFlight.add(instanceId);
+    const res = await fetch(`/api/pais/instances/${instanceId}/approve`, { method: 'POST' }).catch(() => null);
+    // 409: já foi tratada (outro toque ou outro aparelho). Só atualiza a lista.
+    if (!res || (!res.ok && res.status !== 409)) alert('Erro ao aprovar tarefa');
     await fetchPendingTasks();
+    inFlight.delete(instanceId);
   }
 
   async function handleReject(instanceId: string) {
+    if (inFlight.has(instanceId)) return;
+    inFlight.add(instanceId);
     const res = await fetch(`/api/pais/instances/${instanceId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ note }),
-    });
-    if (!res.ok) {
-      alert('Erro ao devolver tarefa');
-    }
+    }).catch(() => null);
+    if (!res || (!res.ok && res.status !== 409)) alert('Erro ao devolver tarefa');
     setRejectingId(null);
     setNote('');
     await fetchPendingTasks();
+    inFlight.delete(instanceId);
   }
 
   if (loading && pendingTasks.length === 0) {
