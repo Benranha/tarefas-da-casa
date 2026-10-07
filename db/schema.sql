@@ -6,7 +6,9 @@
 CREATE TABLE families (
     owner_id UUID PRIMARY KEY REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
     totem_code TEXT NOT NULL UNIQUE DEFAULT replace(gen_random_uuid()::text, '-', ''),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    -- Teste grátis de 30 dias (migração 004).
+    trial_ends_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '30 days')
 );
 
 CREATE TABLE children (

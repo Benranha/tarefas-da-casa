@@ -23,12 +23,17 @@ export async function GET() {
       WHERE family_owner_id = ${family.ownerId}::uuid AND used_at IS NULL AND expires_at > now()
       ORDER BY created_at DESC
     `,
-    sql`SELECT (parental_pin_hash IS NOT NULL) AS has FROM families WHERE owner_id = ${family.ownerId}::uuid`,
+    sql`
+      SELECT (parental_pin_hash IS NOT NULL) AS has, trial_ends_at,
+             GREATEST(0, CEIL(EXTRACT(EPOCH FROM (trial_ends_at - now())) / 86400))::int AS trial_days_left
+      FROM families WHERE owner_id = ${family.ownerId}::uuid`,
   ])
   return NextResponse.json({
     totemCode: family.totemCode,
     me: family.userId,
     hasParentalCode: Boolean(parental[0]?.has),
+    trialEndsAt: parental[0]?.trial_ends_at,
+    trialDaysLeft: parental[0]?.trial_days_left,
     members,
     invites,
   })
