@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
                  t.recurrence = 'daily'
                  OR (t.recurrence = 'weekly'
                      AND lower(to_char(now() at time zone 'America/Manaus', 'Dy')) = ANY (t.recurrence_days))
+                 OR EXISTS (
+                   SELECT 1 FROM task_instances t0
+                   WHERE t0.task_id = t.id AND t0.child_id = c.id
+                     AND t0.date = (now() at time zone 'America/Manaus')::date
+                 )
                )
                AND NOT EXISTS (
                  SELECT 1 FROM task_instances ti
@@ -37,6 +42,11 @@ export async function GET(request: NextRequest) {
                  t.recurrence = 'daily'
                  OR (t.recurrence = 'weekly'
                      AND lower(to_char(now() at time zone 'America/Manaus', 'Dy')) = ANY (t.recurrence_days))
+                 OR EXISTS (
+                   SELECT 1 FROM task_instances t0
+                   WHERE t0.task_id = t.id AND t0.child_id = c.id
+                     AND t0.date = (now() at time zone 'America/Manaus')::date
+                 )
                )
            )::int AS tasks_today
     FROM children c JOIN families f ON f.owner_id = c.owner_id

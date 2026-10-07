@@ -12,6 +12,7 @@ type Task = {
   icon: string
   points: number
   due_time: string | null
+  recurrence: 'daily' | 'weekly' | 'none' | null
   child_name: string
   assigned_child_id: string
 }
@@ -29,6 +30,7 @@ export default function TasksPage() {
   const [childId, setChildId] = useState('')
   const [description, setDescription] = useState('')
   const [dueTime, setDueTime] = useState('')
+  const [once, setOnce] = useState(false) // true = tarefa avulsa, só de hoje
   const [editing, setEditing] = useState<string | null>(null)
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const [editTime, setEditTime] = useState('')
@@ -57,7 +59,7 @@ export default function TasksPage() {
     const res = await fetch('/api/pais/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, icon, points, childId, description, dueTime }),
+      body: JSON.stringify({ title, icon, points, childId, description, dueTime, recurrence: once ? 'none' : 'daily' }),
     })
     setSaving(false)
     if (res.ok) {
@@ -174,8 +176,29 @@ export default function TasksPage() {
               {window_for(children, childId)!.bed_time}. O horário da tarefa fica entre os dois (opcional).
             </p>
           )}
+          <div role="radiogroup" aria-label="Tipo de tarefa" className="grid grid-cols-2 gap-2">
+            {([
+              [false, 'Diária', 'Todos os dias'],
+              [true, 'Só hoje', 'Avulsa: não repete amanhã'],
+            ] as const).map(([value, label, hint]) => (
+              <button
+                key={label}
+                type="button"
+                role="radio"
+                aria-checked={once === value}
+                onClick={() => setOnce(value)}
+                className={`p-3 rounded-2xl border-2 text-left ${once === value ? 'border-brand bg-surface-sunken' : 'border-line'}`}
+              >
+                <span className="block font-extrabold text-ink">{label}</span>
+                <span className="block text-sm text-ink-muted">{hint}</span>
+              </button>
+            ))}
+          </div>
           <p className="text-sm text-ink-muted flex items-center gap-1">
-            <Calendar size={14} /> A tarefa aparece todos os dias, no totem e no aparelho da criança.
+            <Calendar size={14} />{' '}
+            {once
+              ? 'A tarefa aparece só hoje, no totem e no aparelho da criança, e não volta amanhã.'
+              : 'A tarefa aparece todos os dias, no totem e no aparelho da criança.'}
           </p>
           <button
             disabled={saving}
@@ -200,6 +223,9 @@ export default function TasksPage() {
                 <span className="col-start-2 col-span-2 row-start-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 md:contents">
                   {t.due_time && (
                     <span className="flex items-center gap-1 text-sm font-bold text-ink-muted"><AlarmClock size={14} /> {t.due_time}</span>
+                  )}
+                  {t.recurrence === 'none' && (
+                    <span className="px-3 py-1 bg-sun-soft text-ink rounded-full text-xs font-bold whitespace-nowrap">Só hoje</span>
                   )}
                   <span className="px-3 py-1 bg-brand-soft text-brand-ink rounded-full text-xs font-bold whitespace-nowrap">{t.child_name}</span>
                   <span className="font-bold text-ink whitespace-nowrap">{t.points} pts</span>
