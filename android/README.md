@@ -7,10 +7,10 @@ Você instala direto no tablet/TV.
 - Node 18+ e JDK 17. O Bubblewrap baixa o Android SDK sozinho na primeira vez.
 
 ## Passo a passo
-1. Troque `tarefas-da-casa-three.vercel.app` em `twa-manifest.json` pelo domínio do deploy.
+1. O `twa-manifest.json` já aponta para `tarefinha.app.br`. Se o domínio mudar, troque o `host` e as URLs.
 2. Na pasta `android/`:
    ```bash
-   npx @bubblewrap/cli init --manifest=https://tarefas-da-casa-three.vercel.app/manifest.json
+   npx @bubblewrap/cli init --manifest=https://tarefinha.app.br/manifest.json
    # (ou use o twa-manifest.json daqui: npx @bubblewrap/cli build)
    npx @bubblewrap/cli build
    ```
