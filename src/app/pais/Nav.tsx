@@ -2,7 +2,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp } from 'lucide-react';
+import Tutorial, { tutorialSeen } from './Tutorial';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
@@ -42,6 +43,13 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [dark, setDark] = useState(false);
   const [pending, setPending] = useState(0);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  // Primeiro acesso neste aparelho: mostra o tutorial.
+  useEffect(() => {
+    const t = setTimeout(() => { if (!tutorialSeen()) setTourOpen(true); }, 0);
+    return () => clearTimeout(t);
+  }, []);
 
   // Contagem da Fila: busca ao montar/trocar de rota e acompanha o que a própria Fila avisa.
   useEffect(() => {
@@ -103,7 +111,11 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
           <span>{item.name}</span>
         </Link>
       ))}
-      <button type="button" onClick={toggleTheme} className="tf-nav__item tf-nav__spacer">
+      <button type="button" onClick={() => setTourOpen(true)} className="tf-nav__item tf-nav__spacer">
+        <CircleHelp size={20} />
+        <span>Tutorial</span>
+      </button>
+      <button type="button" onClick={toggleTheme} className="tf-nav__item">
         <Moon size={20} />
         <span>Tema</span>
       </button>
@@ -151,6 +163,10 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
               <ChevronRight size={20} className="text-line-strong" />
             </Link>
           ))}
+          <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
+            <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
+            <span className="tf-sheet__label">Tutorial</span>
+          </button>
           <button type="button" onClick={toggleTheme} role="switch" aria-checked={dark} className="tf-sheet__row">
             <span className="tf-sheet__icon"><Moon size={22} /></span>
             <span className="tf-sheet__label">Tema escuro</span>
@@ -174,6 +190,7 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
         </div>
       </div>
     )}
+    {tourOpen && <Tutorial onClose={() => setTourOpen(false)} />}
     </>
   );
 }
