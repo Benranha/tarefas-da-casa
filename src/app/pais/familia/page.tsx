@@ -129,6 +129,9 @@ export default function FamilyPage() {
           <h2 className="font-display text-2xl font-semibold text-ink flex items-center gap-2">
             <Link2 size={24} /> Link do totem (tablet das crianças)
           </h2>
+          <p className="text-ink-muted">
+            Você também pode abrir esse link direto no navegador, se preferir. Seus filhos precisarão do código parental para abrir a tela dos pais.
+          </p>
           <div className="flex flex-col md:flex-row md:items-center gap-3">
             <p className="flex-1 min-w-0 text-sm text-ink-muted truncate">{totemUrl}</p>
             <button onClick={() => copy('totem', totemUrl)} className="tf-btn tf-btn--primary">
