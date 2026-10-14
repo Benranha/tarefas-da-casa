@@ -9,7 +9,7 @@ export async function GET() {
   const family = await getFamily()
   if (!family) return unauthorized()
   const rows = await sql`
-    SELECT id, name, avatar, color, points, has_device, invite_code,
+    SELECT id, name, avatar, color, points, has_device, invite_code, invite_email, invite_sent_at,
            (pin_hash IS NOT NULL) AS has_pin,
            to_char(wake_time, 'HH24:MI') AS wake_time, to_char(bed_time, 'HH24:MI') AS bed_time
     FROM children
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const rows = await sql`
     INSERT INTO children (owner_id, name, avatar, color, wake_time, bed_time, has_device)
     VALUES (${family.ownerId}::uuid, ${name}, ${avatar || '🧒'}, ${color}, ${wake}::time, ${bed}::time, ${hasDevice})
-    RETURNING id, name, avatar, color, points, has_device, invite_code,
+    RETURNING id, name, avatar, color, points, has_device, invite_code, invite_email, invite_sent_at,
               false AS has_pin,
               to_char(wake_time, 'HH24:MI') AS wake_time, to_char(bed_time, 'HH24:MI') AS bed_time
   `

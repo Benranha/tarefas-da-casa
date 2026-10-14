@@ -144,3 +144,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 );
 CREATE INDEX IF NOT EXISTS subscriptions_status_idx ON subscriptions (status);
 CREATE INDEX IF NOT EXISTS task_instances_approved_at_idx ON task_instances (approved_at) WHERE status = 'approved';
+
+-- Versão 6: e-mail da criança para enviar o link dela (db/migrations/006_email_link_crianca.sql).
+ALTER TABLE children
+    ADD COLUMN IF NOT EXISTS invite_email TEXT,
+    ADD COLUMN IF NOT EXISTS invite_sent_at TIMESTAMPTZ;

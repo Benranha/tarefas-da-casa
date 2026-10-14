@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Copy, KeyRound, ListChecks, Moon, Plus, Smartphone, Sun, Trash2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
+import EnviarLink from './EnviarLink'
 
 const AVATARS = TF_GROUPS.avatares
 const COLORS = ['#2F5BEA', '#C8266B', '#3F7D20', '#9A5B06', '#7A3FE0', '#0B7A85', '#C8362B']
@@ -17,6 +18,8 @@ type Child = {
   has_device: boolean
   has_pin: boolean
   invite_code: string
+  invite_email: string | null
+  invite_sent_at: string | null
   wake_time: string
   bed_time: string
 }
@@ -224,6 +227,8 @@ export default function ChildrenPage() {
                   <button onClick={() => copyLink(c)} className="tf-btn tf-btn--primary !min-h-10">
                     <Copy size={16} /> {copied === c.id ? 'Copiado!' : 'Copiar link da criança'}
                   </button>
+                  <hr className="border-line" />
+                  <EnviarLink childId={c.id} name={c.name} savedEmail={c.invite_email} sentAt={c.invite_sent_at} onSent={load} />
                 </div>
               )}
 
