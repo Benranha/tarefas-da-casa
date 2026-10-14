@@ -2,6 +2,9 @@
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
 
+// Handler de fetch (só repassa à rede): exigido por navegadores Android mais antigos para oferecer a instalação do app.
+self.addEventListener('fetch', () => {})
+
 self.addEventListener('push', (event) => {
   let data = {}
   try {
