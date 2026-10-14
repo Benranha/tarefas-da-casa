@@ -2,8 +2,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion } from 'lucide-react';
 import Tutorial, { tutorialSeen } from './Tutorial';
+import Ajuda from './Ajuda';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
@@ -44,6 +45,7 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
   const [dark, setDark] = useState(false);
   const [pending, setPending] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Primeiro acesso neste aparelho: mostra o tutorial.
   useEffect(() => {
@@ -115,6 +117,10 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
         <CircleHelp size={20} />
         <span>Tutorial</span>
       </button>
+      <button type="button" onClick={() => setHelpOpen(true)} className="tf-nav__item">
+        <MessageCircleQuestion size={20} />
+        <span>Ajuda</span>
+      </button>
       <button type="button" onClick={toggleTheme} className="tf-nav__item">
         <Moon size={20} />
         <span>Tema</span>
@@ -167,6 +173,10 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
             <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
             <span className="tf-sheet__label">Tutorial</span>
           </button>
+          <button type="button" onClick={() => { closeSheet(); setHelpOpen(true); }} className="tf-sheet__row">
+            <span className="tf-sheet__icon"><MessageCircleQuestion size={22} /></span>
+            <span className="tf-sheet__label">Ajuda</span>
+          </button>
           <button type="button" onClick={toggleTheme} role="switch" aria-checked={dark} className="tf-sheet__row">
             <span className="tf-sheet__icon"><Moon size={22} /></span>
             <span className="tf-sheet__label">Tema escuro</span>
@@ -191,6 +201,7 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
       </div>
     )}
     {tourOpen && <Tutorial onClose={() => setTourOpen(false)} />}
+    {helpOpen && <Ajuda onClose={() => setHelpOpen(false)} />}
     </>
   );
 }
