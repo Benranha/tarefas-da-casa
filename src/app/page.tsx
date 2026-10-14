@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/server'
 import TfIcon from '@/components/TfIcon'
 import InstallButton from '@/components/landing/InstallButton'
+import IosInstallHint from '@/components/landing/IosInstallHint'
 
 export const dynamic = 'force-dynamic'
 
@@ -259,6 +260,7 @@ export default async function Home() {
         <p className="max-w-[560px] text-[19px] font-bold leading-normal">
           Teste grátis por 30 dias, sem cartão. Abra no navegador e toque em “Instalar app” — sem loja.
         </p>
+        <IosInstallHint />
         <Link href="/cadastro" className={CTA_SUN}>
           Começar 30 dias grátis
         </Link>
