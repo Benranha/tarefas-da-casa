@@ -137,7 +137,18 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
       <Link href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
         <Plus size={30} />
       </Link>
-      <PillTab href="/pais/tarefas" label="Tarefas" icon={ListChecks} pathname={pathname} />
+      <button
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        aria-label="Ajuda"
+        aria-haspopup="dialog"
+        aria-expanded={helpOpen}
+        className="tf-pill__item"
+        data-active={helpOpen || undefined}
+      >
+        <MessageCircleQuestion size={22} />
+        {helpOpen && <span>Ajuda</span>}
+      </button>
       <button
         type="button"
         onClick={openSheet}
@@ -172,10 +183,6 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
           <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
             <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
             <span className="tf-sheet__label">Tutorial</span>
-          </button>
-          <button type="button" onClick={() => { closeSheet(); setHelpOpen(true); }} className="tf-sheet__row">
-            <span className="tf-sheet__icon"><MessageCircleQuestion size={22} /></span>
-            <span className="tf-sheet__label">Ajuda</span>
           </button>
           <button type="button" onClick={toggleTheme} role="switch" aria-checked={dark} className="tf-sheet__row">
             <span className="tf-sheet__icon"><Moon size={22} /></span>
