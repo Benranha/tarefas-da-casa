@@ -2,9 +2,9 @@
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
-import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, Moon, Undo2 } from 'lucide-react'
+import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, LogOut, Moon, Undo2 } from 'lucide-react'
 import PinForm from '@/components/PinForm'
 import TfIcon from '@/components/TfIcon'
 import PushToggle from '@/components/PushToggle'
@@ -20,6 +20,8 @@ type Me = { id: string; name: string; avatar: string; color: string; points: num
 type Reward = { id: string; title: string; icon: string | null; cost_points: number }
 
 const tokenKey = (code: string) => `filhoToken:${code}`
+const MODE_KEY = 'tarefinhaMode'
+const CHILD_KEY = 'filhoCode'
 
 function readToken(code: string) {
   try {
@@ -34,6 +36,7 @@ function Screen({ children }: { children: React.ReactNode }) {
 }
 
 function Filho() {
+  const router = useRouter()
   const code = useSearchParams().get('c') ?? ''
   const valid = /^[0-9a-f]{32}$/i.test(code)
   const [info, setInfo] = useState<Info | null>(null)
@@ -44,6 +47,8 @@ function Filho() {
   const [view, setView] = useState<'tasks' | 'rewards'>('tasks')
   const [rewards, setRewards] = useState<Reward[]>([])
   const [message, setMessage] = useState<string | null>(null)
+  const [confirmExit, setConfirmExit] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const prevStatus = useRef<Map<string, string>>(new Map())
 
   const headers = useCallback((t: string): Record<string, string> => ({ 'x-child-token': t }), [])
@@ -118,6 +123,29 @@ function Filho() {
     return null
   }
 
+  // Sair deste aparelho: para de receber avisos aqui, esquece o acesso e volta para a escolha de modo.
+  async function leave() {
+    setLeaving(true)
+    if (token) {
+      try {
+        const sub = await (await navigator.serviceWorker?.getRegistration())?.pushManager.getSubscription()
+        if (sub) {
+          await fetch('/api/filho/push', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', ...headers(token) },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          })
+        }
+      } catch {}
+    }
+    try {
+      localStorage.removeItem(tokenKey(code))
+      localStorage.removeItem(CHILD_KEY)
+      if (localStorage.getItem(MODE_KEY) === 'filho') localStorage.removeItem(MODE_KEY)
+    } catch {}
+    router.replace('/abrir?trocar=1')
+  }
+
   async function markDone(id: string) {
     if (!token) return
     const res = await fetch(`/api/filho/tasks/${id}/done`, { method: 'POST', headers: headers(token) })
@@ -166,6 +194,9 @@ function Filho() {
         <span className="tf-child__avatar" style={{ ['--size' as string]: '110px' }}><TfIcon name={info.avatar} size={72} color={info.color} /></span>
         <h1 className="font-display text-3xl font-semibold text-ink text-center">Oi, {info.name}!</h1>
         <PinForm key={String(info.has_pin)} creating={!info.has_pin} onSubmit={submitPin} />
+        <button type="button" onClick={leave} disabled={leaving} className="font-bold text-ink-muted underline">
+          Não sou {info.name}. Sair
+        </button>
       </div>
     )
   }
@@ -266,6 +297,19 @@ function Filho() {
             <button onClick={openRewards} className="tf-btn tf-btn--primary"><Gift className="tf-icon" /> Prêmios</button>
           </div>
           {token && <PushToggle endpoint="/api/filho/push" headers={headers(token)} className="text-center" />}
+          <div className="flex flex-col items-center gap-3 pt-2">
+            {confirmExit ? (
+              <>
+                <p className="font-bold text-ink text-center">Sair deste aparelho? Para entrar de novo você vai precisar do link e do seu código.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => setConfirmExit(false)} disabled={leaving} className="tf-btn tf-btn--secondary">Ficar</button>
+                  <button onClick={leave} disabled={leaving} className="tf-btn tf-btn--return">Sim, sair</button>
+                </div>
+              </>
+            ) : (
+              <button onClick={() => setConfirmExit(true)} className="tf-btn tf-btn--secondary"><LogOut className="tf-icon" /> Sair</button>
+            )}
+          </div>
         </main>
       )}
     </div>
