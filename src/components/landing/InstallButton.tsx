@@ -8,6 +8,8 @@ export default function InstallButton({ className, children }: { className?: str
   const [evt, setEvt] = useState<InstallEvent | null>(null)
 
   useEffect(() => {
+    // O navegador só oferece a instalação se houver service worker; aqui na landing ninguém o registrava.
+    navigator.serviceWorker?.register('/sw.js').catch(() => {})
     const onPrompt = (e: Event) => {
       e.preventDefault()
       setEvt(e as InstallEvent)
