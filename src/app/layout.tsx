@@ -39,7 +39,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'AW-18511803494');`}
+gtag('config', 'AW-18511803494');
+
+// Event snippet for Submit lead form conversion page.
+// Chame gtag_report_conversion(url) ao clicar no link/botão escolhido.
+function gtag_report_conversion(url) {
+  var callback = function () {
+    if (typeof(url) != 'undefined') {
+      window.location = url;
+    }
+  };
+  gtag('event', 'conversion', {
+      'send_to': 'AW-18511803494/sZx9CJ_9-ZsdEObojvtE',
+      'value': 1.0,
+      'currency': 'BRL',
+      'event_callback': callback
+  });
+  return false;
+}`}
         </Script>
       </body>
     </html>
