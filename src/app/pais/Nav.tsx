@@ -16,6 +16,7 @@ const items = [
 ];
 
 const MORE = [
+  { name: 'Tarefas', href: '/pais/tarefas', icon: ListChecks },
   { name: 'Recompensas', href: '/pais/recompensas', icon: Gift },
   { name: 'Histórico', href: '/pais/historico', icon: History },
   { name: 'Família', href: '/pais/familia', icon: Users },
@@ -137,7 +138,9 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
       <Link href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
         <Plus size={30} />
       </Link>
-      <PillTab href="/pais/tarefas" label="Tarefas" icon={ListChecks} pathname={pathname} />
+      <button type="button" onClick={() => setHelpOpen(true)} aria-label="Ajuda" aria-haspopup="dialog" className="tf-pill__item">
+        <MessageCircleQuestion size={22} />
+      </button>
       <button
         type="button"
         onClick={openSheet}
@@ -172,10 +175,6 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
           <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
             <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
             <span className="tf-sheet__label">Tutorial</span>
-          </button>
-          <button type="button" onClick={() => { closeSheet(); setHelpOpen(true); }} className="tf-sheet__row">
-            <span className="tf-sheet__icon"><MessageCircleQuestion size={22} /></span>
-            <span className="tf-sheet__label">Ajuda</span>
           </button>
           <button type="button" onClick={toggleTheme} role="switch" aria-checked={dark} className="tf-sheet__row">
             <span className="tf-sheet__icon"><Moon size={22} /></span>
