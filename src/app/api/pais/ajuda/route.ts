@@ -5,7 +5,7 @@ import { AJUDA_SYSTEM_PROMPT } from '@/lib/ajuda'
 
 export const dynamic = 'force-dynamic'
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
 const MAX_MESSAGES = 10
 const MAX_CHARS = 500
 // Proteção simples da cota gratuita: por responsável, em memória (vale por instância do servidor).
@@ -60,16 +60,23 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: AJUDA_SYSTEM_PROMPT }] },
-        contents: msgs.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-        generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
-      }),
-      signal: AbortSignal.timeout(20_000),
-    })
+    const call = () =>
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: AJUDA_SYSTEM_PROMPT }] },
+          contents: msgs.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+          generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
+        }),
+        signal: AbortSignal.timeout(20_000),
+      })
+    let res = await call()
+    // O Gemini às vezes responde 503 por alta demanda: tenta mais uma vez.
+    if (res.status === 503) {
+      await new Promise((r) => setTimeout(r, 1000))
+      res = await call()
+    }
     if (res.status === 429) {
       return NextResponse.json({ error: 'A ajuda está muito procurada agora. Tente de novo daqui a pouco ou veja o Tutorial.' }, { status: 429 })
     }

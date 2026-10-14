@@ -28,7 +28,7 @@ CRON_SECRET=...             # protege /api/cron/lembretes
 
 # Ajuda por IA no painel dos pais (opcional; plano gratuito do Google AI Studio: aistudio.google.com/apikey)
 GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-2.5-flash   # opcional
+GEMINI_MODEL=gemini-3.5-flash-lite   # opcional
 
 # Painel admin do dono do produto (/admin): e-mails autorizados, separados por vírgula
 ADMIN_EMAILS=voce@exemplo.com
