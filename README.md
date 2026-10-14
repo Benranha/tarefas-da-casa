@@ -30,9 +30,16 @@ CRON_SECRET=...             # protege /api/cron/lembretes
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-3.5-flash-lite   # opcional
 
+# Envio do link da criança por e-mail (opcional; resend.com). RESEND_FROM precisa ser de um domínio verificado no Resend;
+# sem ele o Resend só entrega para o e-mail dono da conta.
+RESEND_API_KEY=...
+RESEND_FROM=Tarefinha <nao-responda@seudominio.com.br>
+
 # Painel admin do dono do produto (/admin): e-mails autorizados, separados por vírgula
 ADMIN_EMAILS=voce@exemplo.com
 ```
+
+**Link da criança por e-mail:** rode `db/migrations/006_email_link_crianca.sql` e defina `RESEND_API_KEY` e `RESEND_FROM`.
 
 **Painel admin:** rode `db/migrations/005_assinaturas.sql` e defina `ADMIN_EMAILS`. Quem não estiver na lista recebe 404 em `/admin`.
 A tabela `subscriptions` deve ser alimentada pelos webhooks do gateway de pagamento (ainda não integrado).
