@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { Copy, KeyRound, ListChecks, Moon, Plus, Smartphone, Sun, Trash2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
+import { KID_COLORS } from '@/lib/kid-options'
 import EnviarLink from './EnviarLink'
 
 const AVATARS = TF_GROUPS.avatares
-const COLORS = ['#2F5BEA', '#C8266B', '#3F7D20', '#9A5B06', '#7A3FE0', '#0B7A85', '#C8362B']
+const COLORS = KID_COLORS
 
 type Child = {
   id: string

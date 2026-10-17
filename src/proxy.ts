@@ -6,5 +6,5 @@ export default auth.middleware({
 })
 
 export const config = {
-  matcher: ['/pais/:path*', '/admin/:path*'],
+  matcher: ['/pais/:path*', '/admin/:path*', '/onboarding/:path*'],
 }
