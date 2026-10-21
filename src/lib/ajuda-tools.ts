@@ -1,4 +1,4 @@
-import { approveInstance, listAwaitingApproval } from '@/lib/instances'
+import { approveInstance, listAwaitingApproval, rejectInstance } from '@/lib/instances'
 import { UUID } from '@/lib/http'
 import { checkTask, createTask, listChildren, listTasks, type TaskInput } from '@/lib/tarefas'
 
@@ -34,6 +34,20 @@ export const AJUDA_TOOLS = [
             titulo: { type: 'STRING', description: 'Título da tarefa, como em listar_fila (pode ser parte do título).' },
           },
           required: ['crianca', 'titulo'],
+        },
+      },
+      {
+        name: 'devolver_tarefa',
+        description:
+          'Propõe devolver uma tarefa da Fila para a criança tentar de novo, com um recado curto e gentil para ela. Só é devolvida depois que o responsável confirmar na tela; não diga que já foi devolvida.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            crianca: { type: 'STRING', description: 'Nome da criança, como em listar_fila.' },
+            titulo: { type: 'STRING', description: 'Título da tarefa, como em listar_fila (pode ser parte do título).' },
+            recado: { type: 'STRING', description: 'Recado curto para a criança (até 300 caracteres), dito pelo responsável, por exemplo o que falta fazer.' },
+          },
+          required: ['crianca', 'titulo', 'recado'],
         },
       },
       {
@@ -80,6 +94,24 @@ type ToolDef =
 
 const norm = (s: string) => s.trim().toLocaleLowerCase('pt-BR')
 
+// Acha uma tarefa da Fila por criança + título (parte do título serve). Erros ensinam a IA a se corrigir.
+async function findInFila(ownerId: string, args: Record<string, unknown>) {
+  const kid = typeof args.crianca === 'string' ? norm(args.crianca) : ''
+  const title = typeof args.titulo === 'string' ? norm(args.titulo) : ''
+  if (!kid || !title) return { ok: false as const, error: 'Informe a criança e a tarefa.' }
+
+  const fila = await listAwaitingApproval(ownerId)
+  const matches = fila.filter((i) => norm(i.child_name as string) === kid && norm(i.title as string).includes(title))
+  if (matches.length === 0) {
+    const lista = fila.map((i) => `${i.child_name}: ${i.title}`).join('; ')
+    return { ok: false as const, error: `Nada na Fila combina com isso. Na Fila agora: ${lista || 'nada'}.` }
+  }
+  if (matches.length > 1) {
+    return { ok: false as const, error: `Mais de uma tarefa combina: ${matches.map((i) => i.title).join('; ')}. Peça o título completo.` }
+  }
+  return { ok: true as const, item: matches[0] }
+}
+
 const TOOLS: Record<string, ToolDef> = {
   listar_criancas: {
     confirm: false,
@@ -106,20 +138,9 @@ const TOOLS: Record<string, ToolDef> = {
   aprovar_tarefa: {
     confirm: true,
     prepare: async (ownerId, args) => {
-      const kid = typeof args.crianca === 'string' ? norm(args.crianca) : ''
-      const title = typeof args.titulo === 'string' ? norm(args.titulo) : ''
-      if (!kid || !title) return { ok: false, error: 'Informe a criança e a tarefa.' }
-
-      const fila = await listAwaitingApproval(ownerId)
-      const matches = fila.filter((i) => norm(i.child_name as string) === kid && norm(i.title as string).includes(title))
-      if (matches.length === 0) {
-        const lista = fila.map((i) => `${i.child_name}: ${i.title}`).join('; ')
-        return { ok: false, error: `Nada na Fila combina com isso. Na Fila agora: ${lista || 'nada'}.` }
-      }
-      if (matches.length > 1) {
-        return { ok: false, error: `Mais de uma tarefa combina: ${matches.map((i) => i.title).join('; ')}. Peça o título completo.` }
-      }
-      const item = matches[0]
+      const found = await findInFila(ownerId, args)
+      if (!found.ok) return found
+      const item = found.item
       return {
         ok: true,
         args: { instanceId: item.id as string },
@@ -132,6 +153,29 @@ const TOOLS: Record<string, ToolDef> = {
       const done = await approveInstance(ownerId, userId, id)
       if (!done) return { ok: false, status: 400, error: 'Essa tarefa não pode ser aprovada agora (talvez já tenha sido aprovada).' }
       return { ok: true, message: `Aprovada! "${done.title}" de ${done.childName} rendeu +${done.points} pontos.` }
+    },
+  },
+  devolver_tarefa: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const found = await findInFila(ownerId, args)
+      if (!found.ok) return found
+      const note = typeof args.recado === 'string' ? args.recado.trim().slice(0, 300) : ''
+      if (!note) return { ok: false, error: 'Informe o recado para a criança.' }
+      const item = found.item
+      return {
+        ok: true,
+        args: { instanceId: item.id as string, note },
+        resumo: `Devolver "${item.title}" para ${item.child_name} com o recado: "${note}"`,
+      }
+    },
+    commit: async (ownerId, _userId, a) => {
+      const id = typeof a.instanceId === 'string' ? a.instanceId : ''
+      if (!UUID.test(id)) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const note = typeof a.note === 'string' && a.note.trim() ? a.note.trim().slice(0, 300) : 'Tarefa precisa de melhorias'
+      const done = await rejectInstance(ownerId, id, note)
+      if (!done) return { ok: false, status: 400, error: 'Essa tarefa não está mais aguardando aprovação.' }
+      return { ok: true, message: `Devolvi "${done.title}" para ${done.childName} com o seu recado.` }
     },
   },
   criar_tarefa: {

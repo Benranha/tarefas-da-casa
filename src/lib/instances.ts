@@ -82,3 +82,27 @@ export async function approveInstance(ownerId: string, userId: string, id: strin
   )
   return { childName: name, title, points }
 }
+
+// Devolve para a criança tentar de novo, com um recado (aparece para ela e no push).
+export async function rejectInstance(ownerId: string, id: string, note: string) {
+  const rows = await sql`
+    UPDATE task_instances ti
+    SET status = 'pending', parent_note = ${note}, completed_at = NULL
+    FROM children c, tasks t
+    WHERE ti.id = ${id}::uuid AND c.id = ti.child_id AND t.id = ti.task_id
+      AND c.owner_id = ${ownerId}::uuid
+      AND ti.status = 'awaiting_approval'
+    RETURNING ti.child_id, c.name, t.title
+  `
+  if (rows.length === 0) return null
+  const { child_id: childId, name, title } = rows[0] as { child_id: string; name: string; title: string }
+  after(() =>
+    notifyChild(childId, {
+      title: 'Os papais devolveram uma tarefa',
+      body: `${title}: ${note}`,
+      url: '/filho',
+      tag: `returned-${id}`,
+    }),
+  )
+  return { childName: name, title }
+}
