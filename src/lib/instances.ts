@@ -106,3 +106,32 @@ export async function rejectInstance(ownerId: string, id: string, note: string) 
   )
   return { childName: name, title }
 }
+
+// Tarefas de hoje que ainda estão pendentes (a criança não marcou como feita), da própria família.
+export async function listTodayPending(ownerId: string) {
+  await ensureTodayInstances({ ownerId })
+  return sql`
+    SELECT ti.id, c.name AS child_name, t.title, t.points
+    FROM task_instances ti
+    JOIN tasks t ON t.id = ti.task_id
+    JOIN children c ON c.id = ti.child_id
+    WHERE c.owner_id = ${ownerId}::uuid AND ti.status = 'pending'
+      AND ti.date = (now() at time zone 'America/Manaus')::date
+    ORDER BY c.created_at, t.created_at
+  `
+}
+
+// Os pais marcam a tarefa como feita pela criança: vai para a Fila (aguardando aprovação), sem somar pontos.
+export async function markInstanceDone(ownerId: string, id: string) {
+  const rows = await sql`
+    UPDATE task_instances ti
+    SET status = 'awaiting_approval', completed_at = now(), parent_note = NULL
+    FROM children c, tasks t
+    WHERE ti.id = ${id}::uuid AND c.id = ti.child_id AND t.id = ti.task_id
+      AND c.owner_id = ${ownerId}::uuid
+      AND ti.status = 'pending'
+    RETURNING c.name, t.title
+  `
+  if (rows.length === 0) return null
+  return { childName: rows[0].name as string, title: rows[0].title as string }
+}
