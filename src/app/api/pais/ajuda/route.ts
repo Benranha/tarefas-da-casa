@@ -5,8 +5,13 @@ import { AJUDA_SYSTEM_PROMPT } from '@/lib/ajuda'
 import { AJUDA_TOOLS, runTool, type Proposal } from '@/lib/ajuda-tools'
 
 export const dynamic = 'force-dynamic'
+// Cada pergunta pode ter até MAX_STEPS chamadas ao Gemini: dá folga para elas dentro do limite da função.
+export const maxDuration = 60
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+// Orçamento total por pergunta e teto por chamada ao Gemini (o plano gratuito às vezes demora).
+const DEADLINE_MS = 50_000
+const CALL_TIMEOUT_MS = 25_000
 const MAX_MESSAGES = 10
 const MAX_CHARS = 500
 // Quantas vezes a IA pode pedir ferramentas numa mesma pergunta.
@@ -67,8 +72,11 @@ export async function POST(request: NextRequest) {
     type Content = { role: string; parts: Part[] }
     const contents: Content[] = msgs.map((m) => ({ role: m.role, parts: [{ text: m.text }] }))
 
-    const call = () =>
-      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
+    const started = Date.now()
+    const call = () => {
+      const left = DEADLINE_MS - (Date.now() - started)
+      if (left < 3_000) throw new Error(`Tempo esgotado (${Date.now() - started}ms)`)
+      return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({
@@ -77,21 +85,25 @@ export async function POST(request: NextRequest) {
           tools: AJUDA_TOOLS,
           generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
         }),
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(Math.min(CALL_TIMEOUT_MS, left)),
       })
+    }
 
     let proposal: Proposal | undefined
     for (let step = 0; step < MAX_STEPS; step++) {
-      let res = await call()
-      // O Gemini às vezes responde 503 por alta demanda: tenta mais uma vez.
-      if (res.status === 503) {
+      // O Gemini às vezes responde 503 ou demora demais (alta demanda): tenta mais uma vez.
+      let res = await call().catch((e: unknown) => {
+        console.error(`ajuda: passo ${step + 1}, tentativa 1 falhou após ${Date.now() - started}ms:`, e instanceof Error ? e.message : e)
+        return null
+      })
+      if (!res || res.status === 503) {
         await new Promise((r) => setTimeout(r, 1000))
         res = await call()
       }
       if (res.status === 429) {
         return NextResponse.json({ error: 'A ajuda está muito procurada agora. Tente de novo daqui a pouco ou veja o Tutorial.' }, { status: 429 })
       }
-      if (!res.ok) throw new Error(`Gemini ${res.status}`)
+      if (!res.ok) throw new Error(`Gemini ${res.status} (${MODEL}) após ${Date.now() - started}ms`)
       const data = await res.json()
       const content: Content | undefined = data?.candidates?.[0]?.content
       const parts = content?.parts ?? []

@@ -54,7 +54,7 @@ export default function Ajuda({ onClose }: { onClose: () => void }) {
           {msgs.length === 1 && (
             <div className="flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => submit(s)} className="px-3 py-1.5 rounded-full border border-line bg-surface-raised text-sm font-bold">
+                <button key={s} type="button" onClick={() => submit(s)} className="px-3 py-1.5 rounded-full border border-line bg-surface-raised text-ink text-sm font-bold">
                   {s}
                 </button>
               ))}
