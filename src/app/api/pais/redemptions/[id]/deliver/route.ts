@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { sql } from '@/lib/db'
 import { getFamily } from '@/lib/auth/server'
 import { UUID, badRequest, unauthorized } from '@/lib/http'
+import { deliverRedemption } from '@/lib/recompensas'
 
 export async function POST(
   _request: Request,
@@ -12,16 +12,7 @@ export async function POST(
   const { id } = await params
   if (!UUID.test(id)) return badRequest()
 
-  const rows = await sql`
-    UPDATE reward_redemptions rr
-    SET status = 'delivered', resolved_at = now()
-    FROM children c
-    WHERE rr.id = ${id}::uuid AND c.id = rr.child_id
-      AND c.owner_id = ${family.ownerId}::uuid AND rr.status = 'requested'
-    RETURNING rr.id
-  `
-  if (rows.length === 0) {
-    return NextResponse.json({ error: 'Pedido não está aguardando' }, { status: 409 })
-  }
+  const delivered = await deliverRedemption(family.ownerId, id)
+  if (!delivered) return NextResponse.json({ error: 'Pedido não está aguardando' }, { status: 409 })
   return NextResponse.json({ ok: true })
 }

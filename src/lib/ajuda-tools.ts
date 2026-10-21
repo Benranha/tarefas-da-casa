@@ -1,4 +1,5 @@
-import { approveInstance, listAwaitingApproval, rejectInstance } from '@/lib/instances'
+import { approveInstance, listAwaitingApproval, listTodayPending, markInstanceDone, rejectInstance } from '@/lib/instances'
+import { deliverRedemption, listRequestedRedemptions } from '@/lib/recompensas'
 import { UUID } from '@/lib/http'
 import { checkTask, createTask, listChildren, listTasks, type TaskInput } from '@/lib/tarefas'
 
@@ -51,6 +52,40 @@ export const AJUDA_TOOLS = [
         },
       },
       {
+        name: 'listar_tarefas_de_hoje',
+        description: 'Lista as tarefas de hoje que ainda estão pendentes (a criança ainda não marcou como feita).',
+      },
+      {
+        name: 'marcar_tarefa_feita',
+        description:
+          'Propõe marcar como feita, pela criança, uma tarefa pendente de hoje. Ela vai para a Fila para aprovação (não soma pontos ainda). Só acontece depois que o responsável confirmar na tela.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            crianca: { type: 'STRING', description: 'Nome da criança, como em listar_tarefas_de_hoje.' },
+            titulo: { type: 'STRING', description: 'Título da tarefa, como em listar_tarefas_de_hoje (pode ser parte do título).' },
+          },
+          required: ['crianca', 'titulo'],
+        },
+      },
+      {
+        name: 'listar_pedidos_recompensa',
+        description: 'Lista os prêmios que as crianças pediram e esperam ser entregues.',
+      },
+      {
+        name: 'entregar_recompensa',
+        description:
+          'Propõe marcar como entregue um prêmio que a criança pediu. Só acontece depois que o responsável confirmar na tela.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            crianca: { type: 'STRING', description: 'Nome da criança, como em listar_pedidos_recompensa.' },
+            titulo: { type: 'STRING', description: 'Nome do prêmio, como em listar_pedidos_recompensa (pode ser parte do nome).' },
+          },
+          required: ['crianca', 'titulo'],
+        },
+      },
+      {
         name: 'criar_tarefa',
         description:
           'Propõe a criação de uma tarefa para uma criança. A tarefa só é criada depois que o responsável confirmar na tela; não diga que já foi criada.',
@@ -94,22 +129,30 @@ type ToolDef =
 
 const norm = (s: string) => s.trim().toLocaleLowerCase('pt-BR')
 
-// Acha uma tarefa da Fila por criança + título (parte do título serve). Erros ensinam a IA a se corrigir.
-async function findInFila(ownerId: string, args: Record<string, unknown>) {
+// Linhas do banco (id, child_name e title sempre presentes nas consultas usadas aqui).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Item = Record<string, any>
+
+// Acha um item por criança + título (parte do título serve). Erros ensinam a IA a se corrigir.
+// onde: onde a busca foi feita, ex.: "na Fila"; tipo: o que são os itens, ex.: "tarefa".
+function pickOne<T extends Item>(items: T[], args: Record<string, unknown>, onde: string, tipo: string) {
   const kid = typeof args.crianca === 'string' ? norm(args.crianca) : ''
   const title = typeof args.titulo === 'string' ? norm(args.titulo) : ''
-  if (!kid || !title) return { ok: false as const, error: 'Informe a criança e a tarefa.' }
+  if (!kid || !title) return { ok: false as const, error: `Informe a criança e ${tipo === 'tarefa' ? 'a tarefa' : 'o prêmio'}.` }
 
-  const fila = await listAwaitingApproval(ownerId)
-  const matches = fila.filter((i) => norm(i.child_name as string) === kid && norm(i.title as string).includes(title))
+  const matches = items.filter((i) => norm(i.child_name as string) === kid && norm(i.title as string).includes(title))
   if (matches.length === 0) {
-    const lista = fila.map((i) => `${i.child_name}: ${i.title}`).join('; ')
-    return { ok: false as const, error: `Nada na Fila combina com isso. Na Fila agora: ${lista || 'nada'}.` }
+    const lista = items.map((i) => `${i.child_name}: ${i.title}`).join('; ')
+    return { ok: false as const, error: `Nada ${onde} combina com isso. Agora ${onde}: ${lista || 'nada'}.` }
   }
   if (matches.length > 1) {
-    return { ok: false as const, error: `Mais de uma tarefa combina: ${matches.map((i) => i.title).join('; ')}. Peça o título completo.` }
+    return { ok: false as const, error: `Mais de um item combina: ${matches.map((i) => i.title).join('; ')}. Peça o título completo.` }
   }
   return { ok: true as const, item: matches[0] }
+}
+
+async function findInFila(ownerId: string, args: Record<string, unknown>) {
+  return pickOne(await listAwaitingApproval(ownerId), args, 'na Fila', 'tarefa')
 }
 
 const TOOLS: Record<string, ToolDef> = {
@@ -176,6 +219,58 @@ const TOOLS: Record<string, ToolDef> = {
       const done = await rejectInstance(ownerId, id, note)
       if (!done) return { ok: false, status: 400, error: 'Essa tarefa não está mais aguardando aprovação.' }
       return { ok: true, message: `Devolvi "${done.title}" para ${done.childName} com o seu recado.` }
+    },
+  },
+  listar_tarefas_de_hoje: {
+    confirm: false,
+    run: async (ownerId) => ({
+      pendentes: (await listTodayPending(ownerId)).map((i) => ({ crianca: i.child_name, titulo: i.title, pontos: i.points })),
+    }),
+  },
+  marcar_tarefa_feita: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const found = pickOne(await listTodayPending(ownerId), args, 'entre as pendentes de hoje', 'tarefa')
+      if (!found.ok) return found
+      const item = found.item
+      return {
+        ok: true,
+        args: { instanceId: item.id as string },
+        resumo: `Marcar "${item.title}" de ${item.child_name} como feita (vai para a Fila; os pontos só entram quando você aprovar).`,
+      }
+    },
+    commit: async (ownerId, _userId, a) => {
+      const id = typeof a.instanceId === 'string' ? a.instanceId : ''
+      if (!UUID.test(id)) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const done = await markInstanceDone(ownerId, id)
+      if (!done) return { ok: false, status: 400, error: 'Essa tarefa não está mais pendente.' }
+      return { ok: true, message: `Marquei "${done.title}" de ${done.childName} como feita. Ela está na Fila esperando a sua aprovação.` }
+    },
+  },
+  listar_pedidos_recompensa: {
+    confirm: false,
+    run: async (ownerId) => ({
+      pedidos: (await listRequestedRedemptions(ownerId)).map((r) => ({ crianca: r.child_name, premio: r.title, pontos: r.cost_points })),
+    }),
+  },
+  entregar_recompensa: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const found = pickOne(await listRequestedRedemptions(ownerId), args, 'entre os pedidos', 'prêmio')
+      if (!found.ok) return found
+      const item = found.item
+      return {
+        ok: true,
+        args: { redemptionId: item.id as string },
+        resumo: `Marcar como entregue: "${item.title}", pedido por ${item.child_name}.`,
+      }
+    },
+    commit: async (ownerId, _userId, a) => {
+      const id = typeof a.redemptionId === 'string' ? a.redemptionId : ''
+      if (!UUID.test(id)) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const done = await deliverRedemption(ownerId, id)
+      if (!done) return { ok: false, status: 400, error: 'Esse pedido não está mais aguardando.' }
+      return { ok: true, message: `Pronto! "${done.title}" marcado como entregue para ${done.childName}.` }
     },
   },
   criar_tarefa: {
