@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Send, X } from 'lucide-react';
 
-type Proposal = { tool: 'criar_tarefa'; args: Record<string, unknown>; resumo: string };
+type Proposal = { tool: string; args: Record<string, unknown>; resumo: string };
 type Msg = { role: 'user' | 'model'; text: string; proposal?: Proposal; settled?: boolean };
 
 const HELLO: Msg = {
