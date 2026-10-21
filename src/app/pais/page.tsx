@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
+import PromptBar from './PromptBar';
 
 // Tarefas com aprovar/devolver em andamento: um segundo toque (ou clique) não manda de novo.
 const inFlight = new Set<string>();
@@ -94,6 +95,8 @@ export default function ParentsDashboard() {
           {pendingTasks.length === 0 ? 'Nada pendente' : `${pendingTasks.length} aguardando você`}
         </div>
       </div>
+
+      <PromptBar onChanged={() => fetchPendingTasks(true)} />
 
       {trialDaysLeft !== null && (
         <div className="order-1 md:order-1 tf-card !bg-sun-soft !py-3 !px-5 font-extrabold text-[15px] text-ink">
