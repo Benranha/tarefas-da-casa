@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}))
   if (typeof body.tool !== 'string') return badRequest()
   const args = body.args && typeof body.args === 'object' && !Array.isArray(body.args) ? body.args : {}
-  const result = await commitTool(family.ownerId, body.tool, args)
+  const result = await commitTool(family.ownerId, family.userId, body.tool, args)
   if (!result) return badRequest()
   if (!result.ok) return result.status === 404 ? notFound() : badRequest(result.error)
   return NextResponse.json({ ok: true, message: result.message }, { status: 201 })

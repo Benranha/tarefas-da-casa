@@ -1,3 +1,5 @@
+import { approveInstance, listAwaitingApproval } from '@/lib/instances'
+import { UUID } from '@/lib/http'
 import { checkTask, createTask, listChildren, listTasks, type TaskInput } from '@/lib/tarefas'
 
 // Ferramentas que a IA de ajuda pode pedir ao servidor (function calling do Gemini).
@@ -16,6 +18,23 @@ export const AJUDA_TOOLS = [
       {
         name: 'listar_tarefas',
         description: 'Lista as tarefas ativas da família: título, criança, pontos e horário.',
+      },
+      {
+        name: 'listar_fila',
+        description: 'Lista as tarefas que as crianças marcaram como feitas e esperam aprovação (a Fila).',
+      },
+      {
+        name: 'aprovar_tarefa',
+        description:
+          'Propõe aprovar uma tarefa que está na Fila (soma os pontos para a criança). Só é aprovada depois que o responsável confirmar na tela; não diga que já foi aprovada.',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            crianca: { type: 'STRING', description: 'Nome da criança, como em listar_fila.' },
+            titulo: { type: 'STRING', description: 'Título da tarefa, como em listar_fila (pode ser parte do título).' },
+          },
+          required: ['crianca', 'titulo'],
+        },
       },
       {
         name: 'criar_tarefa',
@@ -56,7 +75,7 @@ type ToolDef =
         args: Record<string, unknown>,
       ) => Promise<{ ok: true; args: Record<string, unknown>; resumo: string } | { ok: false; error: string }>
       // Executa de verdade, só depois do clique, revalidando os dados que voltaram do navegador.
-      commit: (ownerId: string, args: Record<string, unknown>) => Promise<CommitResult>
+      commit: (ownerId: string, userId: string, args: Record<string, unknown>) => Promise<CommitResult>
     }
 
 const norm = (s: string) => s.trim().toLocaleLowerCase('pt-BR')
@@ -77,6 +96,43 @@ const TOOLS: Record<string, ToolDef> = {
         repete: t.recurrence !== 'none',
       })),
     }),
+  },
+  listar_fila: {
+    confirm: false,
+    run: async (ownerId) => ({
+      fila: (await listAwaitingApproval(ownerId)).map((i) => ({ crianca: i.child_name, titulo: i.title, pontos: i.points })),
+    }),
+  },
+  aprovar_tarefa: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const kid = typeof args.crianca === 'string' ? norm(args.crianca) : ''
+      const title = typeof args.titulo === 'string' ? norm(args.titulo) : ''
+      if (!kid || !title) return { ok: false, error: 'Informe a criança e a tarefa.' }
+
+      const fila = await listAwaitingApproval(ownerId)
+      const matches = fila.filter((i) => norm(i.child_name as string) === kid && norm(i.title as string).includes(title))
+      if (matches.length === 0) {
+        const lista = fila.map((i) => `${i.child_name}: ${i.title}`).join('; ')
+        return { ok: false, error: `Nada na Fila combina com isso. Na Fila agora: ${lista || 'nada'}.` }
+      }
+      if (matches.length > 1) {
+        return { ok: false, error: `Mais de uma tarefa combina: ${matches.map((i) => i.title).join('; ')}. Peça o título completo.` }
+      }
+      const item = matches[0]
+      return {
+        ok: true,
+        args: { instanceId: item.id as string },
+        resumo: `Aprovar "${item.title}" de ${item.child_name} (+${item.points} pontos).`,
+      }
+    },
+    commit: async (ownerId, userId, a) => {
+      const id = typeof a.instanceId === 'string' ? a.instanceId : ''
+      if (!UUID.test(id)) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const done = await approveInstance(ownerId, userId, id)
+      if (!done) return { ok: false, status: 400, error: 'Essa tarefa não pode ser aprovada agora (talvez já tenha sido aprovada).' }
+      return { ok: true, message: `Aprovada! "${done.title}" de ${done.childName} rendeu +${done.points} pontos.` }
+    },
   },
   criar_tarefa: {
     confirm: true,
@@ -105,7 +161,7 @@ const TOOLS: Record<string, ToolDef> = {
         resumo: `Criar "${title}" para ${check.childName}: ${points} pontos, ${quando}${hora}.`,
       }
     },
-    commit: async (ownerId, a) => {
+    commit: async (ownerId, _userId, a) => {
       const result = await createTask(ownerId, {
         title: typeof a.title === 'string' ? a.title.trim().slice(0, 80) : '',
         points: Number.isInteger(a.points) ? (a.points as number) : NaN,
@@ -135,8 +191,8 @@ export async function runTool(ownerId: string, name: string, args: Record<string
 }
 
 // Executa uma proposta depois do clique em Confirmar. Só ferramentas com confirm: true chegam aqui.
-export async function commitTool(ownerId: string, name: string, args: Record<string, unknown>): Promise<CommitResult | null> {
+export async function commitTool(ownerId: string, userId: string, name: string, args: Record<string, unknown>): Promise<CommitResult | null> {
   const tool = Object.hasOwn(TOOLS, name) ? TOOLS[name] : undefined
   if (!tool?.confirm) return null
-  return tool.commit(ownerId, args)
+  return tool.commit(ownerId, userId, args)
 }
