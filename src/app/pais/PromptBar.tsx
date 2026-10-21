@@ -24,7 +24,7 @@ export default function PromptBar({ onChanged }: { onChanged: () => void }) {
   }
 
   return (
-    <section aria-label="Peça ao Tarefinha" className="order-1 tf-card !p-3 md:!p-4 flex flex-col gap-3">
+    <section aria-label="Peça ao Tarefinha" className="order-1 tf-card text-ink !p-3 md:!p-4 flex flex-col gap-3">
       {msgs.length > 0 && (
         <div className="relative">
           <div className="max-h-72 overflow-y-auto space-y-3 pr-1">
@@ -59,7 +59,7 @@ export default function PromptBar({ onChanged }: { onChanged: () => void }) {
           maxLength={500}
           placeholder="Peça algo… ex.: crie “arrumar a cama” para a Ana, 10 pontos"
           aria-label="Peça ao Tarefinha"
-          className="flex-1 min-w-0 p-3 rounded-2xl border-2 border-line bg-surface focus:border-brand outline-none"
+          className="flex-1 min-w-0 p-3 rounded-2xl border-2 border-line bg-surface text-ink placeholder:text-ink-muted focus:border-brand outline-none"
         />
         <button type="submit" disabled={busy || !text.trim()} aria-label="Enviar" className="p-3 rounded-2xl bg-brand text-on-brand disabled:opacity-50">
           <Send size={20} />
@@ -68,7 +68,7 @@ export default function PromptBar({ onChanged }: { onChanged: () => void }) {
       {msgs.length === 0 && (
         <div className="flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" onClick={() => submit(s)} className="px-3 py-1.5 rounded-full border border-line bg-surface-raised text-sm font-bold">
+            <button key={s} type="button" onClick={() => submit(s)} className="px-3 py-1.5 rounded-full border border-line bg-surface-sunken text-ink text-sm font-bold">
               {s}
             </button>
           ))}
