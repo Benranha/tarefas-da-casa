@@ -61,6 +61,18 @@ export async function checkTask(ownerId: string, input: TaskInput): Promise<Task
   if (dueTime && kid[0].wake < kid[0].bed && (dueTime < kid[0].wake || dueTime > kid[0].bed)) {
     return { ok: false, status: 400, error: `O horário precisa ficar entre ${kid[0].wake} (acordar) e ${kid[0].bed} (dormir)` }
   }
+  // Tarefa diária repetida (mesma criança e mesmo nome) apareceria mais de uma vez por dia para ser feita.
+  if (!input.once) {
+    const dup = await sql`
+      SELECT 1 FROM tasks
+      WHERE assigned_child_id = ${childId}::uuid AND active AND recurrence <> 'none'
+        AND lower(btrim(title)) = lower(btrim(${title}))
+      LIMIT 1
+    `
+    if (dup.length > 0) {
+      return { ok: false, status: 400, error: `${kid[0].name} já tem uma tarefa diária chamada "${title}"` }
+    }
+  }
   return { ok: true, childName: kid[0].name as string }
 }
 
