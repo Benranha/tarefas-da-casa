@@ -2,13 +2,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Send, X } from 'lucide-react';
 
-type Msg = { role: 'user' | 'model'; text: string };
+type Proposal = { tool: string; args: Record<string, unknown>; resumo: string };
+type Msg = { role: 'user' | 'model'; text: string; proposal?: Proposal; settled?: boolean };
 
 const HELLO: Msg = {
   role: 'model',
-  text: 'Oi! Sou a assistente do Tarefinha. Pergunte como cadastrar crianças, criar tarefas, aprovar na Fila, usar o totem ou instalar o app. Não digite senhas nem códigos secretos aqui.',
+  text: 'Oi! Sou a assistente do Tarefinha. Pergunte como cadastrar crianças, aprovar na Fila, usar o totem ou instalar o app. Também posso ver suas tarefas e criar novas para você (você confirma antes). Não digite senhas nem códigos secretos aqui.',
 };
-const SUGGESTIONS = ['Como abro o totem no tablet?', 'Como aprovo uma tarefa?', 'Como convido o outro responsável?'];
+const SUGGESTIONS = ['Crie uma tarefa para uma criança', 'Quais tarefas já existem?', 'Como abro o totem no tablet?'];
 
 export default function Ajuda({ onClose }: { onClose: () => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([HELLO]);
@@ -37,13 +38,35 @@ export default function Ajuda({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/pais/ajuda', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next.filter((m) => m !== HELLO) }),
+        body: JSON.stringify({ messages: next.filter((m) => m !== HELLO).map(({ role, text }) => ({ role, text })) }),
       });
       const data = await res.json().catch(() => ({}));
       const reply = res.ok && data.reply ? data.reply : data.error || 'Não consegui responder agora. Tente de novo.';
-      setMsgs([...next, { role: 'model', text: reply }]);
+      setMsgs([...next, { role: 'model', text: reply, proposal: res.ok ? data.proposal : undefined }]);
     } catch {
       setMsgs([...next, { role: 'model', text: 'Sem conexão. Tente de novo.' }]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirm(index: number, accept: boolean) {
+    const m = msgs[index];
+    if (!m?.proposal || m.settled || busy) return;
+    const settle = (extra: Msg) =>
+      setMsgs((cur) => [...cur.map((x, i) => (i === index ? { ...x, settled: true } : x)), extra]);
+    if (!accept) return settle({ role: 'model', text: 'Tudo bem, não criei nada.' });
+    setBusy(true);
+    try {
+      const res = await fetch('/api/pais/ajuda/confirmar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool: m.proposal.tool, args: m.proposal.args }),
+      });
+      const data = await res.json().catch(() => ({}));
+      settle({ role: 'model', text: res.ok && data.message ? data.message : data.error || 'Não consegui criar a tarefa. Tente de novo.' });
+    } catch {
+      settle({ role: 'model', text: 'Sem conexão. Tente de novo.' });
     } finally {
       setBusy(false);
     }
@@ -75,6 +98,19 @@ export default function Ajuda({ onClose }: { onClose: () => void }) {
               }
             >
               {m.text}
+              {m.proposal && !m.settled && (
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-xl bg-surface-sunken px-3 py-2 text-sm font-bold">{m.proposal.resumo}</div>
+                  <div className="flex gap-2">
+                    <button type="button" disabled={busy} onClick={() => confirm(i, true)} className="px-4 py-1.5 rounded-full bg-brand text-on-brand text-sm font-bold disabled:opacity-50">
+                      Confirmar
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => confirm(i, false)} className="px-4 py-1.5 rounded-full border border-line text-sm font-bold disabled:opacity-50">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           {msgs.length === 1 && (
