@@ -5,6 +5,12 @@ import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signUp } from '../login/actions'
 
+declare global {
+  interface Window {
+    gtag_report_conversion?: (url?: string) => boolean
+  }
+}
+
 const input =
   'w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none transition-all'
 
@@ -16,7 +22,12 @@ export default function SignUpPage() {
       <div className="max-w-md w-full bg-surface-raised p-8 rounded-[32px] shadow-sm border-2 border-line">
         <h1 className="text-3xl font-bold text-center text-ink mb-2">Criar conta</h1>
         <p className="text-center text-ink-muted mb-8">Para pais e responsáveis</p>
-        <form className="space-y-5" action={action}>
+        <form
+          className="space-y-5"
+          action={action}
+          // Conversão do Google Ads: dispara ao enviar o formulário já validado.
+          onSubmit={() => window.gtag_report_conversion?.()}
+        >
           <input name="name" required className={input} placeholder="Seu nome" />
           <input name="email" type="email" required className={input} placeholder="email@exemplo.com" />
           <input
