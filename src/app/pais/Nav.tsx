@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, Shield } from 'lucide-react';
 import Tutorial, { tutorialSeen } from './Tutorial';
 import Ajuda from './Ajuda';
 
@@ -39,7 +39,7 @@ function forgetAppMode() {
   } catch {}
 }
 
-export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
+export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promise<void>; isAdmin?: boolean }) {
   const pathname = usePathname();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
@@ -114,7 +114,13 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
           <span>{item.name}</span>
         </Link>
       ))}
-      <button type="button" onClick={() => setTourOpen(true)} className="tf-nav__item tf-nav__spacer">
+      {isAdmin && (
+        <Link href="/admin" className="tf-nav__item tf-nav__spacer">
+          <Shield size={20} />
+          <span>Admin</span>
+        </Link>
+      )}
+      <button type="button" onClick={() => setTourOpen(true)} className={`tf-nav__item${isAdmin ? '' : ' tf-nav__spacer'}`}>
         <CircleHelp size={20} />
         <span>Tutorial</span>
       </button>
@@ -172,6 +178,13 @@ export default function Nav({ signOut }: { signOut: () => Promise<void> }) {
               <ChevronRight size={20} className="text-line-strong" />
             </Link>
           ))}
+          {isAdmin && (
+            <Link href="/admin" onClick={closeSheet} className="tf-sheet__row">
+              <span className="tf-sheet__icon"><Shield size={22} /></span>
+              <span className="tf-sheet__label">Admin</span>
+              <ChevronRight size={20} className="text-line-strong" />
+            </Link>
+          )}
           <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
             <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
             <span className="tf-sheet__label">Tutorial</span>
