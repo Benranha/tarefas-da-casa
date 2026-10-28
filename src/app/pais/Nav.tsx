@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, Shield } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, LayoutDashboard, Activity, CreditCard } from 'lucide-react';
 import Tutorial, { tutorialSeen } from './Tutorial';
 import Ajuda from './Ajuda';
 
@@ -22,6 +22,13 @@ const MORE = [
   { name: 'Família', href: '/pais/familia', icon: Users },
 ];
 
+const ADMIN_ITEMS = [
+  { name: 'Visão geral', href: '/admin', icon: LayoutDashboard },
+  { name: 'Assinantes', href: '/admin/assinantes', icon: Users },
+  { name: 'Engajamento', href: '/admin/engajamento', icon: Activity },
+  { name: 'Receita', href: '/admin/receita', icon: CreditCard },
+];
+
 const THEME_KEY = 'tarefinha-theme';
 const MODE_KEY = 'tarefinhaMode';
 
@@ -30,7 +37,7 @@ function panel() {
 }
 
 const isActive = (pathname: string, href: string) =>
-  pathname === href || (href !== '/pais' && pathname.startsWith(href + '/'));
+  pathname === href || (href !== '/pais' && href !== '/admin' && pathname.startsWith(href + '/'));
 
 // Ao sair, esquece o modo "app" deste aparelho para ele poder virar painel de novo.
 function forgetAppMode() {
@@ -94,7 +101,8 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
     try { localStorage.setItem(THEME_KEY, next); } catch {}
     setDark(next === 'dark');
   }
-  const moreActive = sheetOpen || MORE.some((m) => isActive(pathname, m.href));
+  const moreItems = isAdmin ? [...MORE, ...ADMIN_ITEMS] : MORE;
+  const moreActive = sheetOpen || moreItems.some((m) => isActive(pathname, m.href));
 
   return (
     <>
@@ -115,12 +123,17 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
         </Link>
       ))}
       {isAdmin && (
-        <Link href="/admin" className="tf-nav__item tf-nav__spacer">
-          <Shield size={20} />
-          <span>Admin</span>
-        </Link>
+        <>
+          <span className="tf-nav__section">Admin</span>
+          {ADMIN_ITEMS.map((item) => (
+            <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? 'page' : undefined} className="tf-nav__item">
+              <item.icon size={20} />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </>
       )}
-      <button type="button" onClick={() => setTourOpen(true)} className={`tf-nav__item${isAdmin ? '' : ' tf-nav__spacer'}`}>
+      <button type="button" onClick={() => setTourOpen(true)} className="tf-nav__item tf-nav__spacer">
         <CircleHelp size={20} />
         <span>Tutorial</span>
       </button>
@@ -171,20 +184,16 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
               <X size={20} />
             </button>
           </div>
-          {MORE.map((m) => (
-            <Link key={m.href} href={m.href} onClick={closeSheet} className="tf-sheet__row" aria-current={isActive(pathname, m.href) ? 'page' : undefined}>
+          {moreItems.map((m, i) => (
+            <React.Fragment key={m.href}>
+              {isAdmin && i === MORE.length && <p className="tf-sheet__section">Admin</p>}
+            <Link href={m.href} onClick={closeSheet} className="tf-sheet__row" aria-current={isActive(pathname, m.href) ? 'page' : undefined}>
               <span className="tf-sheet__icon"><m.icon size={22} /></span>
               <span className="tf-sheet__label">{m.name}</span>
               <ChevronRight size={20} className="text-line-strong" />
             </Link>
+            </React.Fragment>
           ))}
-          {isAdmin && (
-            <Link href="/admin" onClick={closeSheet} className="tf-sheet__row">
-              <span className="tf-sheet__icon"><Shield size={22} /></span>
-              <span className="tf-sheet__label">Admin</span>
-              <ChevronRight size={20} className="text-line-strong" />
-            </Link>
-          )}
           <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
             <span className="tf-sheet__icon"><CircleHelp size={22} /></span>
             <span className="tf-sheet__label">Tutorial</span>

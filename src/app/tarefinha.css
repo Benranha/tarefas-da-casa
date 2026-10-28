@@ -70,6 +70,8 @@
 .tf-nav--side .tf-nav__item { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font: 800 16px/20px var(--font-nunito), system-ui, sans-serif; }
 /* Celular: pílula flutuante (.tf-pill) + sheet "Mais". No desktop vale a barra lateral. */
 .tf-nav--desktop { display: none; }
+.tf-nav__section, .tf-sheet__section { margin: 16px 16px 4px; font: 800 11px/14px var(--font-nunito), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
+.tf-sheet__section { margin: 10px 12px 2px; }
 .tf-main { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
 .tf-pill { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; align-items: center; gap: 4px; padding: 6px; background: var(--surface-raised); border: 2px solid var(--line); border-radius: 999px; box-shadow: var(--shadow-pop); }
 .tf-pill__item { position: relative; flex: 0 1 52px; min-width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0; border: 0; border-radius: 999px; background: none; color: var(--ink-muted); font: 800 15px/20px var(--font-nunito), system-ui, sans-serif; white-space: nowrap; text-decoration: none; cursor: pointer; transition: flex 0.25s, background-color 0.2s; -webkit-tap-highlight-color: transparent; }
