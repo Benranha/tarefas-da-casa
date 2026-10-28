@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { auth } from '@/lib/auth/server';
 import { getAdmin } from '@/lib/admin';
 import { signOut } from '@/app/login/actions';
-import AdminNav from './Nav';
+import Nav from '../pais/Nav';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +16,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!(await getAdmin())) notFound();
 
   return (
-    <div className="tf-painel ad-shell">
-      <AdminNav signOut={signOut} />
-      <main className="ad-main">{children}</main>
+    <div className="tf-painel min-h-screen bg-surface flex flex-col md:flex-row">
+      <Nav signOut={signOut} isAdmin />
+      <main className="tf-main flex-1 min-w-0 px-5 pt-3 md:p-10">{children}</main>
     </div>
   );
 }

@@ -1,25 +1,5 @@
 /* Painel admin do dono do produto. Usa os tokens do painel dos pais (herda o tema escuro). */
-.ad-shell { min-height: 100vh; background: var(--surface); display: flex; flex-direction: column; }
-.ad-main { flex: 1; min-width: 0; padding: 20px 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
 .ad-page { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
-
-/* Navegação: barra inferior no celular, lateral no desktop */
-.ad-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; gap: 2px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--surface-raised); border-top: 2px solid var(--line); }
-.ad-nav__brand, .ad-nav .ad-nav__spacer, .ad-nav form { display: none; }
-.ad-nav__item { flex: 1; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px; border: 0; border-radius: 16px; background: none; color: var(--ink-muted); font: 800 11px/14px var(--font-nunito), system-ui, sans-serif; text-decoration: none; cursor: pointer; }
-.ad-nav__item[aria-current="page"] { background: var(--brand-soft); color: var(--brand-ink); }
-.ad-pill-admin { padding: 2px 8px; border-radius: 999px; background: var(--ink); color: var(--surface); font: 800 11px/16px var(--font-nunito), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; }
-@media (min-width: 768px) {
-  .ad-shell { flex-direction: row; }
-  .ad-main { padding: 40px; }
-  .ad-nav { position: static; flex: none; flex-direction: column; gap: 4px; width: 256px; padding: 24px 16px; border-top: 0; border-right: 2px solid var(--line); }
-  .ad-nav__brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
-  .ad-nav .ad-nav__spacer { display: flex; margin-top: auto; }
-  .ad-nav form { display: block; }
-  .ad-nav__item { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 0 16px; font: 800 16px/20px var(--font-nunito), system-ui, sans-serif; }
-  .ad-nav__item:hover { background: var(--surface-sunken); }
-  .ad-nav__item[aria-current="page"]:hover { background: var(--brand-soft); }
-}
 
 /* Tipografia e cabeçalho */
 .ad-h1 { margin: 0; font: 600 30px/36px var(--font-fredoka), system-ui, sans-serif; color: var(--ink); }
