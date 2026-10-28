@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect } from 'react';
-import { LayoutDashboard, Users, Activity, CreditCard, Moon, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, CreditCard, Moon, LogOut, House } from 'lucide-react';
 
 const items = [
   { name: 'Visão geral', href: '/admin', icon: LayoutDashboard },
@@ -52,7 +52,11 @@ export default function AdminNav({ signOut }: { signOut: () => Promise<void> }) 
           <span>{item.name}</span>
         </Link>
       ))}
-      <button type="button" onClick={toggleTheme} className="ad-nav__item ad-nav__spacer">
+      <Link href="/pais" className="ad-nav__item ad-nav__spacer">
+        <House size={20} strokeWidth={2} />
+        <span>Minha família</span>
+      </Link>
+      <button type="button" onClick={toggleTheme} className="ad-nav__item">
         <Moon size={20} />
         <span>Tema</span>
       </button>
