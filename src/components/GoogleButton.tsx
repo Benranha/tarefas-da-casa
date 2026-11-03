@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { authClient } from '@/lib/auth/client'
+import { TfLoader } from '@/components/TfLoader'
 
 export default function GoogleButton({ label }: { label: string }) {
   const [loading, setLoading] = useState(false)
@@ -27,8 +28,9 @@ export default function GoogleButton({ label }: { label: string }) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="w-full py-4 bg-surface-raised text-ink-muted font-bold rounded-2xl border-2 border-line hover:bg-surface-sunken transition-colors disabled:opacity-60"
+        className="w-full py-4 flex items-center justify-center gap-2 bg-surface-raised text-ink-muted font-bold rounded-2xl border-2 border-line hover:bg-surface-sunken transition-colors disabled:opacity-60"
       >
+        {loading && <TfLoader size={24} decorative />}
         {loading ? 'Abrindo o Google...' : label}
       </button>
       {error && <p className="text-sm text-returned-fg text-center">{error}</p>}

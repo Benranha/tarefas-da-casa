@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
+import { TfLoader } from '@/components/TfLoader'
 
 function VerifyForm() {
   const router = useRouter()
@@ -67,8 +68,9 @@ function VerifyForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-[#5C4033] text-white font-bold rounded-2xl hover:bg-[#4A3329] transition-colors shadow-lg disabled:opacity-60"
+        className="w-full py-4 flex items-center justify-center gap-2 bg-[#5C4033] text-white font-bold rounded-2xl hover:bg-[#4A3329] transition-colors shadow-lg disabled:opacity-60"
       >
+        {loading && <TfLoader size={24} decorative />}
         {loading ? 'Confirmando...' : 'Confirmar e-mail'}
       </button>
       <div className="flex justify-between text-sm">
