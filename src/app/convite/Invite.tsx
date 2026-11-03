@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { TfLoading } from '@/components/TfLoader'
 
 export default function Invite({ code, loggedIn }: { code: string; loggedIn: boolean }) {
   const router = useRouter()
@@ -46,7 +47,7 @@ export default function Invite({ code, loggedIn }: { code: string; loggedIn: boo
   if (invalid) {
     return <p className="text-center text-ink-muted">Este convite não existe, já foi usado ou expirou. Peça um novo.</p>
   }
-  if (from === null) return <p className="text-center text-ink-muted">Carregando...</p>
+  if (from === null) return <TfLoading text="Abrindo o convite…" />
 
   return (
     <div className="space-y-5 text-center">

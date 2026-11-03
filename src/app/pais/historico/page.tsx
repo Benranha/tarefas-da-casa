@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { TrendingUp, Trophy, History, CheckCircle2, Undo2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
+import { TfLoading } from '@/components/TfLoader'
 
 type Child = { id: string; name: string; avatar: string; color: string; points: number; week_points: number }
 type Event = {
@@ -52,7 +53,7 @@ export default function HistoryPage() {
 
   const total = children.reduce((sum, c) => sum + c.points, 0)
 
-  if (loading) return <div className="p-10 text-center text-ink-muted">Carregando histórico...</div>
+  if (loading) return <TfLoading className="p-10" text="Buscando o histórico…" />
   if (failed) return <div className="p-10 text-center text-returned-fg">Não foi possível carregar o histórico.</div>
 
   return (

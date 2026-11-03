@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signUp } from '../login/actions'
+import { TfLoader } from '@/components/TfLoader'
 
 const input =
   'w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none transition-all'
@@ -41,8 +42,9 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
+            className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
           >
+            {pending && <TfLoader size={24} tone="on-brand" decorative />}
             {pending ? 'Criando...' : 'Criar conta'}
           </button>
         </form>

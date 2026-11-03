@@ -3,6 +3,7 @@ import React, { use, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlarmClock, ArrowLeft, Check, CheckCheck, ChevronDown, Moon, Undo2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
+import { TfLoading } from '@/components/TfLoader'
 
 type Status = 'pending' | 'awaiting_approval' | 'approved'
 type Instance = {
@@ -65,7 +66,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
     await load()
   }
 
-  if (loading) return <div className="p-10 text-center text-ink-muted">Carregando tarefas...</div>
+  if (loading) return <TfLoading className="p-10" text="Buscando as tarefas…" />
   if (failed || !child) return <div className="p-10 text-center text-returned-fg">Criança não encontrada.</div>
 
   const approved = tasks.filter((t) => t.status === 'approved').length

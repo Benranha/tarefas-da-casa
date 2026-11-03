@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signIn } from './actions'
+import { TfLoader } from '@/components/TfLoader'
 
 function ResetNotice() {
   const params = useSearchParams()
@@ -54,8 +55,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
+            className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
           >
+            {pending && <TfLoader size={24} tone="on-brand" decorative />}
             {pending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>

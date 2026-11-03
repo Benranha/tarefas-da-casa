@@ -5,6 +5,7 @@ import { Check, Circle, Clock, ArrowLeft, Gift, Undo2, AlarmClock, Moon } from '
 import Link from 'next/link';
 import PinForm from '@/components/PinForm';
 import TfIcon from '@/components/TfIcon';
+import { TfLoading } from '@/components/TfLoader'
 
 export default function TotemPage() {
   const [step, setStep] = useState<'selection' | 'pin' | 'tasks' | 'rewards'>('selection');
@@ -391,8 +392,8 @@ export default function TotemPage() {
 
       <main className="flex-1 px-10 py-8">
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-brand"></div>
+          <div className="flex items-center justify-center h-80">
+            <TfLoading text="Arrumando a casa…" size={160} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
