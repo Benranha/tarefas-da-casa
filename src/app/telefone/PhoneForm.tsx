@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { savePhoneAction } from '../login/actions'
+import PhoneInput from '@/components/PhoneInput'
 import { TfLoader } from '@/components/TfLoader'
 
 export default function PhoneForm() {
@@ -13,16 +14,12 @@ export default function PhoneForm() {
         <h1 className="text-3xl font-bold text-center text-ink mb-2">Seu telefone</h1>
         <p className="text-center text-ink-muted mb-8">Falta só isso para abrir o painel.</p>
         <form className="space-y-5" action={action}>
-          <input
+          <PhoneInput
             name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
             required
-            maxLength={20}
             autoFocus
             className="w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none transition-all"
-            placeholder="Telefone com DDD, ex.: (92) 99999-9999"
+            placeholder="(92) 99999-9999"
           />
           {state?.error && <p className="text-sm text-returned-fg text-center">{state.error}</p>}
           <button
