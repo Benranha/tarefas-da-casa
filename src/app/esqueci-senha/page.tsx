@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { authClient } from '@/lib/auth/client'
+import { TfLoader } from '@/components/TfLoader'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -57,9 +58,10 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
+                className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
               >
-                {loading ? 'Enviando...' : 'Enviar link'}
+                {loading && <TfLoader size={24} tone="on-brand" decorative />}
+        {loading ? 'Enviando...' : 'Enviar link'}
               </button>
             </form>
             <p className="mt-6 text-center text-sm text-ink-muted">

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check, EllipsisVertical, Copy, X } from 'lucide-react'
 import TfIcon, { isCustomEmoji } from '@/components/TfIcon'
+import { TfLoader } from '@/components/TfLoader'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 
 type Child = { id: string; name: string; wake_time: string; bed_time: string }
@@ -241,7 +242,7 @@ function TaskForm({
       </p>
       <div className="flex flex-wrap gap-3">
         <button disabled={saving} className="tf-btn tf-btn--primary">
-          {onCancel ? <Check size={20} /> : <Plus size={20} />}
+          {saving ? <TfLoader size={24} tone="on-brand" decorative /> : onCancel ? <Check size={20} /> : <Plus size={20} />}
           {submitLabel}
         </button>
         {onCancel && (
@@ -423,7 +424,7 @@ export default function TasksPage() {
                 onClick={doCopy}
                 className="tf-btn tf-btn--primary"
               >
-                <Copy size={18} /> Copiar {copyPick === null ? 'todas' : copyPick.length} {copyPick !== null && copyPick.length === 1 ? 'tarefa' : 'tarefas'}
+                {saving ? <TfLoader size={24} tone="on-brand" decorative /> : <Copy size={18} />} Copiar {copyPick === null ? 'todas' : copyPick.length} {copyPick !== null && copyPick.length === 1 ? 'tarefa' : 'tarefas'}
               </button>
             </div>
           )}

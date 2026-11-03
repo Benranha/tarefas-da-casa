@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TfLoader } from '@/components/TfLoader'
 
 // Código secreto da criança: na primeira vez ela escolhe (e repete); depois só digita.
 export default function PinForm({
@@ -88,6 +89,7 @@ export default function PinForm({
         </p>
       )}
       <button disabled={busy} className={`tf-btn tf-btn--primary w-full ${big ? 'tf-btn--totem' : ''}`}>
+        {busy && <TfLoader size={24} tone="on-brand" decorative />}
         {busy ? 'Entrando...' : (submitLabel ?? (creating ? 'Salvar e entrar' : 'Entrar'))}
       </button>
     </form>

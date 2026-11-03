@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
+import { TfLoader } from '@/components/TfLoader'
 
 function ResetForm() {
   const router = useRouter()
@@ -66,8 +67,9 @@ function ResetForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
+        className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
       >
+        {loading && <TfLoader size={24} tone="on-brand" decorative />}
         {loading ? 'Salvando...' : 'Salvar nova senha'}
       </button>
     </form>

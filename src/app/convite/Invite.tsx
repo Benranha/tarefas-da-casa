@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { TfLoading } from '@/components/TfLoader'
+import { TfLoader } from '@/components/TfLoader'
 
 export default function Invite({ code, loggedIn }: { code: string; loggedIn: boolean }) {
   const router = useRouter()
@@ -57,7 +58,8 @@ export default function Invite({ code, loggedIn }: { code: string; loggedIn: boo
       {loggedIn ? (
         <>
           <button onClick={accept} disabled={busy} className="tf-btn tf-btn--primary w-full">
-            {busy ? 'Entrando...' : 'Entrar na família'}
+            {busy && <TfLoader size={24} tone="on-brand" decorative />}
+        {busy ? 'Entrando...' : 'Entrar na família'}
           </button>
           {error && <p className="text-sm text-returned-fg">{error}</p>}
         </>
