@@ -20,6 +20,16 @@ export default function SignUpPage() {
           <input name="name" required className={input} placeholder="Seu nome" />
           <input name="email" type="email" required className={input} placeholder="email@exemplo.com" />
           <input
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            maxLength={20}
+            className={input}
+            placeholder="Telefone com DDD, ex.: (92) 99999-9999"
+          />
+          <input
             name="password"
             type="password"
             required
