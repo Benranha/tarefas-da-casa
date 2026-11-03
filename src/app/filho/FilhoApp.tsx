@@ -8,6 +8,7 @@ import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, LogOut, Moon, Undo2 
 import PinForm from '@/components/PinForm'
 import TfIcon from '@/components/TfIcon'
 import PushToggle from '@/components/PushToggle'
+import { TfLoading } from '@/components/TfLoader'
 
 type Info = { name: string; avatar: string; color: string; has_pin: boolean }
 type Instance = {
@@ -171,7 +172,7 @@ function Filho() {
     } else setMessage('Você ainda não tem pontos suficientes.')
   }
 
-  if (state === 'loading') return <Screen><div className="mt-32 animate-spin rounded-full h-12 w-12 border-b-4 border-brand" /></Screen>
+  if (state === 'loading') return <Screen><TfLoading className="mt-24" text="Arrumando a casa…" /></Screen>
 
   if (state === 'invalid' || !info) {
     return (

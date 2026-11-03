@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { savePhoneAction } from '../login/actions'
+import { TfLoader } from '@/components/TfLoader'
 
 export default function PhoneForm() {
   const [state, action, pending] = useActionState(savePhoneAction, null)
@@ -27,8 +28,9 @@ export default function PhoneForm() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full py-4 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
+            className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
           >
+            {pending && <TfLoader size={24} tone="on-brand" decorative />}
             {pending ? 'Salvando...' : 'Continuar'}
           </button>
         </form>

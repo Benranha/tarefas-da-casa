@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
+import { TfLoading } from '@/components/TfLoader'
 
 // Tarefas com aprovar/devolver em andamento: um segundo toque (ou clique) não manda de novo.
 const inFlight = new Set<string>();
@@ -84,7 +85,7 @@ export default function ParentsDashboard() {
   }
 
   if (loading && pendingTasks.length === 0) {
-    return <div className="p-10 text-center text-ink-muted">Carregando fila de aprovação...</div>;
+    return <TfLoading className="p-10" text="Buscando as tarefas…" />;
   }
 
   return (
