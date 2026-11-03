@@ -2,6 +2,11 @@ import type { CSSProperties } from 'react'
 import { TF_DEFS, TF_FROM_EMOJI, type TfIconDef } from '@/lib/tf-icons-data'
 
 
+/** Emoji escolhido pelos pais que não é um dos ícones próprios nem um emoji antigo mapeado. */
+export function isCustomEmoji(name: string | null | undefined): name is string {
+  return !!name && name.length <= 16 && !TF_DEFS[name] && !TF_FROM_EMOJI[name] && /\p{Extended_Pictographic}/u.test(name)
+}
+
 export function resolveIcon(name: string | null | undefined): { key: string; def: TfIconDef } {
   const n = name ?? ''
   const key = TF_DEFS[n] ? n : TF_FROM_EMOJI[n] ?? 'brilho'
@@ -48,8 +53,21 @@ export default function TfIcon({
   className?: string
   'aria-label'?: string
 }) {
-  const { def } = resolveIcon(name)
   const px = typeof size === 'number' ? `${size}px` : size
+  // Emoji livre (coisas bem específicas, como "arrumar a cafeteira"): aparece como está.
+  if (isCustomEmoji(name)) {
+    return (
+      <span
+        className={`tf-ic${className ? ` ${className}` : ''}`}
+        role="img"
+        aria-label={ariaLabel ?? 'Ícone'}
+        style={{ width: px, height: px, display: 'inline-grid', placeItems: 'center', fontSize: `calc(${px} * 0.78)`, lineHeight: 1, ...style }}
+      >
+        {name}
+      </span>
+    )
+  }
+  const { def } = resolveIcon(name)
   return (
     <span
       className={`tf-ic${className ? ` ${className}` : ''}`}
