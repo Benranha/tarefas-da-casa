@@ -149,3 +149,10 @@ CREATE INDEX IF NOT EXISTS task_instances_approved_at_idx ON task_instances (app
 ALTER TABLE children
     ADD COLUMN IF NOT EXISTS invite_email TEXT,
     ADD COLUMN IF NOT EXISTS invite_sent_at TIMESTAMPTZ;
+
+-- Versão 7: telefone do responsável no cadastro (db/migrations/007_telefone.sql).
+CREATE TABLE IF NOT EXISTS user_phones (
+    user_id UUID PRIMARY KEY REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+    phone TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
