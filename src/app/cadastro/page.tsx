@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signUp } from '../login/actions'
+import PhoneInput from '@/components/PhoneInput'
 import { TfLoader } from '@/components/TfLoader'
 
 const input =
@@ -20,15 +21,11 @@ export default function SignUpPage() {
         <form className="space-y-5" action={action}>
           <input name="name" required className={input} placeholder="Seu nome" />
           <input name="email" type="email" required className={input} placeholder="email@exemplo.com" />
-          <input
+          <PhoneInput
             name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
             required
-            maxLength={20}
             className={input}
-            placeholder="Telefone com DDD, ex.: (92) 99999-9999"
+            placeholder="(92) 99999-9999"
           />
           <input
             name="password"
