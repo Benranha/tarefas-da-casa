@@ -181,6 +181,31 @@ export const TF_DEFS: Record<string, TfIconDef> = {
     "b": "<path d=\"M12 8h24a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H21l-8 8v-8h-1a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z\"/>",
     "d": "<circle cx=\"17\" cy=\"20\" r=\"2.6\" class=\"d\"/><circle cx=\"24\" cy=\"20\" r=\"2.6\" class=\"d\"/><circle cx=\"31\" cy=\"20\" r=\"2.6\" class=\"d\"/>"
   },
+  "bola": {
+    "label": "Futebol e bola",
+    "b": "<circle cx=\"24\" cy=\"24\" r=\"18\"/>",
+    "d": "<path class=\"d\" d=\"M24 14.5l8 5.8-3 9.4H19l-3-9.4z\"/><path class=\"sk\" stroke-width=\"2\" d=\"M24 14.5V7M32 20.3l7-2.4M29 29.7l4.5 6.2M19 29.7l-4.5 6.2M16 20.3l-7-2.4\"/>"
+  },
+  "natacao": {
+    "label": "Natação",
+    "b": "<circle cx=\"34\" cy=\"13\" r=\"5.5\"/><path fill=\"none\" stroke-width=\"{L}\" d=\"M7 26l13-9 9 3 5 7\"/><path fill=\"none\" stroke-width=\"{L}\" d=\"M4 34q5-5 10 0t10 0t10 0t10 0\"/><path fill=\"none\" stroke-width=\"{L}\" d=\"M4 42q5-5 10 0t10 0t10 0t10 0\"/>",
+    "d": "<circle cx=\"35.5\" cy=\"11.5\" r=\"1.6\" class=\"d\"/>"
+  },
+  "musica": {
+    "label": "Música",
+    "b": "<rect x=\"17\" y=\"8\" width=\"5\" height=\"28\" rx=\"2.5\"/><rect x=\"35\" y=\"5\" width=\"5\" height=\"28\" rx=\"2.5\"/><path d=\"M18 9l21-4.5v8.5L18 17.5z\"/><ellipse cx=\"13\" cy=\"36\" rx=\"8\" ry=\"6\"/><ellipse cx=\"31\" cy=\"33\" rx=\"8\" ry=\"6\"/>",
+    "d": "<path class=\"d\" d=\"M18 11l21-4.5v3L18 14z\"/><ellipse cx=\"10.5\" cy=\"34.5\" rx=\"3\" ry=\"2\" class=\"d\" transform=\"rotate(-25 10.5 34.5)\"/><ellipse cx=\"28.5\" cy=\"31.5\" rx=\"3\" ry=\"2\" class=\"d\" transform=\"rotate(-25 28.5 31.5)\"/>"
+  },
+  "luta": {
+    "label": "Jiu-jitsu e lutas",
+    "b": "<path d=\"M17 6L6 13l5 9 5-2.5V42h16V19.5l5 2.5 5-9-11-7-7 7z\"/>",
+    "d": "<path class=\"d\" d=\"M17 6l7 7 7-7q-7-2-14 0z\"/><path class=\"sk\" stroke-width=\"2\" d=\"M24 13l-4 12M24 13l4 12\"/><rect x=\"14.5\" y=\"28\" width=\"19\" height=\"5\" rx=\"1.5\" class=\"k\"/><path class=\"k\" d=\"M26 33l-1 9h4l1-9z\"/>"
+  },
+  "ferramenta": {
+    "label": "Arrumar / consertar",
+    "b": "<path d=\"M33 4a10 10 0 0 0-9.4 13.4L6.5 34.5a4.5 4.5 0 0 0 6.4 6.4l17.1-17.1A10 10 0 0 0 43 14l-6.5 6.5-6-1-1-6L36 7a10 10 0 0 0-3-3z\"/>",
+    "d": "<circle cx=\"10\" cy=\"37.5\" r=\"2\" class=\"d\"/>"
+  },
   "brilho": {
     "label": "Outra tarefa",
     "b": "<path d=\"M21 10Q23.56 23.44 37 26Q23.56 28.56 21 42Q18.44 28.56 5 26Q18.44 23.44 21 10Z\"/><path d=\"M37.5 3.5Q38.54 8.96 44 10Q38.54 11.04 37.5 16.5Q36.46 11.04 31 10Q36.46 8.96 37.5 3.5Z\"/>",
@@ -205,7 +230,12 @@ export const TF_GROUPS = {
     "talheres",
     "lapis",
     "camiseta",
-    "limpeza"
+    "limpeza",
+    "bola",
+    "natacao",
+    "luta",
+    "musica",
+    "ferramenta"
   ],
   "recompensas": [
     "presente",
