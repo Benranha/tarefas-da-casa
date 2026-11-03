@@ -39,7 +39,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'AW-18511803494');`}
+gtag('config', 'AW-18511803494');
+gtag('config', 'G-K0YQXXVDMC');`}
         </Script>
       </body>
     </html>
