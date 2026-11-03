@@ -5,6 +5,7 @@ import { signOut } from '@/app/login/actions'
 import { getFamily } from '@/lib/auth/server'
 import { onboardingStatus } from '@/lib/onboarding';
 import { getAdmin } from '@/lib/admin';
+import { hasPhone } from '@/lib/telefone';
 import Nav from './Nav';
 
 export default async function ParentsLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,8 @@ export default async function ParentsLayout({ children }: { children: React.Reac
 
   // Conta nova: só libera o painel depois da primeira criança e da primeira tarefa.
   const family = await getFamily()
+  // Entrou com o Google (ou conta antiga) sem telefone: pede antes de abrir o painel.
+  if (family && !(await hasPhone(family.userId))) redirect('/telefone')
   if (family && !(await onboardingStatus(family.ownerId)).done) redirect('/onboarding')
 
   return (

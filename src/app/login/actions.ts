@@ -2,14 +2,7 @@
 
 import { auth } from '@/lib/auth/server'
 import { redirect } from 'next/navigation'
-import { sql } from '@/lib/db'
-
-// Telefone brasileiro: só dígitos, com DDD (10 ou 11). Aceita +55 e máscara, e devolve só o número com DDD.
-function parsePhone(raw: string): string | null {
-  let digits = raw.replace(/\D/g, '')
-  if (digits.length > 11 && digits.startsWith('55')) digits = digits.slice(2)
-  return /^[1-9]{2}9?\d{8}$/.test(digits) ? digits : null
-}
+import { parsePhone, savePhone } from '@/lib/telefone'
 
 export async function signIn(
   _prev: { error: string } | null,
@@ -61,10 +54,7 @@ export async function signUp(
   // Guarda o telefone; se falhar, a conta já existe e não deve travar o cadastro.
   if (data?.user?.id) {
     try {
-      await sql`
-        INSERT INTO user_phones (user_id, phone) VALUES (${data.user.id}::uuid, ${phone})
-        ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone
-      `
+      await savePhone(data.user.id, phone)
     } catch (e) {
       console.error('Não foi possível salvar o telefone do cadastro', e)
     }
@@ -73,6 +63,26 @@ export async function signUp(
   const hasSession = Boolean((data as { token?: string | null } | null)?.token)
   if (!hasSession && !data?.user?.emailVerified) {
     redirect(`/verificar-email?email=${encodeURIComponent(email)}`)
+  }
+  redirect('/pais')
+}
+
+// Quem entrou com o Google (ou já tinha conta) informa o telefone antes de usar o painel.
+export async function savePhoneAction(
+  _prev: { error: string } | null,
+  formData: FormData
+) {
+  const { data: session } = await auth.getSession()
+  if (!session?.user) redirect('/login')
+  const phone = parsePhone(String(formData.get('phone') ?? ''))
+  if (!phone) {
+    return { error: 'Informe um telefone válido, com DDD. Ex.: (92) 99999-9999.' }
+  }
+  try {
+    await savePhone(session.user.id, phone)
+  } catch (e) {
+    console.error('Não foi possível salvar o telefone', e)
+    return { error: 'Não foi possível salvar o telefone. Tente de novo.' }
   }
   redirect('/pais')
 }
