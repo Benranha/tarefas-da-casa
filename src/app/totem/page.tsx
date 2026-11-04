@@ -6,6 +6,10 @@ import Link from 'next/link';
 import PinForm from '@/components/PinForm';
 import TfIcon from '@/components/TfIcon';
 import { TfLoading } from '@/components/TfLoader'
+import { usePolling } from '@/lib/use-polling';
+
+// O totem fica com a tela sempre ligada: sem ninguém tocar por este tempo, para de buscar.
+const TOTEM_IDLE_MS = 3 * 60_000;
 
 export default function TotemPage() {
   const [step, setStep] = useState<'selection' | 'pin' | 'tasks' | 'rewards'>('selection');
@@ -69,17 +73,17 @@ export default function TotemPage() {
   }
 
   // Na seleção de criança, mantém as contagens de tarefas atualizadas.
+  const refreshChildren = () =>
+    fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => Array.isArray(data) && setChildren(data))
+      .catch(() => {});
   useEffect(() => {
     if (step !== 'selection' || !code) return;
-    const refresh = () =>
-      fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => Array.isArray(data) && setChildren(data))
-        .catch(() => {});
-    refresh(); // ao voltar da lista de tarefas, atualiza já
-    const timer = setInterval(refresh, 8000);
-    return () => clearInterval(timer);
+    refreshChildren(); // ao voltar da lista de tarefas, atualiza já
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, code]);
+  usePolling(refreshChildren, 30_000, { enabled: step === 'selection' && !!code, idleAfterMs: TOTEM_IDLE_MS });
 
   // "Trocar modo" é dos pais: se houver código parental, pede antes de abrir a reconfiguração.
   const [parentalOpen, setParentalOpen] = useState(false);
@@ -125,24 +129,24 @@ export default function TotemPage() {
     const res = await fetch(`/api/totem/tasks?code=${code}`, { cache: 'no-store', headers: auth() });
     if (res.status === 401) return leaveChild();
     const data = res.ok ? await res.json() : [];
+    let changed = false;
     for (const t of data) {
-      if (prevStatus.current.get(t.id) === 'awaiting_approval' && t.status === 'approved') celebrate(t.tasks?.points ?? 0);
+      const before = prevStatus.current.get(t.id);
+      if (before !== undefined && before !== t.status) changed = true;
+      if (before === 'awaiting_approval' && t.status === 'approved') celebrate(t.tasks?.points ?? 0);
     }
     prevStatus.current = new Map(data.map((t: any) => [t.id, t.status]));
+    // Os pontos só mudam quando alguma tarefa muda de status: só então busca de novo.
+    if (changed) refreshPoints(childId);
     setTasks(data);
     if (!silent) setLoading(false);
   }
 
-  // Sem Realtime no Neon: atualiza a lista a cada 5s enquanto a criança está na tela.
-  useEffect(() => {
-    if (!selectedChild || !token) return;
-    const timer = setInterval(() => {
-      fetchTasks(selectedChild.id, true);
-      refreshPoints(selectedChild.id);
-    }, 5000);
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChild, token]);
+  // Sem Realtime no Neon: atualiza a lista enquanto a criança está na tela (e mexendo nela).
+  usePolling(() => selectedChild && fetchTasks(selectedChild.id, true), 15_000, {
+    enabled: !!selectedChild && !!token,
+    idleAfterMs: TOTEM_IDLE_MS,
+  });
 
   async function refreshPoints(childId: string) {
     const res = await fetch(`/api/totem/children?code=${code}`, { cache: 'no-store' });
@@ -155,6 +159,7 @@ export default function TotemPage() {
 
   async function openRewards() {
     setMessage(null);
+    refreshPoints(selectedChild.id);
     const res = await fetch(`/api/totem/rewards?code=${code}`, { cache: 'no-store' });
     setRewards(res.ok ? await res.json() : []);
     setStep('rewards');

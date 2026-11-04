@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { AlarmClock, ArrowLeft, Check, CheckCheck, ChevronDown, Moon, Undo2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TfLoading } from '@/components/TfLoader'
+import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 
 type Status = 'pending' | 'awaiting_approval' | 'approved'
 type Instance = {
@@ -47,10 +48,9 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     load()
-    // Sem Realtime no Neon: atualiza a cada 10s.
-    const timer = setInterval(load, 10000)
-    return () => clearInterval(timer)
   }, [load])
+  // Sem Realtime no Neon: atualiza enquanto a tela está aberta e em uso.
+  usePolling(load, 30_000, { idleAfterMs: PAIS_IDLE_MS })
 
   async function act(instanceId: string, action: 'done' | 'approve' | 'reject') {
     setBusy(true)

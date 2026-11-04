@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Plus, Trash2, Check, X } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
+import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 
 type Reward = { id: string; title: string; icon: string; cost_points: number }
 type Redemption = {
@@ -35,9 +36,9 @@ export default function RewardsPage() {
   }
   useEffect(() => {
     load()
-    const timer = setInterval(load, 10000)
-    return () => clearInterval(timer)
   }, [])
+  // Sem Realtime no Neon: atualiza os pedidos enquanto a tela está aberta e em uso.
+  usePolling(load, 30_000, { idleAfterMs: PAIS_IDLE_MS })
 
   async function add(e: React.FormEvent) {
     e.preventDefault()
