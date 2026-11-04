@@ -1,9 +1,12 @@
+import { privatePage } from '@/lib/noindex'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/server'
 import { hasPhone } from '@/lib/telefone'
 import PhoneForm from './PhoneForm'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = privatePage('Seu telefone')
 
 export default async function PhonePage() {
   const { data: session } = await auth.getSession()

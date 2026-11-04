@@ -1,9 +1,12 @@
+import { privatePage } from '@/lib/noindex'
 import { redirect } from 'next/navigation'
 import { getFamily } from '@/lib/auth/server'
 import { onboardingStatus } from '@/lib/onboarding'
 import OnboardingFlow from './OnboardingFlow'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = privatePage('Primeiros passos')
 
 export default async function OnboardingPage() {
   const family = await getFamily()

@@ -7,7 +7,7 @@ import Nav from '../pais/Nav';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: 'Admin · Tarefinha', robots: { index: false, follow: false } };
+export const metadata = { title: 'Admin', robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = await auth.getSession();

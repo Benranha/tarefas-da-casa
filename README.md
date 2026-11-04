@@ -35,6 +35,11 @@ GEMINI_MODEL=gemini-3.5-flash-lite   # opcional
 RESEND_API_KEY=...
 RESEND_FROM=Tarefinha <nao-responda@seudominio.com.br>
 
+# SEO (opcional): domínio público e códigos de verificação do Google Search Console / Bing Webmaster
+NEXT_PUBLIC_SITE_URL=https://tarefinha.app.br
+GOOGLE_SITE_VERIFICATION=...
+BING_SITE_VERIFICATION=...
+
 # Painel admin do dono do produto (/admin): e-mails autorizados, separados por vírgula
 ADMIN_EMAILS=voce@exemplo.com
 ```

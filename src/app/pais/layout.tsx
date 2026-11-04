@@ -7,6 +7,9 @@ import { onboardingStatus } from '@/lib/onboarding';
 import { getAdmin } from '@/lib/admin';
 import { hasPhone } from '@/lib/telefone';
 import Nav from './Nav';
+import { privatePage } from '@/lib/noindex';
+
+export const metadata = privatePage('Painel dos pais');
 
 export default async function ParentsLayout({ children }: { children: React.ReactNode }) {
   // Veio de um convite e acabou de entrar/criar a conta: volta para aceitar o convite.

@@ -1,11 +1,15 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/server'
 import TfIcon from '@/components/TfIcon'
 import InstallButton from '@/components/landing/InstallButton'
 import IosInstallHint from '@/components/landing/IosInstallHint'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = { alternates: { canonical: '/' } }
 
 const STICKERS = [
   { icon: 'vassoura', size: 96, pos: 'left-[5%] top-[130px]', r: -14 },
@@ -74,17 +78,91 @@ const FEATURES = [
 ]
 
 const FAQ = [
+  { q: 'O que é o Tarefinha?', a: 'O Tarefinha é um app brasileiro de tarefas domésticas para crianças. Funciona como um quadro de rotina e de recompensas digital: os pais criam as tarefas do dia, as crianças marcam o que fizeram, os pais aprovam e os pontos ganhos são trocados por prêmios combinados em família.' },
+  { q: 'Para que idade o Tarefinha é indicado?', a: 'Para crianças de cerca de 3 a 12 anos. As tarefas usam ícones grandes, então funciona até para quem ainda não sabe ler. Os pais escolhem tarefas compatíveis com a idade de cada filho.' },
   { q: 'É grátis mesmo?', a: 'Sim. Durante a fase de teste o Tarefinha é totalmente gratuito, sem cartão de crédito.' },
   { q: 'Preciso baixar em alguma loja?', a: 'Não. O Tarefinha é um app web (PWA): você abre o link no navegador e toca em “Instalar app” (Android) ou “Adicionar à Tela de Início” (iPhone). Ele passa a abrir como um app normal.' },
   { q: 'Meus filhos precisam de celular?', a: 'Não. Um tablet da casa vira o totem da família. O celular da criança é opcional — serve para ela receber lembretes no horário.' },
   { q: 'Como cada criança entra?', a: 'Na primeira vez ela escolhe um código secreto de 4 a 8 números. Sem ele, ninguém mexe nas tarefas dela. Os pais podem redefinir quando quiserem.' },
   { q: 'Dá para dividir com o outro responsável?', a: 'Sim. Em Família você gera um convite e os dois passam a aprovar tarefas e cuidar das recompensas juntos.' },
+  { q: 'Como os pontos viram recompensas?', a: 'Os pais cadastram recompensas com um custo em pontos (um sorvete, um passeio, tempo de videogame ou até mesada). A criança junta os pontos das tarefas aprovadas e troca pelo prêmio; os pais confirmam a entrega.' },
+  { q: 'Funciona em Android e iPhone?', a: 'Sim. O Tarefinha roda no navegador de qualquer celular, tablet ou computador — Android, iPhone, iPad, Windows ou Mac — e pode ser instalado na tela inicial como um app.' },
   { q: 'Que tablet eu preciso?', a: 'Qualquer tablet com um navegador atualizado. Para deixar a tela sempre ligada, recomendamos o modo quiosque (Fully Kiosk Browser no Android).' },
+]
+
+const BY_AGE = [
+  { age: '3 a 5 anos', kid: 'rosa', icon: 'brinquedos', tasks: ['Guardar os brinquedos', 'Colocar a roupa suja no cesto', 'Ajudar a dar comida ao pet', 'Escovar os dentes'] },
+  { age: '6 a 8 anos', kid: 'azul', icon: 'cama', tasks: ['Arrumar a cama', 'Pôr e tirar a mesa', 'Regar as plantas', 'Arrumar a mochila da escola'] },
+  { age: '9 a 12 anos', kid: 'verde', icon: 'louca', tasks: ['Lavar a louça', 'Varrer a casa', 'Tirar o lixo', 'Dobrar e guardar a roupa'] },
 ]
 
 const CTA_BASE =
   'inline-flex items-center justify-center min-h-16 px-9 rounded-full font-display font-semibold text-2xl'
 const CTA_SUN = `${CTA_BASE} bg-sun text-on-sun shadow-[0_6px_0_rgba(58,42,34,.3)] active:translate-y-0.5 active:shadow-none`
+
+// Dados estruturados: ajudam o Google (resultados ricos) e assistentes de IA a entender e citar o produto.
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/icons/icon-512x512.png`,
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      inLanguage: 'pt-BR',
+      publisher: { '@id': `${SITE_URL}/#organization` },
+    },
+    {
+      '@type': 'WebApplication',
+      '@id': `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: SITE_DESCRIPTION,
+      applicationCategory: 'LifestyleApplication',
+      applicationSubCategory: 'Tarefas domésticas e rotina infantil',
+      operatingSystem: 'Android, iOS, iPadOS, Windows, macOS (navegador)',
+      browserRequirements: 'Requer um navegador moderno com JavaScript',
+      inLanguage: 'pt-BR',
+      image: `${SITE_URL}/opengraph-image`,
+      audience: { '@type': 'PeopleAudience', audienceType: 'Pais e mães de crianças de 3 a 12 anos' },
+      featureList: [
+        'Quadro de tarefas domésticas para crianças',
+        'Sistema de pontos aprovados pelos pais',
+        'Troca de pontos por recompensas',
+        'Totem da família no tablet com código secreto por criança',
+        'Lembretes de tarefa no celular da criança no horário marcado',
+        'Dois responsáveis na mesma família',
+      ],
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'BRL',
+        description: 'Gratuito durante a fase de teste, sem cartão de crédito',
+      },
+      publisher: { '@id': `${SITE_URL}/#organization` },
+    },
+    {
+      '@type': 'HowTo',
+      name: 'Como organizar as tarefas de casa das crianças com o Tarefinha',
+      step: STEPS.map((st, i) => ({ '@type': 'HowToStep', position: i + 1, name: st.title, text: st.body })),
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: FAQ.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+}
 
 export default async function Home() {
   const { data: session } = await auth.getSession()
@@ -92,6 +170,10 @@ export default async function Home() {
 
   return (
     <div className="bg-surface text-ink font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, '\\u003c') }}
+      />
       {/* Hero */}
       <div className="relative overflow-hidden bg-brand text-[#fff8ef]">
         <nav className="relative z-10 flex items-center justify-between px-5 md:px-16 py-6">
@@ -128,11 +210,14 @@ export default async function Home() {
           <span className="inline-flex items-center rounded-full bg-sun text-on-sun px-[18px] py-2.5 text-[15px] font-extrabold shadow-[0_3px_0_rgba(58,42,34,.25)]">
             Grátis na fase de teste
           </span>
+          <p className="text-base md:text-lg font-extrabold uppercase tracking-[0.08em] opacity-90">
+            App de tarefas domésticas para crianças
+          </p>
           <h1 className="max-w-[900px] font-display font-bold text-[52px] md:text-[84px] leading-none tracking-[-0.01em] text-balance">
             Arrumou a cama? Ganhou ponto.
           </h1>
           <p className="max-w-[620px] text-lg md:text-[21px] font-bold leading-normal text-pretty">
-            O Tarefinha transforma as tarefas de casa em um jogo: as crianças marcam, os pais aprovam e os pontos viram recompensas.
+            O Tarefinha é um quadro de tarefas e de recompensas que transforma a rotina de casa em um jogo: as crianças marcam, os pais aprovam e os pontos viram prêmios.
           </p>
           <div className="flex flex-wrap justify-center gap-3.5">
             <InstallButton className={CTA_SUN}>Instalar grátis</InstallButton>
@@ -240,6 +325,35 @@ export default async function Home() {
         ))}
       </section>
 
+      {/* Tarefas por idade */}
+      <section id="idades" className="flex flex-col items-center gap-10 px-5 md:px-16 pb-24">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h2 className="font-display font-bold text-[40px] md:text-[52px] leading-[1.1] text-balance">
+            Tarefas domésticas por idade
+          </h2>
+          <p className="max-w-[640px] text-lg leading-[1.55] text-ink-muted text-pretty">
+            Não sabe por onde começar? Estas são ideias de tarefas que as crianças conseguem fazer em cada fase. No Tarefinha, cada uma vira um cartão com ícone e pontos.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+          {BY_AGE.map((g) => (
+            <div key={g.age} className="flex flex-col gap-4 rounded-[28px] p-7" style={{ background: `var(--kid-${g.kid}-soft)` }}>
+              <div className="flex items-center gap-3">
+                <TfIcon name={g.icon} size={48} color={`var(--kid-${g.kid})`} />
+                <h3 className="font-display font-semibold text-[28px] leading-tight">{g.age}</h3>
+              </div>
+              <ul className="flex flex-col gap-2.5">
+                {g.tasks.map((t) => (
+                  <li key={t} className="bg-white rounded-[18px] px-4 py-3 font-extrabold text-[17px] shadow-sticker">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* FAQ */}
       <section id="faq" className="flex flex-col gap-10 px-5 md:px-16 py-24 bg-surface-raised border-t-2 border-line">
         <h2 className="font-display font-bold text-[40px] md:text-[52px] leading-[1.1] text-center">Perguntas frequentes</h2>
@@ -272,7 +386,14 @@ export default async function Home() {
       <footer className="flex flex-col sm:flex-row gap-3 justify-between items-center px-5 md:px-16 py-7 text-sm font-bold text-ink-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-7 w-auto" />
-        <span>Feito para famílias · fase de teste</span>
+        <nav aria-label="Rodapé" className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+          <a href="#como">Como funciona</a>
+          <a href="#idades">Tarefas por idade</a>
+          <a href="#faq">Perguntas frequentes</a>
+          <Link href="/cadastro">Criar conta</Link>
+          <Link href="/login">Entrar</Link>
+        </nav>
+        <span>Feito para famílias brasileiras · fase de teste</span>
       </footer>
     </div>
   )

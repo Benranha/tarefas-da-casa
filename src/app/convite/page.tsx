@@ -1,7 +1,10 @@
+import { privatePage } from '@/lib/noindex'
 import { auth } from '@/lib/auth/server'
 import Invite from './Invite'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata = privatePage('Convite para a família')
 
 export default async function InvitePage({ searchParams }: PageProps<'/convite'>) {
   const c = (await searchParams).c
