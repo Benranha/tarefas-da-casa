@@ -1,0 +1,41 @@
+# Tarefinha
+
+> Tarefinha (https://tarefinha.app.br) é um app web brasileiro de tarefas domésticas para crianças. Funciona como um quadro de rotina e de recompensas digital: os pais criam as tarefas do dia, as crianças marcam o que fizeram, os pais aprovam e os pontos são trocados por recompensas combinadas em família. É gratuito durante a fase de teste, sem cartão de crédito, e não precisa ser baixado de loja (é um PWA instalável).
+
+## Para quem é
+
+- Pais e mães de crianças de cerca de 3 a 12 anos que querem criar rotina, autonomia e responsabilidade em casa.
+- Famílias que procuram um "quadro de tarefas infantil", "tabela de rotina", "sistema de pontos para crianças" ou "mesada por tarefas" em formato digital.
+- Funciona para crianças que ainda não sabem ler: as tarefas têm ícones grandes.
+
+## Como funciona
+
+1. Os pais cadastram as crianças (nome, avatar, cor, horário de acordar e de dormir).
+2. Os pais criam as tarefas do dia com ícone, pontos e horário opcional; elas se repetem todos os dias.
+3. A criança marca a tarefa como feita no totem (tablet da casa) ou no próprio celular.
+4. Os pais aprovam com um toque ou devolvem com um recado para a criança refazer.
+5. Os pontos aprovados são trocados por recompensas cadastradas pelos pais (sorvete, cinema, videogame, passeio, mesada...).
+
+## Recursos
+
+- Totem da família: um tablet vira o quadro de tarefas da casa; cada criança toca no próprio rosto e entra com um código secreto de 4 a 8 números.
+- App da criança: link pessoal que pode ser instalado no celular dela, com lembretes (notificações) no horário de cada tarefa, só entre a hora de acordar e a de dormir.
+- Painel dos pais: fila de aprovação, histórico, recompensas e ajuda por IA para montar a rotina.
+- Família compartilhada: convite para o outro responsável aprovar tarefas junto.
+- Funciona em Android, iPhone, iPad, Windows e Mac pelo navegador.
+
+## Preço
+
+- Gratuito durante a fase de teste (teste grátis de 30 dias, sem cartão de crédito).
+
+## Ideias de tarefas domésticas por idade
+
+- 3 a 5 anos: guardar os brinquedos, colocar a roupa suja no cesto, ajudar a dar comida ao pet, escovar os dentes.
+- 6 a 8 anos: arrumar a cama, pôr e tirar a mesa, regar as plantas, arrumar a mochila da escola.
+- 9 a 12 anos: lavar a louça, varrer a casa, tirar o lixo, dobrar e guardar a roupa.
+
+## Links
+
+- [Página inicial](https://tarefinha.app.br/): apresentação, como funciona e perguntas frequentes.
+- [Criar conta grátis](https://tarefinha.app.br/cadastro)
+- [Entrar](https://tarefinha.app.br/login)

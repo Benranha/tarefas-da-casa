@@ -6,7 +6,8 @@ export async function generateMetadata({ searchParams }: PageProps<'/filho'>): P
   const c = (await searchParams).c
   const code = typeof c === 'string' && /^[0-9a-f]{32}$/i.test(c) ? c : null
   return {
-    title: 'Minhas tarefas • Tarefinha',
+    title: 'Minhas tarefas',
+    robots: { index: false, follow: false },
     manifest: code ? `/api/filho/manifest?c=${code}` : '/manifest.json',
   }
 }
