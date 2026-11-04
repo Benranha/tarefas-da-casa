@@ -9,6 +9,7 @@ import PinForm from '@/components/PinForm'
 import TfIcon from '@/components/TfIcon'
 import PushToggle from '@/components/PushToggle'
 import { TfLoading } from '@/components/TfLoader'
+import { usePolling } from '@/lib/use-polling'
 
 type Info = { name: string; avatar: string; color: string; has_pin: boolean }
 type Instance = {
@@ -98,12 +99,8 @@ function Filho() {
       .catch(() => setState('invalid'))
   }, [code, valid, load])
 
-  // Sem Realtime no Neon: atualiza a cada 8s enquanto a tela está aberta.
-  useEffect(() => {
-    if (!token || state !== 'tasks') return
-    const timer = setInterval(() => load(token), 8000)
-    return () => clearInterval(timer)
-  }, [token, state, load])
+  // Sem Realtime no Neon: atualiza enquanto a tela está aberta e em uso.
+  usePolling(() => token && load(token), 15_000, { enabled: !!token && state === 'tasks', idleAfterMs: 10 * 60_000 })
 
   async function submitPin(pin: string): Promise<string | null> {
     const res = await fetch('/api/filho/entrar', {

@@ -5,6 +5,7 @@ import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
 import { TfLoading } from '@/components/TfLoader'
+import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 
 // Tarefas com aprovar/devolver em andamento: um segundo toque (ou clique) não manda de novo.
 const inFlight = new Set<string>();
@@ -37,10 +38,9 @@ export default function ParentsDashboard() {
 
   useEffect(() => {
     fetchPendingTasks();
-    // Sem Realtime no Neon: atualiza a fila a cada 10s.
-    const timer = setInterval(() => fetchPendingTasks(true), 10000);
-    return () => clearInterval(timer);
   }, []);
+  // Sem Realtime no Neon: atualiza a fila enquanto o painel está aberto e em uso.
+  usePolling(() => fetchPendingTasks(true), 20_000, { idleAfterMs: PAIS_IDLE_MS });
 
   async function fetchPendingTasks(silent = false) {
     if (!silent) setLoading(true);
