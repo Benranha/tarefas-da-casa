@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
+import { track } from '@/lib/analytics'
 
 type InstallEvent = Event & { prompt: () => Promise<void> }
 
@@ -14,7 +15,10 @@ export default function InstallButton({ className, children }: { className?: str
       e.preventDefault()
       setEvt(e as InstallEvent)
     }
-    const onInstalled = () => setEvt(null)
+    const onInstalled = () => {
+      track('app_install')
+      setEvt(null)
+    }
     window.addEventListener('beforeinstallprompt', onPrompt)
     window.addEventListener('appinstalled', onInstalled)
     return () => {
@@ -30,6 +34,7 @@ export default function InstallButton({ className, children }: { className?: str
       onClick={(e) => {
         if (!evt) return
         e.preventDefault()
+        track('app_install_prompt')
         evt.prompt().finally(() => setEvt(null))
       }}
     >

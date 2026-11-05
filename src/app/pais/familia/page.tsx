@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Copy, KeyRound, Link2, Plus, UserPlus } from 'lucide-react'
 import PushToggle from '@/components/PushToggle'
+import { track } from '@/lib/analytics'
 
 type Member = { id: string; name: string; email: string; is_owner: boolean }
 type Invite = { code: string; expires_at: string }
@@ -37,8 +38,10 @@ export default function FamilyPage() {
     setBusy(true)
     const res = await fetch('/api/pais/family/invite', { method: 'POST' })
     setBusy(false)
-    if (res.ok) await load()
-    else alert('Não foi possível criar o convite.')
+    if (res.ok) {
+      track('invite_parent')
+      await load()
+    } else alert('Não foi possível criar o convite.')
   }
 
   async function saveParental(e: React.FormEvent) {

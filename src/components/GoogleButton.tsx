@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { authClient } from '@/lib/auth/client'
 import { TfLoader } from '@/components/TfLoader'
+import { rememberAuthMethod } from '@/lib/analytics'
 
 export default function GoogleButton({ label }: { label: string }) {
   const [loading, setLoading] = useState(false)
@@ -11,6 +12,7 @@ export default function GoogleButton({ label }: { label: string }) {
   async function handleClick() {
     setLoading(true)
     setError(null)
+    rememberAuthMethod('google')
     const { error } = await authClient.signIn.social({
       provider: 'google',
       callbackURL: `${window.location.origin}/pais`,

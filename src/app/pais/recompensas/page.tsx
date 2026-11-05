@@ -4,6 +4,7 @@ import { Plus, Trash2, Check, X } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
+import { track } from '@/lib/analytics'
 
 type Reward = { id: string; title: string; icon: string; cost_points: number }
 type Redemption = {
@@ -50,6 +51,7 @@ export default function RewardsPage() {
     })
     setSaving(false)
     if (res.ok) {
+      track('create_reward', { cost })
       setTitle('')
       await load()
     } else {

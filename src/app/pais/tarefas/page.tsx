@@ -4,6 +4,7 @@ import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check, EllipsisVertical, Co
 import TfIcon, { isCustomEmoji } from '@/components/TfIcon'
 import { TfLoader } from '@/components/TfLoader'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
+import { track } from '@/lib/analytics'
 
 type Child = { id: string; name: string; wake_time: string; bed_time: string }
 type Mode = 'daily' | 'weekly' | 'once'
@@ -305,6 +306,7 @@ export default function TasksPage() {
       setEditing(null)
       // Mantém criança, ícone, pontos e dias para cadastrar a próxima tarefa rápido; limpa só o texto.
       if (method === 'POST') {
+        track('create_task', { source: 'painel', recurrence: d.mode })
         setLast(d)
         setFormKey((k) => k + 1)
       }
@@ -327,6 +329,7 @@ export default function TasksPage() {
     setSaving(false)
     const data = await res.json().catch(() => ({}))
     if (!res.ok) return alert(data.error || 'Não foi possível copiar.')
+    track('copy_tasks', { copied: data.copied })
     alert(
       `${data.copied} ${data.copied === 1 ? 'tarefa copiada' : 'tarefas copiadas'}` +
         (data.skipped ? `. ${data.skipped} já existia${data.skipped === 1 ? '' : 'm'} e ficou${data.skipped === 1 ? '' : 'ram'} de fora.` : '.'),
