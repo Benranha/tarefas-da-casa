@@ -6,6 +6,7 @@ import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
+import { track } from '@/lib/analytics'
 
 // Tarefas com aprovar/devolver em andamento: um segundo toque (ou clique) não manda de novo.
 const inFlight = new Set<string>();
@@ -65,6 +66,7 @@ export default function ParentsDashboard() {
     const res = await fetch(`/api/pais/instances/${instanceId}/approve`, { method: 'POST' }).catch(() => null);
     // 409: já foi tratada (outro toque ou outro aparelho). Só atualiza a lista.
     if (!res || (!res.ok && res.status !== 409)) alert('Erro ao aprovar tarefa');
+    else if (res.ok) track('approve_task');
     await fetchPendingTasks();
     inFlight.delete(instanceId);
   }

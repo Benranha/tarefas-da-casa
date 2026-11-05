@@ -1,11 +1,12 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import { ChevronDown, Moon, PartyPopper, Plus, Sun } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 import { KID_COLORS } from '@/lib/kid-options'
+import { authMethod, track, trackOnce } from '@/lib/analytics'
 
 const AVATARS = TF_GROUPS.avatares
 const ICONS = TF_GROUPS.tarefas
@@ -49,6 +50,11 @@ export default function OnboardingFlow({
 
   const step = child ? 2 : 1
 
+  // Toda conta nova passa por aqui antes do painel: é o melhor ponto para contar o cadastro.
+  useEffect(() => {
+    if (!existingChild) trackOnce('sign_up', { method: authMethod() })
+  }, [existingChild])
+
   async function post(url: string, body: unknown) {
     setSaving(true)
     setError('')
@@ -76,7 +82,9 @@ export default function OnboardingFlow({
     e.preventDefault()
     if (wake >= bed) return setError('A hora de acordar precisa ser antes da hora de dormir.')
     const created = await post('/api/pais/children', { name, avatar, color, wakeTime: wake, bedTime: bed, hasDevice })
-    if (created) setChild({ id: created.id, name: created.name })
+    if (!created) return
+    track('add_child', { source: 'onboarding' })
+    setChild({ id: created.id, name: created.name })
   }
 
   async function addTask(e: React.FormEvent) {
@@ -84,6 +92,8 @@ export default function OnboardingFlow({
     if (!child) return
     const created = await post('/api/pais/tasks', { title, icon, points, childId: child.id, recurrence: 'daily' })
     if (!created) return
+    track('create_task', { source: 'onboarding', recurrence: 'daily' })
+    track('tutorial_complete')
     try {
       localStorage.setItem('tarefinha-tutorial-visto', '1')
     } catch {}

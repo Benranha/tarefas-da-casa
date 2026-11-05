@@ -6,6 +6,7 @@ import TfIcon from '@/components/TfIcon'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 import { KID_COLORS } from '@/lib/kid-options'
 import EnviarLink from './EnviarLink'
+import { track } from '@/lib/analytics'
 
 const AVATARS = TF_GROUPS.avatares
 const COLORS = KID_COLORS
@@ -57,6 +58,7 @@ export default function ChildrenPage() {
     })
     setSaving(false)
     if (res.ok) {
+      track('add_child', { source: 'painel' })
       setName('')
       await load()
     } else {
