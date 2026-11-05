@@ -45,7 +45,7 @@ export default async function Image() {
               borderRadius: 999,
             }}
           >
-            Grátis na fase de teste · tarefinha.app.br
+            30 dias grátis · tarefinha.app.br
           </div>
         </div>
       </div>

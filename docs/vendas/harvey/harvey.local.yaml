@@ -1,0 +1,91 @@
+# Configuração do Harvey (github.com/ethanplusai/harvey) para prospectar PARCEIROS do Tarefinha.
+# Copie para a raiz do clone do Harvey como harvey.local.yaml (ele tem prioridade sobre harvey.yaml).
+# Preencha tudo que estiver entre colchetes antes de rodar.
+#
+# Atenção: o Harvey é para B2B. Aqui ele só fala com escolas, psicólogas, clínicas e criadoras de conteúdo,
+# pelo e-mail profissional publicado. Nunca use para mandar e-mail frio a pais (LGPD).
+
+persona:
+  name: "[seu nome]"
+  company: "Tarefinha"
+  role: "Fundador(a)"
+  email: "[seu e-mail no domínio do Tarefinha]"
+  linkedin: ""
+  tone: "simples, direto, gentil, como uma pessoa falando com outra"
+
+product:
+  name: "Tarefinha"
+  description: >-
+    App web (PWA) brasileiro de tarefas domésticas para crianças de 3 a 12 anos. Os pais criam as tarefas,
+    as crianças marcam no tablet da casa ou no próprio celular, os pais aprovam e os pontos viram prêmios
+    combinados em família.
+  pricing: "30 dias grátis, sem cartão de crédito. Preço depois do teste: [ainda não definido; não informar]"
+  key_benefits:
+    - "Os pais param de cobrar a mesma tarefa o dia todo: o app lembra a criança no horário"
+    - "Funciona até para criança que não lê: ícones grandes e uma cor por criança"
+    - "Ponto só vale depois que o responsável aprova, e dá para devolver com recado"
+  objection_responses:
+    "já indicamos outra coisa": "Faz sentido. O que as famílias mais reclamam da ferramenta que vocês indicam hoje?"
+    "não indicamos aplicativos": "Entendo. Posso perguntar por quê? Se for por causa de tela, a criança usa só por segundos."
+    "não temos tempo": "Entendo. Quer que eu mande só o vídeo de 2 minutos para ver quando der?"
+  offer:
+    primary: "Indicar o Tarefinha às famílias (sem programa de comissão por enquanto)"
+    entry: "Vídeo de 2 minutos e a página tarefinha.app.br/conheca"
+    goal: "get_reply"
+    booking_method: "suggest_times"
+    booking_url: ""
+    meeting_duration: "15 minutos"
+    meeting_owner: "[seu nome]"
+
+icp:
+  # O OpenStreetMap (fonte grátis padrão) não tem categoria para escola ou psicóloga no Harvey.
+  # Use o provedor TinyFish (grátis, com chave) ou Serper: `harvey discover --providers`.
+  industries:
+    - "escola particular educação infantil"
+    - "psicóloga infantil"
+    - "psicopedagoga"
+    - "clínica pediátrica"
+  company_size: "1-200 funcionários"
+  titles:
+    - "Coordenadora pedagógica"
+    - "Diretora"
+    - "Psicóloga"
+    - "Psicopedagoga"
+    - "Pediatra"
+  geography:
+    - "[sua cidade], [UF], Brasil"
+  hiring_signals: []
+
+channels:
+  email:
+    enabled: true
+    provider: "gmail"
+    max_daily_sends: 10          # lote pequeno: cada e-mail com uma observação real
+    require_approval: true       # nada sai sem você aprovar no Outbox. Não desligue.
+    send_to_risky: false
+    max_bounce_rate: 0.05
+    send_window:
+      start: "09:00"
+      end: "17:00"
+      weekdays_only: true
+      recipient_timezone: false
+  linkedin:
+    enabled: false
+
+usage:
+  max_daily_claude_percent: 50
+  heartbeat_interval_minutes: 30
+  quiet_hours:
+    start: "20:00"
+    end: "08:00"
+    timezone: "America/Sao_Paulo"
+
+compliance:
+  postal_address: "[endereço comercial ou caixa postal, e CNPJ se tiver]"
+  # O Harvey só reconhece palavras de descadastro em inglês, hebraico e espanhol ("stop", "unsubscribe", "baja").
+  # "não, obrigado", "pare" e "sair" NÃO são reconhecidos: confira as respostas e descadastre à mão.
+  opt_out_line: 'Se não fizer sentido, responda "stop" que eu não escrevo mais.'
+  do_not_contact: []
+
+writer:
+  email_rules: "skills/email_rules.md"

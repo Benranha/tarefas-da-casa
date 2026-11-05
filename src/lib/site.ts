@@ -6,7 +6,7 @@ export const SITE_NAME = 'Tarefinha'
 export const SITE_TITLE = 'Tarefinha — App de tarefas domésticas para crianças com pontos e recompensas'
 
 export const SITE_DESCRIPTION =
-  'Quadro de tarefas e rotina infantil gamificado: as crianças marcam as tarefas de casa, os pais aprovam e os pontos viram recompensas. Funciona no tablet como totem da família e no celular, sem baixar da loja. Grátis na fase de teste.'
+  'Quadro de tarefas e rotina infantil gamificado: as crianças marcam as tarefas de casa, os pais aprovam e os pontos viram recompensas. Funciona no tablet como totem da família e no celular, sem baixar da loja. Teste grátis de 30 dias, sem cartão.'
 
 export const SITE_KEYWORDS = [
   'tarefas domésticas para crianças',
