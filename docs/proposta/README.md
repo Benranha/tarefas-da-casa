@@ -1,6 +1,7 @@
 # Material para proposta
 
-- **`Tarefinha-apresentacao.pdf`**: apresentação em 14 páginas (A4) que explica cada tela e funcionalidade do app.
+- **`Tarefinha-apresentacao.pdf`**: apresentação em 12 páginas (A4) com linguagem para mães e pais, sem termos técnicos, explicando cada tela e funcionalidade.
+- **`vsl/`**: vídeo de vendas (VSL) de cerca de 1min47 com locução e legenda (`Tarefinha-VSL.mp4`), a legenda separada (`Tarefinha-VSL.srt`), o roteiro cena a cena (`ROTEIRO.md`), a miniatura e as informações para postar no YouTube (`YOUTUBE.md`). No site, uma versão leve do vídeo fica em `public/video/` e aparece no topo da página inicial e de `/conheca`.
 - No site, a apresentação virou a página `/conheca` (`src/app/conheca/page.tsx`), com linguagem para mães e pais; as imagens dela ficam em `public/conheca/`.
 - **`telas/`**: capturas reais do app rodando com dados fictícios (Família Albuquerque: Lucas, Sofia e Davi). Os PNGs estão em alta resolução (2x).
 
