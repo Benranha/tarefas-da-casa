@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import TfIcon from '@/components/TfIcon'
-import InstallButton from '@/components/landing/InstallButton'
-import IosInstallHint from '@/components/landing/IosInstallHint'
 
 // Página de apresentação do app para mães e pais: as telas reais (com dados de exemplo) e o que cada uma faz.
 // As imagens ficam em public/conheca/.
@@ -39,7 +37,6 @@ const S = {
 const CTA_BASE =
   'inline-flex items-center justify-center text-center min-h-16 px-9 rounded-full font-display font-semibold text-xl md:text-2xl'
 const CTA_SUN = `${CTA_BASE} bg-sun text-on-sun shadow-[0_6px_0_rgba(58,42,34,.3)] active:translate-y-0.5 active:shadow-none`
-const CTA_OUTLINE = `${CTA_BASE} border-[3px] border-[#fff8ef] text-[#fff8ef]`
 
 // Moldura de navegador (computador), de celular ou de tablet em volta de um print.
 function Desk({ s, crop, eager }: { s: Shot; crop?: string; eager?: boolean }) {
@@ -180,7 +177,6 @@ export default function Conheca() {
               <Link href="/cadastro" className={CTA_SUN}>
                 Comece a testar agora: 30 dias grátis
               </Link>
-              <InstallButton className={CTA_OUTLINE}>Instalar o app</InstallButton>
             </div>
             <p className="text-sm font-bold opacity-80">Sem cartão de crédito. Nomes e números das telas são de exemplo.</p>
           </div>
@@ -370,19 +366,15 @@ export default function Conheca() {
       </section>
 
       {/* Chamada final */}
-      <section id="instalar" className="flex flex-col items-center text-center gap-6 px-5 md:px-16 py-20 md:py-28 bg-brand text-[#fff8ef]">
+      <section className="flex flex-col items-center text-center gap-6 px-5 md:px-16 py-20 md:py-28 bg-brand text-[#fff8ef]">
         <TfIcon name="festa" size={96} style={{ ['--ic-b' as string]: '#ffc93c', ['--ic-k' as string]: '#8a2e06' }} />
         <h2 className="font-display font-bold text-[40px] md:text-[56px] leading-[1.05] text-balance">Pronto para organizar a rotina da sua casa?</h2>
         <p className="max-w-[580px] text-lg md:text-[19px] font-bold leading-normal text-pretty">
           Crie a conta, cadastre as crianças e veja as primeiras tarefas aprovadas ainda hoje. Sem cartão de crédito e sem baixar nada da loja.
         </p>
-        <IosInstallHint />
-        <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3.5">
-          <Link href="/cadastro" className={CTA_SUN}>
-            Comece a testar agora: 30 dias grátis
-          </Link>
-          <InstallButton className={CTA_OUTLINE}>Instalar o app</InstallButton>
-        </div>
+        <Link href="/cadastro" className={CTA_SUN}>
+          Comece a testar agora: 30 dias grátis
+        </Link>
         <Link href="/login" className="font-extrabold underline underline-offset-4">
           Já tenho conta
         </Link>
