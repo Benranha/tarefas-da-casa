@@ -1,6 +1,6 @@
 # Material para proposta
 
-- **`Tarefinha-apresentacao.pdf`**: apresentação em 15 páginas (A4) que explica cada tela e funcionalidade do app.
+- **`Tarefinha-apresentacao.pdf`**: apresentação em 14 páginas (A4) que explica cada tela e funcionalidade do app.
 - **`telas/`**: capturas reais do app rodando com dados fictícios (Família Albuquerque: Lucas, Sofia e Davi). Os PNGs estão em alta resolução (2x).
 
 | Arquivo | Tela |
@@ -20,7 +20,6 @@
 | `14-mobile-pais-fila.png` / `15-mobile-pais-menu.png` | Painel dos pais no celular |
 | `16-totem-escolha.png` … `19-totem-premios.png` | Totem no tablet: escolha, código, tarefas, prêmios |
 | `20-filho-tarefas.png` / `21-filho-premios.png` | App da criança no celular |
-| `22-admin-visao-geral.png` … `25-admin-engajamento.png` | Painel admin: visão geral, assinantes, receita, engajamento |
-| `24-admin-receita-c.png` | Recorte dos indicadores de receita |
+| `26-pais-assistente-ia.png` / `27-mobile-assistente-ia.png` | Assistente com IA (computador e celular) |
 
 Todos os nomes, e-mails, números e indicadores são fictícios.
