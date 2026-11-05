@@ -7,6 +7,17 @@ export function parsePhone(raw: string): string | null {
   return /^[1-9]{2}9?\d{8}$/.test(digits) ? digits : null
 }
 
+// Só dígitos com DDD (como salvo em user_phones) → "(92) 99999-9999".
+export function formatPhone(digits: string): string {
+  const m = /^(\d{2})(\d{4,5})(\d{4})$/.exec(digits)
+  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : digits
+}
+
+// Link do WhatsApp para um telefone salvo (Brasil).
+export function whatsappUrl(digits: string): string {
+  return `https://wa.me/55${digits}`
+}
+
 export async function savePhone(userId: string, phone: string) {
   await sql`
     INSERT INTO user_phones (user_id, phone) VALUES (${userId}::uuid, ${phone})
