@@ -13,6 +13,19 @@ conteúdo). Nunca para pais.
 | `product_knowledge.md` | `skills/product_knowledge.md` |
 | `email_rules.md` | `skills/email_rules.md` |
 
+## Antes de começar: o domínio de prospecção
+
+Os e-mails para parceiros saem de um **domínio separado** (por exemplo `tarefinha.com.br`), nunca do
+`tarefinha.app.br`. Se a prospecção cair em spam, a reputação do domínio do app, que manda os links das crianças,
+continua limpa.
+
+1. Registre o domínio (registro.br) e crie uma caixa no Google Workspace nele.
+2. Configure SPF, DKIM e DMARC do domínio (o Workspace mostra os registros DNS).
+3. Faça o domínio novo redirecionar para `tarefinha.app.br`, para quem digitar o endereço cair no site.
+4. Comece o aquecimento da caixa (TrulyInbox, ou trocando e-mails de verdade) e anote a data em
+   `channels.email.warmup.start_date`. Por 14 dias o Harvey não manda e-mail frio, mas já pode achar
+   parceiros e escrever os rascunhos.
+
 ## Passo a passo
 
 Pré-requisitos: macOS ou Linux, Python 3.13, Claude Code com login feito, uma conta Gmail para enviar.

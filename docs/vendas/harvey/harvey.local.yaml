@@ -53,7 +53,7 @@ icp:
     - "Psicopedagoga"
     - "Pediatra"
   geography:
-    - "[sua cidade], [UF], Brasil"
+    - "Manaus, AM"
   hiring_signals: []
 
 channels:
@@ -64,6 +64,13 @@ channels:
     require_approval: true       # nada sai sem você aprovar no Outbox. Não desligue.
     send_to_risky: false
     max_bounce_rate: 0.05
+    # Domínio novo de prospecção: no dia em que a caixa começar a ser aquecida, coloque a data aqui.
+    # Por 14 dias nenhum e-mail frio sai; depois o limite começa em 3 e sobe 1 por dia até max_daily_sends.
+    warmup:
+      start_date: ""            # AAAA-MM-DD
+      min_days: 14
+      start_sends: 3
+      daily_increase: 1
     send_window:
       start: "09:00"
       end: "17:00"
@@ -78,7 +85,7 @@ usage:
   quiet_hours:
     start: "20:00"
     end: "08:00"
-    timezone: "America/Sao_Paulo"
+    timezone: "America/Manaus"
 
 compliance:
   postal_address: "[endereço comercial ou caixa postal, e CNPJ se tiver]"
