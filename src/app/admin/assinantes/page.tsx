@@ -6,6 +6,7 @@ import {
 import { UUID } from '@/lib/http';
 import { Chip, fmtInt, fmtDec, fmtDM } from '../ui';
 import FamilyActions from './Actions';
+import { formatPhone, whatsappUrl } from '@/lib/telefone';
 
 const KID_COLORS = ['#2f5bea', '#c8266b', '#3f7d20', '#9a5b06', '#7a3fe0', '#0b7a85', '#c8362b'];
 const KID_SOFT = ['#e2e8fc', '#f7e1ea', '#e4ede0', '#f1e8dc', '#ece4fb', '#ddecee', '#f7e3e1'];
@@ -61,7 +62,7 @@ export default async function AdminSubscribers({ searchParams }: PageProps<'/adm
           <form action="/admin/assinantes" className="ad-search" role="search">
             {status && <input type="hidden" name="status" value={status} />}
             <Search size={18} aria-hidden="true" />
-            <input name="q" defaultValue={search} placeholder="Buscar família ou e-mail" aria-label="Buscar família ou e-mail" />
+            <input name="q" defaultValue={search} placeholder="Buscar família, e-mail ou telefone" aria-label="Buscar família, e-mail ou telefone" />
           </form>
         </header>
 
@@ -90,7 +91,7 @@ export default async function AdminSubscribers({ searchParams }: PageProps<'/adm
               <Link key={r.owner_id} href={qs({ f: r.owner_id })} className="ad-tr" role="row" data-selected={r.owner_id === selId || undefined}>
                 <span className="ad-fam">
                   <i className="ad-avatar" style={{ borderColor: c.solid, background: c.soft }}>{nm.replace('Família ', '')[0]?.toUpperCase()}</i>
-                  <span><strong>{nm}</strong><small>{r.email}</small></span>
+                  <span><strong>{nm}</strong><small>{r.email}</small>{r.phone && <small>{formatPhone(r.phone)}</small>}</span>
                 </span>
                 <span><Chip tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</Chip></span>
                 <span>{r.children}</span>
@@ -130,6 +131,21 @@ export default async function AdminSubscribers({ searchParams }: PageProps<'/adm
             <div className="ad-spark" role="img" aria-label="Tarefas aprovadas nos últimos 14 dias">
               {detail.spark.map((v, i) => <div key={i} title={String(v)} style={{ height: `${Math.max(4, (v / sparkMax) * 100)}%` }} />)}
             </div>
+          </div>
+          <div>
+            <p className="ad-label">Responsáveis</p>
+            <ul className="ad-contacts">
+              {detail.contacts.map((p) => (
+                <li key={p.email}>
+                  <span><strong>{p.name || p.email}</strong><small>{p.is_owner ? 'Titular' : 'Convidado'} · {p.email}</small></span>
+                  {p.phone ? (
+                    <a href={whatsappUrl(p.phone)} target="_blank" rel="noreferrer" className="ad-link">{formatPhone(p.phone)}</a>
+                  ) : (
+                    <small>Sem telefone</small>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
           <ul className="ad-kids">
             {detail.kids.length === 0 && <li>Nenhuma criança cadastrada.</li>}

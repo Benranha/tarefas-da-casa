@@ -124,7 +124,7 @@ export async function overview(period: Period) {
 }
 
 export type SubscriberRow = {
-  owner_id: string; status: Status; name: string | null; email: string; created_at: string
+  owner_id: string; status: Status; name: string | null; email: string; phone: string | null; created_at: string
   children: number; per_day: number; trial_ends_at: string; current_period_end: string | null
   canceled_at: string | null; last_payment_failed_at: string | null
 }
@@ -140,17 +140,28 @@ export async function subscribers(opts: { status?: Status; search?: string; tria
   if (opts.search) {
     params.push(`%${opts.search.replace(/[%_\\]/g, '\\$&')}%`)
     const i = params.length
-    where.push(`(u.name ILIKE $${i} OR u.email ILIKE $${i} OR EXISTS (
+    // Busca por telefone: compara só os dígitos (o telefone é salvo sem máscara).
+    const digits = opts.search.replace(/\D/g, '')
+    let phoneMatch = ''
+    if (digits.length >= 4) {
+      params.push(`%${digits}%`)
+      const d = params.length
+      phoneMatch = ` OR ph.phone LIKE $${d} OR EXISTS (
+      SELECT 1 FROM family_members fm JOIN user_phones mp ON mp.user_id = fm.user_id
+      WHERE fm.family_owner_id = fs.owner_id AND mp.phone LIKE $${d})`
+    }
+    where.push(`(u.name ILIKE $${i} OR u.email ILIKE $${i}${phoneMatch} OR EXISTS (
       SELECT 1 FROM family_members fm JOIN neon_auth."user" mu ON mu.id = fm.user_id
       WHERE fm.family_owner_id = fs.owner_id AND (mu.email ILIKE $${i} OR mu.name ILIKE $${i})))`)
   }
   const [rows, counts] = await Promise.all([
     q<SubscriberRow>(`WITH fs AS (${FAMILY_STATUS_SQL})
-      SELECT fs.owner_id, fs.status, u.name, u.email, fs.created_at, fs.trial_ends_at, fs.current_period_end, fs.canceled_at, fs.last_payment_failed_at,
+      SELECT fs.owner_id, fs.status, u.name, u.email, ph.phone, fs.created_at, fs.trial_ends_at, fs.current_period_end, fs.canceled_at, fs.last_payment_failed_at,
              (SELECT count(*)::int FROM children c WHERE c.owner_id = fs.owner_id) AS children,
              (SELECT count(*)::float / 30 FROM task_instances ti JOIN children c ON c.id = ti.child_id
                 WHERE c.owner_id = fs.owner_id AND ti.status = 'approved' AND ti.approved_at >= now() - interval '30 days') AS per_day
       FROM fs JOIN neon_auth."user" u ON u.id = fs.owner_id
+      LEFT JOIN user_phones ph ON ph.user_id = fs.owner_id
       ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
       ORDER BY fs.created_at DESC LIMIT 100`, params),
     q(`WITH fs AS (${FAMILY_STATUS_SQL}) SELECT status, count(*)::int AS n FROM fs GROUP BY status`),
@@ -161,11 +172,17 @@ export async function subscribers(opts: { status?: Status; search?: string; tria
 }
 
 export async function familyDetail(id: string) {
-  const [[f], members, kids, spark, [stats]] = await Promise.all([
+  const [[f], contacts, kids, spark, [stats]] = await Promise.all([
     q<SubscriberRow>(`WITH fs AS (${FAMILY_STATUS_SQL})
-      SELECT fs.owner_id, fs.status, u.name, u.email, fs.created_at, fs.trial_ends_at, fs.current_period_end, fs.canceled_at, fs.last_payment_failed_at
-      FROM fs JOIN neon_auth."user" u ON u.id = fs.owner_id WHERE fs.owner_id = $1::uuid`, [id]),
-    q(`SELECT count(*)::int AS n FROM (SELECT $1::uuid AS id UNION SELECT user_id FROM family_members WHERE family_owner_id = $1::uuid) m`, [id]),
+      SELECT fs.owner_id, fs.status, u.name, u.email, ph.phone, fs.created_at, fs.trial_ends_at, fs.current_period_end, fs.canceled_at, fs.last_payment_failed_at
+      FROM fs JOIN neon_auth."user" u ON u.id = fs.owner_id LEFT JOIN user_phones ph ON ph.user_id = fs.owner_id
+      WHERE fs.owner_id = $1::uuid`, [id]),
+    // Responsáveis da família (titular primeiro) com o telefone cadastrado.
+    q<{ name: string | null; email: string; phone: string | null; is_owner: boolean }>(`
+      SELECT u.name, u.email, ph.phone, m.is_owner
+      FROM (SELECT $1::uuid AS id, true AS is_owner UNION SELECT user_id, false FROM family_members WHERE family_owner_id = $1::uuid AND user_id <> $1::uuid) m
+      JOIN neon_auth."user" u ON u.id = m.id LEFT JOIN user_phones ph ON ph.user_id = m.id
+      ORDER BY m.is_owner DESC, u.name`, [id]),
     q(`SELECT name, color, has_device FROM children WHERE owner_id = $1::uuid ORDER BY created_at`, [id]),
     q(`SELECT d::date AS day, count(ti.id)::int AS total
        FROM generate_series((now() at time zone ${TZ})::date - 13, (now() at time zone ${TZ})::date, interval '1 day') d
@@ -180,7 +197,8 @@ export async function familyDetail(id: string) {
   const approved = n(stats.approved)
   return {
     ...f,
-    members: n(members[0]?.n),
+    members: contacts.length,
+    contacts,
     kids: kids as { name: string; color: string | null; has_device: boolean }[],
     spark: spark.map((r) => n(r.total)),
     approvalPct: approved + n(stats.rejected) ? pct(approved, approved + n(stats.rejected)) : null,
