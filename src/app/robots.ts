@@ -12,6 +12,8 @@ const PRIVATE = [
   '/filho',
   '/abrir',
   '/convite',
+  '/verificar-email',
+  '/redefinir-senha',
 ]
 
 // Robôs de busca e de assistentes de IA liberados explicitamente (ChatGPT, Claude, Perplexity, Gemini, Copilot...).

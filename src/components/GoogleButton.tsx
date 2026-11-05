@@ -42,9 +42,11 @@ export default function GoogleButton({ label }: { label: string }) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="w-full py-4 flex items-center justify-center gap-3 bg-white text-ink text-lg font-extrabold rounded-2xl border-2 border-line-strong shadow-sm hover:bg-surface-sunken transition-colors disabled:opacity-60"
+        className="w-full min-h-16 py-4 px-5 flex items-center justify-center gap-3 bg-brand text-on-brand text-xl font-extrabold rounded-2xl shadow-[0_5px_0_rgba(58,42,34,.25)] hover:bg-brand-hover active:translate-y-0.5 active:shadow-none transition-colors disabled:opacity-60"
       >
-        {loading ? <TfLoader size={24} decorative /> : <GoogleLogo />}
+        <span className="grid place-items-center size-9 shrink-0 rounded-full bg-white">
+          {loading ? <TfLoader size={22} decorative /> : <GoogleLogo />}
+        </span>
         {loading ? 'Abrindo o Google...' : label}
       </button>
       {error && <p className="text-sm text-returned-fg text-center">{error}</p>}
