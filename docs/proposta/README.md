@@ -1,6 +1,7 @@
 # Material para proposta
 
 - **`Tarefinha-apresentacao.pdf`**: apresentação em 14 páginas (A4) que explica cada tela e funcionalidade do app.
+- **`public/tarefinha-apresentacao.pdf`**: versão leve (4 MB) do mesmo PDF, publicada no site em `/conheca` (e `/conheça`).
 - **`telas/`**: capturas reais do app rodando com dados fictícios (Família Albuquerque: Lucas, Sofia e Davi). Os PNGs estão em alta resolução (2x).
 
 | Arquivo | Tela |
