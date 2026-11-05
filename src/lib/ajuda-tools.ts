@@ -1,6 +1,7 @@
 import { approveInstance, listAwaitingApproval, listTodayPending, markInstanceDone, rejectInstance } from '@/lib/instances'
 import { deliverRedemption, listRequestedRedemptions } from '@/lib/recompensas'
 import { UUID } from '@/lib/http'
+import { problemaNoTextoParaCrianca } from '@/lib/ajuda-gate'
 import { checkTask, createTask, listChildren, listTasks, type TaskInput } from '@/lib/tarefas'
 
 // Ferramentas que a IA de ajuda pode pedir ao servidor (function calling do Gemini).
@@ -278,6 +279,8 @@ const TOOLS: Record<string, ToolDef> = {
       if (!found.ok) return found
       const note = typeof args.recado === 'string' ? args.recado.trim().slice(0, 300) : ''
       if (!note) return { ok: false, error: 'Informe o recado para a criança.' }
+      const problemaRecado = problemaNoTextoParaCrianca(note)
+      if (problemaRecado) return { ok: false, error: problemaRecado }
       const item = found.item
       return {
         ok: true,
@@ -391,6 +394,8 @@ const TOOLS: Record<string, ToolDef> = {
       const title = typeof args.titulo === 'string' ? args.titulo.trim().slice(0, 80) : ''
       const points = typeof args.pontos === 'number' ? Math.trunc(args.pontos) : NaN
       const dueTime = typeof args.horario === 'string' && args.horario.trim() ? args.horario.trim() : null
+      const problemaTitulo = problemaNoTextoParaCrianca(title)
+      if (problemaTitulo) return { ok: false, error: problemaTitulo }
 
       const kids = await listChildren(ownerId)
       const matches = kids.filter((k) => norm(k.name as string) === norm(name))

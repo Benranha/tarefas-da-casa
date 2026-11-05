@@ -1,6 +1,6 @@
 # Tarefinha
 
-> Tarefinha (https://tarefinha.app.br) é um app web brasileiro de tarefas domésticas para crianças. Funciona como um quadro de rotina e de recompensas digital: os pais criam as tarefas do dia, as crianças marcam o que fizeram, os pais aprovam e os pontos são trocados por recompensas combinadas em família. É gratuito durante a fase de teste, sem cartão de crédito, e não precisa ser baixado de loja (é um PWA instalável).
+> Tarefinha (https://tarefinha.app.br) é um app web brasileiro de tarefas domésticas para crianças. Funciona como um quadro de rotina e de recompensas digital: os pais criam as tarefas do dia, as crianças marcam o que fizeram, os pais aprovam e os pontos são trocados por recompensas combinadas em família. Tem teste grátis de 30 dias, sem cartão de crédito, e não precisa ser baixado de loja (é um PWA instalável).
 
 ## Para quem é
 
@@ -26,7 +26,7 @@
 
 ## Preço
 
-- Gratuito durante a fase de teste (teste grátis de 30 dias, sem cartão de crédito).
+- Teste grátis de 30 dias, sem cartão de crédito. Sem cartão cadastrado, nada é cobrado automaticamente quando o teste acaba.
 
 ## Ideias de tarefas domésticas por idade
 

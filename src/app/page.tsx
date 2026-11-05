@@ -55,7 +55,7 @@ const FEATURES = [
   {
     kicker: 'App da criança',
     title: 'Tem celular? A tarefa avisa na hora',
-    body: 'Mande um link só dela. Instalado como app, ele lembra cada tarefa no horário marcado — só entre a hora de acordar e a de dormir.',
+    body: 'Mande um link só dela. Instalado como app, ele lembra cada tarefa no horário marcado, e só entre a hora de acordar e a de dormir.',
     kid: 'rosa',
     items: [
       { icon: 'escova', text: '“Hora da tarefa! Escovar os dentes”' },
@@ -79,13 +79,17 @@ const FEATURES = [
 const FAQ = [
   { q: 'O que é o Tarefinha?', a: 'O Tarefinha é um app brasileiro de tarefas domésticas para crianças. Funciona como um quadro de rotina e de recompensas digital: os pais criam as tarefas do dia, as crianças marcam o que fizeram, os pais aprovam e os pontos ganhos são trocados por prêmios combinados em família.' },
   { q: 'Para que idade o Tarefinha é indicado?', a: 'Para crianças de cerca de 3 a 12 anos. As tarefas usam ícones grandes, então funciona até para quem ainda não sabe ler. Os pais escolhem tarefas compatíveis com a idade de cada filho.' },
-  { q: 'É grátis mesmo?', a: 'Sim. Durante a fase de teste o Tarefinha é totalmente gratuito, sem cartão de crédito.' },
+  { q: 'Quanto custa?', a: 'Os primeiros 30 dias são grátis e não pedimos cartão de crédito. Como não há cartão cadastrado, nada é cobrado sozinho quando o teste acaba.' },
   { q: 'Preciso baixar em alguma loja?', a: 'Não. O Tarefinha é um app web (PWA): você abre o link no navegador e toca em “Instalar app” (Android) ou “Adicionar à Tela de Início” (iPhone). Ele passa a abrir como um app normal.' },
-  { q: 'Meus filhos precisam de celular?', a: 'Não. Um tablet da casa vira o totem da família. O celular da criança é opcional — serve para ela receber lembretes no horário.' },
+  { q: 'Meus filhos precisam de celular?', a: 'Não. Um tablet da casa vira o totem da família. O celular da criança é opcional: serve para ela receber lembretes no horário.' },
   { q: 'Como cada criança entra?', a: 'Na primeira vez ela escolhe um código secreto de 4 a 8 números. Sem ele, ninguém mexe nas tarefas dela. Os pais podem redefinir quando quiserem.' },
   { q: 'Dá para dividir com o outro responsável?', a: 'Sim. Em Família você gera um convite e os dois passam a aprovar tarefas e cuidar das recompensas juntos.' },
   { q: 'Como os pontos viram recompensas?', a: 'Os pais cadastram recompensas com um custo em pontos (um sorvete, um passeio, tempo de videogame ou até mesada). A criança junta os pontos das tarefas aprovadas e troca pelo prêmio; os pais confirmam a entrega.' },
-  { q: 'Funciona em Android e iPhone?', a: 'Sim. O Tarefinha roda no navegador de qualquer celular, tablet ou computador — Android, iPhone, iPad, Windows ou Mac — e pode ser instalado na tela inicial como um app.' },
+  { q: 'Funciona em Android e iPhone?', a: 'Sim. O Tarefinha roda no navegador de qualquer celular, tablet ou computador (Android, iPhone, iPad, Windows ou Mac) e pode ser instalado na tela inicial como um app.' },
+  { q: 'Dar ponto por tarefa não ensina a criança a só ajudar em troca de prêmio?', a: 'Vocês escolhem o que vale como prêmio, e não precisa ser nada comprado: uma história a mais antes de dormir, escolher o filme de sexta, meia hora a mais acordado no sábado. O ponto mostra que o esforço foi visto. O combinado continua sendo da família.' },
+  { q: 'Não é mais uma tela para as crianças?', a: 'A criança usa o Tarefinha por poucos segundos: toca na tarefa quando termina e pronto. Não tem jogo, vídeo nem nada para ficar rolando. A tarefa acontece fora da tela.' },
+  { q: 'Já uso um quadro de papel na geladeira. Por que trocar?', a: 'Se o quadro funciona na sua casa, ótimo. O Tarefinha ajuda no que o papel não faz: lembra a criança no horário, soma os pontos sem conta de cabeça e deixa os dois responsáveis aprovarem de onde estiverem.' },
+  { q: 'E se meu filho perder o interesse depois de uma semana?', a: 'Pode acontecer, e o Histórico mostra quando o ritmo cai. Costuma ajudar trocar os prêmios de tempos em tempos e deixar a criança sugerir um deles. Se não funcionar para a sua família, é só parar de usar: sem cartão, nada é cobrado.' },
   { q: 'Que tablet eu preciso?', a: 'Qualquer tablet com um navegador atualizado. Para deixar a tela sempre ligada, recomendamos o modo quiosque (Fully Kiosk Browser no Android).' },
 ]
 
@@ -143,7 +147,7 @@ const JSON_LD = {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'BRL',
-        description: 'Gratuito durante a fase de teste, sem cartão de crédito',
+        description: 'Teste grátis de 30 dias, sem cartão de crédito',
       },
       publisher: { '@id': `${SITE_URL}/#organization` },
     },
@@ -208,7 +212,7 @@ export default async function Home() {
 
         <header className="relative z-10 flex flex-col items-center text-center gap-7 px-5 md:px-16 pt-10 md:pt-16 pb-44 md:pb-[220px]">
           <span className="inline-flex items-center rounded-full bg-sun text-on-sun px-[18px] py-2.5 text-[15px] font-extrabold shadow-[0_3px_0_rgba(58,42,34,.25)]">
-            Grátis na fase de teste
+            30 dias grátis, sem cartão
           </span>
           <p className="text-base md:text-lg font-extrabold uppercase tracking-[0.08em] opacity-90">
             App de tarefas domésticas para crianças
@@ -402,7 +406,7 @@ export default async function Home() {
           <Link href="/cadastro">Criar conta</Link>
           <Link href="/login">Entrar</Link>
         </nav>
-        <span>Feito para famílias brasileiras · fase de teste</span>
+        <span>Feito para famílias brasileiras</span>
       </footer>
     </div>
   )
