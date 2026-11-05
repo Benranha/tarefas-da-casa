@@ -66,14 +66,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         {children}
-        {/* Google tag (gtag.js) */}
+        {/* Google tag (gtag.js). A área /admin fica fora do Analytics e do Ads: lá o gtag não é configurado. */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-18511803494" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'AW-18511803494');
-gtag('config', 'G-K0YQXXVDMC');`}
+if (!/^\/admin(\/|$)/.test(location.pathname)) {
+  gtag('config', 'AW-18511803494');
+  gtag('config', 'G-K0YQXXVDMC');
+}`}
         </Script>
       </body>
     </html>
