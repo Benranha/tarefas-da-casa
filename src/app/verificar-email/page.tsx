@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
 import { TfLoader } from '@/components/TfLoader'
+import AuthShell from '@/components/AuthShell'
 
 function VerifyForm() {
   const router = useRouter()
@@ -17,8 +18,8 @@ function VerifyForm() {
   if (!email) {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-gray-600">Não sabemos qual e-mail confirmar.</p>
-        <Link href="/login" className="block font-bold text-[#5C4033]">
+        <p className="text-ink-muted">Não sabemos qual e-mail confirmar.</p>
+        <Link href="/login" className="block font-bold text-ink">
           Ir para o login
         </Link>
       </div>
@@ -51,7 +52,7 @@ function VerifyForm() {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <p className="text-center text-gray-600">
+      <p className="text-center text-ink-muted">
         Enviamos um código para <strong>{email}</strong>. Digite abaixo para confirmar o e-mail.
       </p>
       <input
@@ -61,40 +62,37 @@ function VerifyForm() {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="Código de 6 dígitos"
-        className="w-full p-3 text-center text-2xl tracking-widest rounded-2xl border-2 border-gray-200 focus:border-[#5C4033] outline-none transition-all"
+        className="w-full p-3 text-center text-2xl tracking-widest rounded-2xl border-2 border-line focus:border-brand outline-none transition-all"
       />
-      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-      {info && <p className="text-sm text-green-700 text-center">{info}</p>}
+      {error && <p className="text-sm text-returned-fg text-center">{error}</p>}
+      {info && <p className="text-sm text-approved-fg text-center">{info}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-4 flex items-center justify-center gap-2 bg-[#5C4033] text-white font-bold rounded-2xl hover:bg-[#4A3329] transition-colors shadow-lg disabled:opacity-60"
+        className="w-full py-4 flex items-center justify-center gap-2 bg-brand text-on-brand font-bold rounded-2xl hover:bg-brand-hover transition-colors shadow-lg disabled:opacity-60"
       >
-        {loading && <TfLoader size={24} decorative />}
+        {loading && <TfLoader size={24} tone="on-brand" decorative />}
         {loading ? 'Confirmando...' : 'Confirmar e-mail'}
       </button>
       <div className="flex justify-between text-sm">
-        <button type="button" onClick={resend} className="font-bold text-[#5C4033]">
+        <button type="button" onClick={resend} className="font-bold text-brand">
           Reenviar código
         </button>
-        <Link href="/login" className="font-bold text-[#5C4033]">
+        <Link href="/login" className="font-bold text-ink">
           Voltar ao login
         </Link>
       </div>
-      <p className="text-xs text-center text-gray-400">Não chegou? Veja a caixa de spam.</p>
+      <p className="text-xs text-center text-ink-muted">Não chegou? Veja a caixa de spam.</p>
     </form>
   )
 }
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFBFA] p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-[32px] shadow-sm border-2 border-[#EEDCDF]">
-        <h1 className="text-3xl font-bold text-center text-[#5C4033] mb-8">Confirme seu e-mail</h1>
+    <AuthShell title="Confirme seu e-mail" icon="recado">
         <Suspense fallback={null}>
           <VerifyForm />
         </Suspense>
-      </div>
-    </div>
+    </AuthShell>
   )
 }
