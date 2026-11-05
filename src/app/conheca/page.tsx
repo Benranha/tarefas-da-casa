@@ -21,11 +21,9 @@ const S = {
   assistente: shot('assistente', 1800, 1153, 'Assistente do Tarefinha criando uma tarefa e oferecendo aprovar as tarefas que estão esperando'),
   assistenteCelular: shot('assistente-celular', 1170, 1992, 'Assistente do Tarefinha no celular'),
   criancas: shot('criancas', 1800, 2077, 'Cadastro das crianças com avatar, cor e horários'),
-  criancaDia: shot('crianca-dia', 1800, 1153, 'Tarefas do dia do Lucas, com o que já foi feito e o que falta'),
   tarefas: shot('tarefas', 1800, 2391, 'Tela de tarefas com ícones, pontos, horários e dias da semana'),
   historico: shot('historico', 1800, 1617, 'Histórico com os pontos de cada criança e as tarefas feitas'),
   recompensas: shot('recompensas', 1800, 2111, 'Recompensas cadastradas e pedidos das crianças'),
-  familia: shot('familia', 1800, 1835, 'Tela da família com convite para o outro responsável'),
   filaCelular: shot('fila-celular', 1170, 1992, 'Aprovação de tarefas pelo celular'),
   menuCelular: shot('menu-celular', 1170, 1992, 'Menu do Tarefinha no celular'),
   totemEscolha: shot('totem-escolha', 1800, 1257, 'Tablet da casa: cada criança toca no próprio rosto'),
@@ -34,7 +32,6 @@ const S = {
   totemPremios: shot('totem-premios', 1800, 1257, 'Tablet da casa: prêmios que dá para trocar pelos pontos'),
   criancaTarefas: shot('crianca-tarefas', 1170, 1992, 'Celular da criança com as tarefas do dia'),
   criancaPremios: shot('crianca-premios', 1170, 1992, 'Celular da criança com os prêmios'),
-  primeirosPassos: shot('primeiros-passos', 1280, 1340, 'Primeiro acesso: cadastrando a primeira criança'),
 }
 
 const CTA_BASE =
