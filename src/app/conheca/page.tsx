@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import TfIcon from '@/components/TfIcon'
+import VslVideo from '@/components/VslVideo'
 
 // Página de apresentação do app para mães e pais: as telas reais (com dados de exemplo) e o que cada uma faz.
 // As imagens ficam em public/conheca/.
@@ -180,9 +181,9 @@ export default function Conheca() {
             </div>
             <p className="text-sm font-bold opacity-80">Sem cartão de crédito. Nomes e números das telas são de exemplo.</p>
           </div>
-          <div className="relative pb-10 lg:pb-0">
-            <Desk s={S.fila} crop="aspect-[1280/980]" eager />
-            <Phone s={S.criancaTarefas} className="absolute -bottom-2 right-2 md:right-6 w-[34%] max-w-[200px]" />
+          <div className="flex flex-col gap-3">
+            <VslVideo />
+            <p className="text-center text-sm font-bold opacity-90">Veja em menos de 2 minutos. Com som e legenda.</p>
           </div>
         </header>
       </div>

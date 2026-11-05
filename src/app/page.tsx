@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/server'
 import TfIcon from '@/components/TfIcon'
+import VslVideo from '@/components/VslVideo'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
@@ -276,8 +277,14 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* Vídeo */}
+      <section id="video" className="flex flex-col items-center gap-6 px-5 md:px-16 pt-20 md:pt-[110px]">
+        <h2 className="font-display font-bold text-[34px] md:text-[48px] leading-[1.1] text-center text-balance">Veja o Tarefinha em menos de 2 minutos</h2>
+        <VslVideo className="w-full max-w-[960px]" />
+      </section>
+
       {/* Como funciona */}
-      <section id="como" className="flex flex-col items-center gap-14 px-5 md:px-16 pt-24 md:pt-[120px] pb-24">
+      <section id="como" className="flex flex-col items-center gap-14 px-5 md:px-16 pt-20 md:pt-[110px] pb-24">
         <h2 className="font-display font-bold text-[40px] md:text-[52px] leading-[1.1] text-center">Como funciona</h2>
         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10 w-full">
           <div aria-hidden="true" className="hidden md:block absolute top-[72px] left-[16%] right-[16%] border-t-4 border-dashed border-pending-border" />
