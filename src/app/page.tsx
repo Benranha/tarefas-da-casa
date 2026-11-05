@@ -182,7 +182,7 @@ export default async function Home() {
           <div className="flex items-center gap-4 md:gap-8 font-extrabold whitespace-nowrap">
             <a href="#como" className="hidden md:inline">Como funciona</a>
             <a href="#faq" className="hidden md:inline">Perguntas</a>
-            <a href="/conheca" target="_blank" rel="noopener" className="hidden md:inline">Conheça o app</a>
+            <Link href="/conheca" className="hidden md:inline">Conheça o app</Link>
             <Link href="/login" className="hidden md:inline-flex items-center min-h-12 px-6 border-2 border-[#fff8ef] rounded-full">
               Entrar
             </Link>
@@ -379,9 +379,9 @@ export default async function Home() {
         <Link href="/cadastro" className={CTA_SUN}>
           Começar 30 dias grátis
         </Link>
-        <a href="/conheca" target="_blank" rel="noopener" className="font-extrabold underline underline-offset-4">
-          Conheça o app: veja todas as telas (PDF)
-        </a>
+        <Link href="/conheca" className="font-extrabold underline underline-offset-4">
+          Conheça o app por dentro: veja todas as telas
+        </Link>
         <Link href="/login" className="font-extrabold underline underline-offset-4">
           Já tenho conta
         </Link>
@@ -394,7 +394,7 @@ export default async function Home() {
           <a href="#como">Como funciona</a>
           <a href="#idades">Tarefas por idade</a>
           <a href="#faq">Perguntas frequentes</a>
-          <a href="/conheca" target="_blank" rel="noopener">Conheça o app</a>
+          <Link href="/conheca">Conheça o app</Link>
           <Link href="/cadastro">Criar conta</Link>
           <Link href="/login">Entrar</Link>
         </nav>
