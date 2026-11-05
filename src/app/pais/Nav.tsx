@@ -36,6 +36,15 @@ function panel() {
   return document.querySelector<HTMLElement>('.tf-painel');
 }
 
+const isAdminPath = (path: string) => path === '/admin' || path.startsWith('/admin/');
+
+// Entrar ou sair do /admin recarrega a página: o gtag só é configurado fora do admin (app/layout.tsx),
+// e numa navegação no cliente a configuração de uma área iria junto para a outra.
+function NavLink({ pathname, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; pathname: string }) {
+  if (isAdminPath(props.href) !== isAdminPath(pathname)) return <a {...props} />;
+  return <Link {...props} />;
+}
+
 const isActive = (pathname: string, href: string) =>
   pathname === href || (href !== '/pais' && href !== '/admin' && pathname.startsWith(href + '/'));
 
@@ -112,7 +121,8 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
         <img src="/logo/tarefinha-horizontal-claro.svg" alt="Tarefinha" className="h-9 dark-invert" />
       </div>
       {items.map((item) => (
-        <Link
+        <NavLink
+          pathname={pathname}
           key={item.href}
           href={item.href}
           aria-current={isActive(pathname, item.href) ? 'page' : undefined}
@@ -120,16 +130,16 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
         >
           <item.icon size={20} />
           <span>{item.name}</span>
-        </Link>
+        </NavLink>
       ))}
       {isAdmin && (
         <>
           <span className="tf-nav__section">Admin</span>
           {ADMIN_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? 'page' : undefined} className="tf-nav__item">
+            <NavLink pathname={pathname} key={item.href} href={item.href} aria-current={isActive(pathname, item.href) ? 'page' : undefined} className="tf-nav__item">
               <item.icon size={20} />
               <span>{item.name}</span>
-            </Link>
+            </NavLink>
           ))}
         </>
       )}
@@ -154,9 +164,9 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
     <nav aria-label="Principal" className="tf-pill">
       <PillTab href="/pais" label="Fila" icon={Inbox} pathname={pathname} badge={pending} />
       <PillTab href="/pais/criancas" label="Crianças" icon={User} pathname={pathname} />
-      <Link href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
+      <NavLink pathname={pathname} href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
         <Plus size={30} />
-      </Link>
+      </NavLink>
       <button type="button" onClick={() => setHelpOpen(true)} aria-label="Ajuda" aria-haspopup="dialog" className="tf-pill__item">
         <MessageCircleQuestion size={22} />
       </button>
@@ -187,11 +197,11 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
           {moreItems.map((m, i) => (
             <React.Fragment key={m.href}>
               {isAdmin && i === MORE.length && <p className="tf-sheet__section">Admin</p>}
-            <Link href={m.href} onClick={closeSheet} className="tf-sheet__row" aria-current={isActive(pathname, m.href) ? 'page' : undefined}>
+            <NavLink pathname={pathname} href={m.href} onClick={closeSheet} className="tf-sheet__row" aria-current={isActive(pathname, m.href) ? 'page' : undefined}>
               <span className="tf-sheet__icon"><m.icon size={22} /></span>
               <span className="tf-sheet__label">{m.name}</span>
               <ChevronRight size={20} className="text-line-strong" />
-            </Link>
+            </NavLink>
             </React.Fragment>
           ))}
           <button type="button" onClick={() => { closeSheet(); setTourOpen(true); }} className="tf-sheet__row">
@@ -238,10 +248,10 @@ function PillTab({
 }) {
   const active = isActive(pathname, href);
   return (
-    <Link href={href} aria-label={label} aria-current={active ? 'page' : undefined} className="tf-pill__item" data-active={active || undefined}>
+    <NavLink pathname={pathname} href={href} aria-label={label} aria-current={active ? 'page' : undefined} className="tf-pill__item" data-active={active || undefined}>
       <Icon size={22} />
       {active && <span>{label}</span>}
       {!!badge && <span className="tf-pill__badge" aria-label={`${badge} aguardando`}>{badge}</span>}
-    </Link>
+    </NavLink>
   );
 }
