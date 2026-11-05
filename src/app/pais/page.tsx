@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
+import InstalarAviso from './InstalarAviso';
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 import { track } from '@/lib/analytics'
@@ -108,6 +109,8 @@ export default function ParentsDashboard() {
             : 'Seu teste grátis de 30 dias terminou.'}
         </div>
       )}
+
+      <InstalarAviso />
 
       {totemUrl && (
         <div className="order-4 md:order-2 tf-card flex items-center gap-3 !bg-sun-soft !py-3 !pr-3 !pl-5">

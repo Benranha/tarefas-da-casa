@@ -3,8 +3,6 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth/server'
 import TfIcon from '@/components/TfIcon'
-import InstallButton from '@/components/landing/InstallButton'
-import IosInstallHint from '@/components/landing/IosInstallHint'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
@@ -186,9 +184,9 @@ export default async function Home() {
             <Link href="/login" className="hidden md:inline-flex items-center min-h-12 px-6 border-2 border-[#fff8ef] rounded-full">
               Entrar
             </Link>
-            <InstallButton className="md:hidden inline-flex items-center min-h-11 px-5 rounded-full bg-sun text-on-sun">
-              Instalar
-            </InstallButton>
+            <Link href="/login" className="md:hidden inline-flex items-center min-h-11 px-5 rounded-full bg-sun text-on-sun">
+              Entrar
+            </Link>
           </div>
         </nav>
 
@@ -221,7 +219,7 @@ export default async function Home() {
             O Tarefinha é um quadro de tarefas e de recompensas que transforma a rotina de casa em um jogo: as crianças marcam, os pais aprovam e os pontos viram prêmios.
           </p>
           <div className="flex flex-wrap justify-center gap-3.5">
-            <InstallButton className={CTA_SUN}>Instalar grátis</InstallButton>
+            <Link href="/cadastro" className={CTA_SUN}>Testar grátis</Link>
             <a
               href="#como"
               className={`${CTA_BASE} px-8 border-[3px] border-[#fff8ef] text-[#fff8ef]`}
@@ -369,13 +367,12 @@ export default async function Home() {
       </section>
 
       {/* CTA final */}
-      <section id="instalar" className="flex flex-col items-center text-center gap-7 px-5 md:px-16 py-[88px] bg-brand text-[#fff8ef]">
+      <section className="flex flex-col items-center text-center gap-7 px-5 md:px-16 py-[88px] bg-brand text-[#fff8ef]">
         <TfIcon name="festa" size={96} style={{ ['--ic-b' as string]: '#ffc93c', ['--ic-k' as string]: '#8a2e06' }} />
         <h2 className="font-display font-bold text-[40px] md:text-[56px] leading-[1.05] text-balance">Bora começar hoje?</h2>
         <p className="max-w-[560px] text-[19px] font-bold leading-normal">
-          Teste grátis por 30 dias, sem cartão. Abra no navegador e toque em “Instalar app” — sem loja.
+          Teste grátis por 30 dias, sem cartão e sem baixar nada da loja.
         </p>
-        <IosInstallHint />
         <Link href="/cadastro" className={CTA_SUN}>
           Começar 30 dias grátis
         </Link>
