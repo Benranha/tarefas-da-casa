@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authClient } from '@/lib/auth/client'
 import { TfLoader } from '@/components/TfLoader'
+import AuthShell from '@/components/AuthShell'
 
 function ResetForm() {
   const router = useRouter()
@@ -18,7 +19,7 @@ function ResetForm() {
   if (!token) {
     return (
       <div className="space-y-4 text-center">
-        <p className="text-ink-muted mt-4">Este link é inválido ou expirou.</p>
+        <p className="text-ink-muted">Este link é inválido ou expirou.</p>
         <Link href="/esqueci-senha" className="block font-bold text-ink">
           Pedir um novo link
         </Link>
@@ -78,13 +79,10 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <div className="max-w-md w-full bg-surface-raised p-8 rounded-[32px] shadow-sm border-2 border-line">
-        <h1 className="text-3xl font-bold text-center text-ink mb-8">Nova senha</h1>
+    <AuthShell title="Nova senha" icon="estrela">
         <Suspense fallback={null}>
           <ResetForm />
         </Suspense>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

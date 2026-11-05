@@ -42,7 +42,7 @@ export default function GoogleButton({ label }: { label: string }) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="w-full min-h-16 py-4 px-5 flex items-center justify-center gap-3 bg-brand text-on-brand text-xl font-extrabold rounded-2xl shadow-[0_5px_0_rgba(58,42,34,.25)] hover:bg-brand-hover active:translate-y-0.5 active:shadow-none transition-colors disabled:opacity-60"
+        className="w-full min-h-16 py-4 px-4 flex items-center justify-center gap-3 bg-brand text-on-brand text-lg font-extrabold whitespace-nowrap rounded-2xl shadow-[0_5px_0_rgba(58,42,34,.25)] hover:bg-brand-hover active:translate-y-0.5 active:shadow-none transition-colors disabled:opacity-60"
       >
         <span className="grid place-items-center size-9 shrink-0 rounded-full bg-white">
           {loading ? <TfLoader size={22} decorative /> : <GoogleLogo />}

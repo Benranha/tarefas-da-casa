@@ -6,6 +6,7 @@ import Link from 'next/link'
 import GoogleButton from '@/components/GoogleButton'
 import { signIn } from './actions'
 import { TfLoader } from '@/components/TfLoader'
+import AuthShell from '@/components/AuthShell'
 
 const input = 'w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none transition-all'
 
@@ -62,10 +63,7 @@ function EmailLogin() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <div className="max-w-md w-full bg-surface-raised p-8 rounded-[32px] shadow-sm border-2 border-line">
-        <h1 className="text-3xl font-bold text-center text-ink mb-2">Login dos Pais</h1>
-        <p className="text-center text-ink-muted mb-8">Entre com a sua conta do Google.</p>
+    <AuthShell title="Login dos pais" subtitle="Entre com a sua conta do Google." icon="menina">
         <GoogleButton label="Entrar com o Google" />
         <Suspense fallback={null}>
           <EmailLogin />
@@ -82,7 +80,6 @@ export default function LoginPage() {
             Usar como painel
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

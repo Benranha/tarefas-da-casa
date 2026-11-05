@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { authClient } from '@/lib/auth/client'
 import { TfLoader } from '@/components/TfLoader'
+import AuthShell from '@/components/AuthShell'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -29,12 +30,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <div className="max-w-md w-full bg-surface-raised p-8 rounded-[32px] shadow-sm border-2 border-line">
-        <h1 className="text-3xl font-bold text-center text-ink mb-2">Esqueci a senha</h1>
+    <AuthShell title="Esqueci a senha" icon="recado">
         {sent ? (
           <div className="space-y-4 text-center">
-            <p className="text-ink-muted mt-4">
+            <p className="text-ink-muted">
               Se existir uma conta com esse e-mail, enviamos um link para criar uma nova senha. O link vale por 15
               minutos. Confira também a caixa de spam.
             </p>
@@ -44,7 +43,7 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           <>
-            <p className="text-center text-ink-muted mb-8">Informe o e-mail da sua conta.</p>
+            <p className="text-center text-ink-muted mb-6 -mt-3">Informe o e-mail da sua conta.</p>
             <form className="space-y-5" onSubmit={handleSubmit}>
               <input
                 type="email"
@@ -71,7 +70,6 @@ export default function ForgotPasswordPage() {
             </p>
           </>
         )}
-      </div>
-    </div>
+    </AuthShell>
   )
 }

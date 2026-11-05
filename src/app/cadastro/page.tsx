@@ -7,6 +7,7 @@ import { signUp } from '../login/actions'
 import PhoneInput from '@/components/PhoneInput'
 import { TfLoader } from '@/components/TfLoader'
 import { rememberAuthMethod } from '@/lib/analytics'
+import AuthShell from '@/components/AuthShell'
 
 const input = 'w-full p-3 rounded-2xl border-2 border-line focus:border-brand outline-none transition-all'
 
@@ -17,12 +18,11 @@ export default function SignUpPage() {
   const [state, action, pending] = useActionState(signUp, null)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      <div className="max-w-md w-full bg-surface-raised p-8 rounded-[32px] shadow-sm border-2 border-line">
-        <h1 className="text-3xl font-bold text-center text-ink mb-2">Criar conta</h1>
-        <p className="text-center text-ink-muted mb-8">
-          Para pais e responsáveis. Use a sua conta do Google; em seguida pedimos o seu telefone.
-        </p>
+    <AuthShell
+      title="Criar conta"
+      subtitle="Para pais e responsáveis. Use a sua conta do Google; em seguida pedimos o seu telefone."
+      icon="festa"
+    >
         <GoogleButton label="Continuar com o Google" />
 
         {!open ? (
@@ -73,7 +73,6 @@ export default function SignUpPage() {
             Entrar
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthShell>
   )
 }
