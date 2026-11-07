@@ -190,11 +190,20 @@ export async function familyDetail(id: string) {
          ON ${APPROVED_DAY} = d::date
        GROUP BY d ORDER BY d`, [id]),
     q(`SELECT count(*) FILTER (WHERE ti.status = 'approved') AS approved, count(*) FILTER (WHERE ti.status = 'rejected') AS rejected,
-              max(ti.completed_at) AS last_use
+              max(ti.completed_at) AS kid_last_use,
+              -- Último acesso de qualquer responsável da família (titular ou convidado) ao painel.
+              (SELECT max(GREATEST(s."createdAt", s."updatedAt")) FROM neon_auth.session s
+                WHERE s."userId" = $1::uuid
+                   OR s."userId" IN (SELECT user_id FROM family_members WHERE family_owner_id = $1::uuid)) AS parent_last_use
        FROM task_instances ti JOIN children c ON c.id = ti.child_id WHERE c.owner_id = $1::uuid`, [id]),
   ])
   if (!f) return null
   const approved = n(stats.approved)
+  // Último uso: o mais recente entre a criança marcar tarefa e um responsável entrar no painel.
+  const kidAt = stats.kid_last_use ? new Date(stats.kid_last_use as string) : null
+  const parentAt = stats.parent_last_use ? new Date(stats.parent_last_use as string) : null
+  const lastUseBy: 'crianca' | 'responsavel' | null =
+    kidAt && (!parentAt || kidAt >= parentAt) ? 'crianca' : parentAt ? 'responsavel' : null
   return {
     ...f,
     members: contacts.length,
@@ -202,7 +211,8 @@ export async function familyDetail(id: string) {
     kids: kids as { name: string; color: string | null; has_device: boolean }[],
     spark: spark.map((r) => n(r.total)),
     approvalPct: approved + n(stats.rejected) ? pct(approved, approved + n(stats.rejected)) : null,
-    lastUse: (stats.last_use as string | null) ?? null,
+    lastUse: (lastUseBy === 'crianca' ? kidAt : parentAt)?.toISOString() ?? null,
+    lastUseBy,
   }
 }
 

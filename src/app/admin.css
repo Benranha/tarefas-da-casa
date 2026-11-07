@@ -99,6 +99,7 @@ a.ad-tr:hover { background: var(--surface); }
 .ad-stats div { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 16px; background: var(--surface); }
 .ad-stats span { font: 800 12px/16px var(--font-nunito), system-ui, sans-serif; color: var(--ink-muted); }
 .ad-stats strong { font: 600 18px/24px var(--font-fredoka), system-ui, sans-serif; color: var(--ink); }
+.ad-stats small { font: 600 12px/16px var(--font-nunito), system-ui, sans-serif; color: var(--ink-muted); }
 .ad-spark { display: flex; align-items: flex-end; gap: 3px; height: 56px; }
 .ad-spark div { flex: 1; background: var(--brand); border-radius: 4px 4px 0 0; }
 .ad-contacts { margin: 6px 0 0; padding: 0; list-style: none; }
