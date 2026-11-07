@@ -124,7 +124,11 @@ export default async function AdminSubscribers({ searchParams }: PageProps<'/adm
             <div><span>Cliente desde</span><strong>{new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric', timeZone: 'America/Manaus' }).format(new Date(detail.created_at))}</strong></div>
             <div><span>Responsáveis</span><strong>{detail.members}</strong></div>
             <div><span>Aprovação</span><strong>{detail.approvalPct == null ? '—' : `${detail.approvalPct}%`}</strong></div>
-            <div><span>Último uso</span><strong>{detail.lastUse ? fmtDM(new Date(new Date(detail.lastUse).getTime() - 4 * 3600000).toISOString()) : '—'}</strong></div>
+            <div>
+              <span>Último uso</span>
+              <strong>{detail.lastUse ? fmtDM(new Date(new Date(detail.lastUse).getTime() - 4 * 3600000).toISOString()) : '—'}</strong>
+              {detail.lastUseBy && <small>{detail.lastUseBy === 'crianca' ? 'criança' : 'responsável'}</small>}
+            </div>
           </div>
           <div>
             <p className="ad-label">Tarefas aprovadas · 14 dias</p>
