@@ -278,6 +278,60 @@ export async function engagement() {
   }
 }
 
+// Faixas de "dias sem abrir o app" usadas no filtro da tela de engajamento.
+export const AWAY_BUCKETS = [
+  { key: 'hoje', label: 'Hoje', min: 0, max: 0 },
+  { key: '1-3', label: '1 a 3 dias', min: 1, max: 3 },
+  { key: '4-7', label: '4 a 7 dias', min: 4, max: 7 },
+  { key: '8-30', label: '8 a 30 dias', min: 8, max: 30 },
+  { key: '30+', label: 'Mais de 30', min: 31, max: Infinity },
+] as const
+export type AwayKey = (typeof AWAY_BUCKETS)[number]['key'] | 'nunca'
+
+export type LastUseRow = {
+  owner_id: string; status: Status; name: string | null; email: string
+  last_at: string | null; last_by: 'crianca' | 'responsavel' | null
+  away: number | null; days30: number
+}
+
+// Último uso de cada família: o mais recente entre a criança marcar tarefa, um responsável aprovar
+// e um responsável (titular ou convidado) entrar no painel. "away" = dias de calendário (fuso da casa)
+// desde esse uso; "days30" = dias diferentes com algum uso nos últimos 30 dias.
+export async function lastUse() {
+  const rows = await q<LastUseRow>(`WITH fs AS (${FAMILY_STATUS_SQL}),
+    members AS (
+      SELECT owner_id AS family, owner_id AS user_id FROM families
+      UNION SELECT family_owner_id, user_id FROM family_members
+    ),
+    ev AS (
+      SELECT c.owner_id AS family, ti.completed_at AS at, 'crianca' AS by
+        FROM task_instances ti JOIN children c ON c.id = ti.child_id WHERE ti.completed_at IS NOT NULL
+      UNION ALL
+      SELECT c.owner_id, ti.approved_at, 'responsavel'
+        FROM task_instances ti JOIN children c ON c.id = ti.child_id WHERE ti.approved_at IS NOT NULL
+      UNION ALL
+      SELECT m.family, s."createdAt", 'responsavel' FROM neon_auth.session s JOIN members m ON m.user_id = s."userId"
+      UNION ALL
+      SELECT m.family, s."updatedAt", 'responsavel' FROM neon_auth.session s JOIN members m ON m.user_id = s."userId"
+    ),
+    last AS (SELECT DISTINCT ON (family) family, at, by FROM ev WHERE at IS NOT NULL ORDER BY family, at DESC),
+    d30 AS (
+      SELECT family, count(DISTINCT (at at time zone ${TZ})::date)::int AS n
+      FROM ev WHERE at >= now() - interval '30 days' GROUP BY family
+    )
+    SELECT fs.owner_id, fs.status, u.name, u.email, l.at AS last_at, l.by AS last_by,
+           ((now() at time zone ${TZ})::date - (l.at at time zone ${TZ})::date)::int AS away,
+           coalesce(d.n, 0)::int AS days30
+    FROM fs JOIN neon_auth."user" u ON u.id = fs.owner_id
+    LEFT JOIN last l ON l.family = fs.owner_id
+    LEFT JOIN d30 d ON d.family = fs.owner_id
+    ORDER BY l.at DESC NULLS LAST`)
+  return rows.map((r) => ({ ...r, away: r.away == null ? null : n(r.away), days30: n(r.days30) }))
+}
+
+export const awayKey = (away: number | null): AwayKey =>
+  away == null ? 'nunca' : AWAY_BUCKETS.find((b) => away >= b.min && away <= b.max)?.key ?? '30+'
+
 export async function revenue() {
   const [r] = await q(`WITH fs AS (${FAMILY_STATUS_SQL})
     SELECT coalesce(sum(price_cents) FILTER (WHERE status = 'active'), 0) AS mrr,
