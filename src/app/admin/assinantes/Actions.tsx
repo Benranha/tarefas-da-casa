@@ -8,7 +8,7 @@ export default function FamilyActions({ id, email, status }: { id: string; email
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
 
-  async function run(action: 'estender' | 'cancelar') {
+  async function run(action: 'estender' | 'cancelar' | 'restaurar') {
     if (busy) return;
     setBusy(true);
     setError('');
@@ -28,6 +28,9 @@ export default function FamilyActions({ id, email, status }: { id: string; email
     <div className="ad-actions">
       {(status === 'trialing' || status === 'expired') && (
         <button type="button" className="tf-btn tf-btn--primary" disabled={busy} onClick={() => run('estender')}>Estender teste +7 dias</button>
+      )}
+      {status === 'canceled' && (
+        <button type="button" className="tf-btn tf-btn--primary" disabled={busy} onClick={() => run('restaurar')}>Restaurar assinatura</button>
       )}
       <a className="tf-btn tf-btn--secondary" href={`mailto:${email}`}>Enviar e-mail</a>
       {status !== 'canceled' && (confirming ? (
