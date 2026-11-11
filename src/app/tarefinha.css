@@ -120,12 +120,18 @@
 .tf-dica[data-lado="cima"] .tf-dica__balao::after { bottom: -5px; }
 .tf-dica[data-lado="baixo"] .tf-dica__balao { top: calc(100% + 14px); }
 .tf-dica[data-lado="baixo"] .tf-dica__balao::after { top: -5px; }
+.tf-dica[data-lado="dentro"] .tf-dica__balao { top: 16px; right: 14px; max-width: 200px; }
+.tf-dica[data-lado="dentro"] .tf-dica__balao::after { display: none; }
 .tf-dica[data-alinhar="inicio"] .tf-dica__balao { left: 0; }
 .tf-dica[data-alinhar="inicio"] .tf-dica__balao::after { left: 18px; }
 .tf-dica[data-alinhar="centro"] .tf-dica__balao { left: 50%; transform: translateX(-50%); }
 .tf-dica[data-alinhar="centro"] .tf-dica__balao::after { left: calc(50% - 6px); }
 .tf-dica[data-alinhar="fim"] .tf-dica__balao { right: 0; }
 .tf-dica[data-alinhar="fim"] .tf-dica__balao::after { right: 18px; }
+/* Área da criança (.tf-totem): lida de mais longe e por quem lê pouco. Balão maior. */
+.tf-totem .tf-dica__balao { max-width: min(300px, calc(100vw - 32px)); padding: 12px 18px; border-radius: 20px; font-size: 19px; line-height: 26px; }
+@media (min-width: 768px) { .tf-totem .tf-dica__balao { max-width: 380px; padding: 16px 24px; border-radius: 24px; font-size: 24px; line-height: 32px; } }
+.tf-totem .tf-dica[data-lado="dentro"] .tf-dica__balao { max-width: 210px; }
 @keyframes tf-pulso { 0% { opacity: 0.9; transform: scale(0.96); } 80%, 100% { opacity: 0; transform: scale(1.18); } }
 @keyframes tf-balao-entra { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .tf-pill__item, .tf-switch, .tf-switch::after { transition: none; } }

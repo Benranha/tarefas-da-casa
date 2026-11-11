@@ -7,7 +7,8 @@ import { useCallback, useEffect, useSyncExternalStore, type RefObject } from 're
 //   as outras esperam a próxima abertura).
 // - Balões vêm antes dos cartões. Entre dois do mesmo tipo vale a prioridade (número menor primeiro).
 // - Cartões esperam 24 horas depois do último dispensado.
-// - Nada aparece antes do tutorial ter sido visto, nem com as dicas desligadas.
+// - Nada aparece com as dicas desligadas. No painel dos pais, nada aparece antes do tutorial ter sido
+//   visto (o aparelho da criança não tem tutorial, então ali essa espera não vale).
 // - O que já foi dispensado não volta, neste aparelho. Ligar as dicas de novo limpa essa lista.
 //
 // O texto de tudo que a pessoa lê está neste arquivo, para revisar com docs/vendas/escrita.md.
@@ -59,7 +60,6 @@ const ULTIMA = 'tarefinha-dicas-ultima' // quando o último cartão foi dispensa
 const TUTORIAL = 'tarefinha-tutorial-visto'
 const ESPERA_CARTAO = 24 * 60 * 60 * 1000
 const AUTO_DISPENSAR = 20_000
-const VISIVEL_MIN = 0.55 // quanto do alvo precisa estar na tela para o balão valer
 
 function ler(chave: string): string | null {
   try { return localStorage.getItem(chave) } catch { return null }
@@ -73,7 +73,8 @@ function apagar(chave: string) {
 
 // Quem está na tela querendo aparecer. Só ocupa uma vaga se estiver visível (um balão dentro da
 // pílula do celular não conta no computador, onde a pílula fica escondida).
-type Registro = { tipo: TipoDica; prioridade: number }
+export type AreaDica = 'pais' | 'filho'
+type Registro = { tipo: TipoDica; prioridade: number; area: AreaDica }
 const registro = new Map<string, Registro>()
 const ouvintes = new Set<() => void>()
 let dispensouNestaAbertura = false
@@ -96,11 +97,13 @@ function assinar(cb: () => void) {
 // O id da única dica que pode aparecer agora, ou null.
 function escolhida(): string | null {
   if (dispensouNestaAbertura) return null
-  if (ler(OFF) === '1' || ler(TUTORIAL) !== '1') return null
+  if (ler(OFF) === '1') return null
+  const tutorialVisto = ler(TUTORIAL) === '1'
   const cartaoEmEspera = Date.now() - (Number(ler(ULTIMA)) || 0) < ESPERA_CARTAO
   let melhor: { id: string; ordem: number } | null = null
   for (const [id, r] of registro) {
     if (ler(CHAVE + id) === '1') continue
+    if (r.area === 'pais' && !tutorialVisto) continue
     if (r.tipo === 'sabia' && cartaoEmEspera) continue
     const ordem = (r.tipo === 'toque' ? 0 : 1000) + r.prioridade
     if (!melhor || ordem < melhor.ordem || (ordem === melhor.ordem && id < melhor.id)) melhor = { id, ordem }
@@ -118,14 +121,25 @@ function dispensar(id: string, tipo: TipoDica) {
 // Usado por ToqueAqui e VoceSabia. Com "alvo", só conta enquanto o elemento estiver visível na
 // tela (escondido por CSS, ou abaixo da dobra, não ocupa a vaga nem gasta o tempo do balão).
 // "margem" encolhe a área considerada visível, para sobrar espaço ao balão e não ficar sob a barra.
-export function useDica(
-  id: string,
-  tipo: TipoDica,
-  prioridade: number,
-  quando: boolean,
-  alvo?: RefObject<HTMLElement | null>,
+export function useDica({
+  id,
+  tipo,
+  prioridade,
+  quando,
+  area = 'pais',
+  alvo,
   margem = '0px',
-) {
+  minimo = 0.55,
+}: {
+  id: string
+  tipo: TipoDica
+  prioridade: number
+  quando: boolean
+  area?: AreaDica
+  alvo?: RefObject<HTMLElement | null>
+  margem?: string
+  minimo?: number // quanto do alvo precisa estar na tela para a dica valer (0 a 1)
+}) {
   const escolha = useSyncExternalStore(assinar, escolhida, () => null)
 
   useEffect(() => {
@@ -134,7 +148,7 @@ export function useDica(
     const marcar = (visivel: boolean) => {
       if (visivel === ativo) return
       ativo = visivel
-      if (visivel) registro.set(id, { tipo, prioridade })
+      if (visivel) registro.set(id, { tipo, prioridade, area })
       else registro.delete(id)
       avisar()
     }
@@ -144,15 +158,15 @@ export function useDica(
       return () => marcar(false)
     }
     const obs = new IntersectionObserver(
-      (entradas) => marcar(entradas[entradas.length - 1].intersectionRatio >= VISIVEL_MIN),
-      { threshold: VISIVEL_MIN, rootMargin: margem },
+      (entradas) => marcar(entradas[entradas.length - 1].intersectionRatio >= minimo),
+      { threshold: minimo, rootMargin: margem },
     )
     obs.observe(el)
     return () => {
       obs.disconnect()
       marcar(false)
     }
-  }, [id, tipo, prioridade, quando, alvo, margem])
+  }, [id, tipo, prioridade, quando, area, alvo, margem, minimo])
 
   const fechar = useCallback(() => dispensar(id, tipo), [id, tipo])
   // "quando" também vale aqui: com várias instâncias do mesmo id (uma por tarefa, por exemplo),

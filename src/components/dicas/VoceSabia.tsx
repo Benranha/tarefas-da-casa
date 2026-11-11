@@ -21,7 +21,7 @@ export default function VoceSabia({
   acao?: Acao
   className?: string
 }) {
-  const { visivel, dispensar } = useDica(id, 'sabia', prioridade, quando)
+  const { visivel, dispensar } = useDica({ id, tipo: 'sabia', prioridade, quando })
   if (!visivel) return null
 
   const botao = '!text-[15px] !px-[18px] !min-h-[44px]'
