@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, LayoutDashboard, Activity, CreditCard } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, LayoutDashboard, Activity, CreditCard, Lightbulb } from 'lucide-react';
 import Tutorial, { tutorialSeen } from './Tutorial';
 import Ajuda from './Ajuda';
+import ToqueAqui from '@/components/dicas/ToqueAqui';
+import { definirDicas, useDicasLigadas } from '@/lib/dicas';
 
 const items = [
   { name: 'Fila', href: '/pais', icon: Inbox },
@@ -63,6 +65,7 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
   const [pending, setPending] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const dicasLigadas = useDicasLigadas();
 
   // Primeiro acesso neste aparelho: mostra o tutorial.
   useEffect(() => {
@@ -155,6 +158,11 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
         <Moon size={20} />
         <span>Tema</span>
       </button>
+      <button type="button" onClick={() => definirDicas(!dicasLigadas)} role="switch" aria-checked={dicasLigadas} className="tf-nav__item">
+        <Lightbulb size={20} />
+        <span>Dicas</span>
+        <span className="tf-switch ml-auto" data-on={dicasLigadas || undefined} aria-hidden="true" />
+      </button>
       <form action={signOut} onSubmit={forgetAppMode}>
         <button className="tf-nav__item w-full">Sair</button>
       </form>
@@ -166,9 +174,11 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
       <PillTab href="/pais/criancas" label="Crianças" icon={User} pathname={pathname} />
       <NavLink pathname={pathname} href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
         <Plus size={30} />
+        <ToqueAqui id="pais.adicionar" prioridade={10} />
       </NavLink>
       <button type="button" onClick={() => setHelpOpen(true)} aria-label="Ajuda" aria-haspopup="dialog" className="tf-pill__item">
         <MessageCircleQuestion size={22} />
+        <ToqueAqui id="pais.ajuda" prioridade={11} />
       </button>
       <button
         type="button"
@@ -181,6 +191,7 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
       >
         <Ellipsis size={22} />
         {moreActive && <span>Mais</span>}
+        <ToqueAqui id="pais.mais" prioridade={12} alinhar="fim" />
       </button>
     </nav>
 
@@ -212,6 +223,11 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
             <span className="tf-sheet__icon"><Moon size={22} /></span>
             <span className="tf-sheet__label">Tema escuro</span>
             <span className="tf-switch" data-on={dark || undefined} aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => definirDicas(!dicasLigadas)} role="switch" aria-checked={dicasLigadas} className="tf-sheet__row">
+            <span className="tf-sheet__icon"><Lightbulb size={22} /></span>
+            <span className="tf-sheet__label">Dicas</span>
+            <span className="tf-switch" data-on={dicasLigadas || undefined} aria-hidden="true" />
           </button>
           <hr className="tf-sheet__divider" />
           {confirmSignOut ? (
