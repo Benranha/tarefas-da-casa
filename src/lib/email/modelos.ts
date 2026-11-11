@@ -24,3 +24,90 @@ export function linkCrianca(d: { nomeCrianca: string; nomeResponsavel: string; l
   })
   return { assunto, html, text }
 }
+
+// ---- E-mails ao responsável (boas-vindas, "sem uso" e dicas) ----
+// Todos levam o link para parar de receber. Cada um tem uma ideia só (docs/vendas/escrita.md).
+
+const RODAPE_CONTA = 'Você recebeu este e-mail porque criou uma conta no Tarefinha.'
+
+type Novidade = { assunto: string; texto: string; botao: string }
+const minuscula = (t: string) => t.charAt(0).toLowerCase() + t.slice(1)
+
+// Logo depois que a primeira tarefa fica pronta. Mostra o ciclo e uma dica: o assistente
+// (só se o servidor tem o assistente ligado, senão a dica prometeria algo que não funciona).
+export function boasVindas(d: { nome: string; abrir: string; parar: string; assistente: boolean }) {
+  const primeiro = d.nome.trim().split(/\s+/)[0]
+  const assunto = 'Seu Tarefinha está pronto'
+  const { html, text } = montarEmail({
+    assunto,
+    preheader: 'A criança marca, você aprova.',
+    titulo: primeiro ? `Oi, ${primeiro}!` : 'Oi!',
+    paragrafos: ['Você cadastrou a primeira tarefa. Agora a criança marca quando terminar, e você aprova. Os pontos só valem depois da sua aprovação.'],
+    botao: { texto: 'Abrir a Fila', url: d.abrir },
+    apoioBotao: 'Toque no botão. As tarefas que a criança marcar aparecem lá para você aprovar.',
+    apoioBotaoTexto: 'Toque no link. As tarefas que a criança marcar aparecem lá para você aprovar.',
+    dica: d.assistente
+      ? {
+          texto: 'Você pode pedir ao assistente do painel para criar tarefas. Escreva uma frase e toque em Confirmar.',
+          botao: { texto: 'Toque aqui para experimentar', url: d.abrir },
+        }
+      : undefined,
+    rodape: [RODAPE_CONTA],
+    parar: d.parar,
+  })
+  return { assunto, html, text }
+}
+
+// Faz alguns dias sem uso e há tarefas feitas esperando aprovação: o motivo mais útil para voltar.
+export function semUsoAprovacao(d: { abrir: string; parar: string }) {
+  const assunto = 'Tem tarefas esperando você aprovar'
+  const { html, text } = montarEmail({
+    assunto,
+    preheader: 'Os pontos só entram depois da sua aprovação.',
+    titulo: 'Tem tarefas esperando',
+    paragrafos: ['Tem tarefas marcadas como feitas esperando a sua aprovação. Os pontos só entram depois que você aprova.'],
+    botao: { texto: 'Abrir a Fila', url: d.abrir },
+    apoioBotao: 'Toque no botão para ver o que está esperando.',
+    apoioBotaoTexto: 'Toque no link para ver o que está esperando.',
+    rodape: [RODAPE_CONTA],
+    parar: d.parar,
+  })
+  return { assunto, html, text }
+}
+
+// Faz alguns dias sem uso e nada esperando: um convite para voltar, com uma dica se houver alguma.
+export function semUsoDica(d: { abrir: string; parar: string; novidade?: Novidade & { url: string } }) {
+  const assunto = 'Faz alguns dias sem uso no Tarefinha'
+  const { html, text } = montarEmail({
+    assunto,
+    preheader: 'Se a rotina mudou, dá para ajustar as tarefas.',
+    titulo: 'Faz alguns dias sem uso',
+    paragrafos: ['Faz alguns dias que ninguém usa o Tarefinha. Se a rotina da casa mudou, dá para ajustar as tarefas em poucos toques.'],
+    botao: { texto: 'Abrir o Tarefinha', url: d.abrir },
+    apoioBotao: 'Toque no botão para ver as tarefas de hoje.',
+    apoioBotaoTexto: 'Toque no link para ver as tarefas de hoje.',
+    dica: d.novidade
+      ? { texto: d.novidade.texto, botao: { texto: `Toque aqui para ${minuscula(d.novidade.botao)}`, url: d.novidade.url } }
+      : undefined,
+    rodape: [RODAPE_CONTA],
+    parar: d.parar,
+  })
+  return { assunto, html, text }
+}
+
+// Uma funcionalidade por e-mail, a que a família ainda não usa.
+export function novidade(d: { novidade: Novidade; url: string; parar: string }) {
+  const assunto = d.novidade.assunto
+  const { html, text } = montarEmail({
+    assunto,
+    preheader: d.novidade.texto.split('. ')[0].replace(/\.?$/, '.'),
+    titulo: 'Você sabia?',
+    paragrafos: [d.novidade.texto],
+    botao: { texto: d.novidade.botao, url: d.url },
+    apoioBotao: 'Toque no botão para abrir essa tela.',
+    apoioBotaoTexto: 'Toque no link para abrir essa tela.',
+    rodape: [RODAPE_CONTA],
+    parar: d.parar,
+  })
+  return { assunto, html, text }
+}

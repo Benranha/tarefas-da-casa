@@ -42,7 +42,7 @@ export function montarEmail(e: EmailEntrada): { html: string; text: string } {
     : ''
 
   const parar = e.parar
-    ? `<p style="margin:10px 0 0;font-size:13px;line-height:19px;color:${COR.suave}">Não quer mais receber estas dicas? <a href="${esc(e.parar)}" style="color:${COR.suave}">Parar de receber</a>.</p>`
+    ? `<p style="margin:10px 0 0;font-size:13px;line-height:19px;color:${COR.suave}">Para parar de receber estas dicas, <a href="${esc(e.parar)}" style="color:${COR.suave}">toque aqui</a>.</p>`
     : ''
 
   const html = `<!doctype html>
@@ -89,6 +89,6 @@ ${e.rodape.map(pequeno).join('\n')}${parar}
     linhas.push('')
   }
   linhas.push(...e.rodape)
-  if (e.parar) linhas.push('', `Não quer mais receber estas dicas? Para parar: ${e.parar}`)
+  if (e.parar) linhas.push('', `Para parar de receber estas dicas, use este link: ${e.parar}`)
   return { html, text: linhas.join('\n') }
 }

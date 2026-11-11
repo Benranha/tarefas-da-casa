@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Copy, KeyRound, Link2, Plus, UserPlus } from 'lucide-react'
+import { Copy, KeyRound, Link2, Mail, Plus, UserPlus } from 'lucide-react'
 import PushToggle from '@/components/PushToggle'
 import { track } from '@/lib/analytics'
 
@@ -17,6 +17,8 @@ export default function FamilyPage() {
   const [hasParental, setHasParental] = useState(false)
   const [parentalPin, setParentalPin] = useState('')
   const [parentalMsg, setParentalMsg] = useState<string | null>(null)
+  // Dicas por e-mail: null = ainda não carregou ou o app não manda esses e-mails (a seção não aparece).
+  const [emailDicas, setEmailDicas] = useState<boolean | null>(null)
 
   async function load() {
     const res = await fetch('/api/pais/family', { cache: 'no-store' })
@@ -30,7 +32,26 @@ export default function FamilyPage() {
   }
   useEffect(() => {
     load()
+    fetch('/api/pais/email-dicas', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.ativo && setEmailDicas(Boolean(d.dicas)))
+      .catch(() => {})
   }, [])
+
+  async function mudarEmailDicas() {
+    if (emailDicas === null) return
+    const novo = !emailDicas
+    setEmailDicas(novo)
+    const res = await fetch('/api/pais/email-dicas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dicas: novo }),
+    }).catch(() => null)
+    if (!res?.ok) {
+      setEmailDicas(!novo)
+      alert('Não foi possível salvar agora. Tente de novo.')
+    }
+  }
 
   const inviteUrl = (code: string) => `${window.location.origin}/convite?c=${code}`
 
@@ -178,6 +199,21 @@ export default function FamilyPage() {
         <p className="text-ink-muted">Receba um aviso neste aparelho quando uma criança terminar uma tarefa.</p>
         <PushToggle endpoint="/api/pais/push" />
       </section>
+
+      {emailDicas !== null && (
+        <section className="tf-card space-y-3">
+          <h2 className="font-display text-2xl font-semibold text-ink flex items-center gap-2">
+            <Mail size={24} /> E-mails
+          </h2>
+          <p className="text-ink-muted">
+            De vez em quando mandamos uma dica de como usar o Tarefinha, para o e-mail de quem criou a família. Dá para parar quando quiser.
+          </p>
+          <button type="button" onClick={mudarEmailDicas} role="switch" aria-checked={emailDicas} className="flex items-center gap-3 min-h-12 font-bold text-ink text-left">
+            <span className="tf-switch" data-on={emailDicas || undefined} aria-hidden="true" />
+            Receber dicas por e-mail
+          </button>
+        </section>
+      )}
     </div>
   )
 }
