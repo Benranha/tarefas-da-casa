@@ -1,0 +1,33 @@
+name: Lembretes
+
+# Chama /api/cron/lembretes a cada ~5 min (o GitHub pode atrasar alguns minutos).
+# No plano grátis do Render o servidor dorme após 15 min sem acesso; essa chamada
+# também o mantém acordado, evitando a espera de ~1 min na primeira visita.
+# Requer o segredo CRON_SECRET em Settings → Secrets and variables → Actions
+# (o mesmo valor configurado no Render).
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: lembretes
+  cancel-in-progress: false
+
+jobs:
+  lembretes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chamar o cron
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE: ${{ vars.SITE_URL || 'https://tarefinha.onrender.com' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Segredo CRON_SECRET não configurado no repositório."
+            exit 1
+          fi
+          curl -fsS --retry 3 --retry-delay 20 --retry-all-errors --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$SITE/api/cron/lembretes"
