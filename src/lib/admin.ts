@@ -1,5 +1,9 @@
 import { auth } from '@/lib/auth/server'
 import { sql } from '@/lib/db'
+import { FAMILY_STATUS_SQL, TZ, USO_EVENTOS_SQL } from '@/lib/uso'
+
+// FAMILY_STATUS_SQL e TZ moraram aqui; continuam exportados para quem já os importa.
+export { FAMILY_STATUS_SQL, TZ }
 
 // Admin = e-mail na allowlist ADMIN_EMAILS (separados por vírgula). Nunca é um pai/mãe comum.
 export async function getAdmin() {
@@ -30,13 +34,6 @@ export const FILTER_LABEL: Record<Status, string> = {
   active: 'Ativos', trialing: 'Em teste', past_due: 'Pagamento atrasado', expired: 'Teste expirado', canceled: 'Cancelados',
 }
 
-// Uma linha por família com o status de cobrança efetivo. Sem assinatura: teste ou expirado.
-export const FAMILY_STATUS_SQL = `
-  SELECT f.owner_id, f.created_at, f.trial_ends_at,
-         COALESCE(s.status, CASE WHEN f.trial_ends_at > now() THEN 'trialing' ELSE 'expired' END) AS status,
-         COALESCE(s.plan_price_cents, 1990) AS price_cents,
-         s.current_period_end, s.canceled_at, s.last_payment_failed_at, s.created_at AS sub_created_at
-  FROM families f LEFT JOIN subscriptions s ON s.family_id = f.owner_id`
 
 export const brl = (cents: number) =>
   (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -50,7 +47,6 @@ export const familyName = (name: string | null | undefined, email: string) => {
 const q = <T = Record<string, any>>(text: string, params: unknown[] = []) => sql.query(text, params) as Promise<T[]>
 const n = (v: unknown) => Number(v ?? 0)
 
-export const TZ = `'America/Manaus'`
 // Dia (no fuso da casa) em que a tarefa foi aprovada.
 const APPROVED_DAY = `(ti.approved_at at time zone ${TZ})::date`
 
@@ -299,21 +295,7 @@ export type LastUseRow = {
 // desde esse uso; "days30" = dias diferentes com algum uso nos últimos 30 dias.
 export async function lastUse() {
   const rows = await q<LastUseRow>(`WITH fs AS (${FAMILY_STATUS_SQL}),
-    members AS (
-      SELECT owner_id AS family, owner_id AS user_id FROM families
-      UNION SELECT family_owner_id, user_id FROM family_members
-    ),
-    ev AS (
-      SELECT c.owner_id AS family, ti.completed_at AS at, 'crianca' AS by
-        FROM task_instances ti JOIN children c ON c.id = ti.child_id WHERE ti.completed_at IS NOT NULL
-      UNION ALL
-      SELECT c.owner_id, ti.approved_at, 'responsavel'
-        FROM task_instances ti JOIN children c ON c.id = ti.child_id WHERE ti.approved_at IS NOT NULL
-      UNION ALL
-      SELECT m.family, s."createdAt", 'responsavel' FROM neon_auth.session s JOIN members m ON m.user_id = s."userId"
-      UNION ALL
-      SELECT m.family, s."updatedAt", 'responsavel' FROM neon_auth.session s JOIN members m ON m.user_id = s."userId"
-    ),
+    ${USO_EVENTOS_SQL},
     last AS (SELECT DISTINCT ON (family) family, at, by FROM ev WHERE at IS NOT NULL ORDER BY family, at DESC),
     d30 AS (
       SELECT family, count(DISTINCT (at at time zone ${TZ})::date)::int AS n

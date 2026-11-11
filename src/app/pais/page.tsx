@@ -5,6 +5,10 @@ import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
 import InstalarAviso from './InstalarAviso';
+import { pedirAoAssistente } from './PromptBar';
+import ToqueAqui from '@/components/dicas/ToqueAqui';
+import VoceSabia from '@/components/dicas/VoceSabia';
+import { VOCE_SABIA } from '@/lib/dicas';
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 import { track } from '@/lib/analytics'
@@ -19,6 +23,7 @@ export default function ParentsDashboard() {
   const [totemUrl, setTotemUrl] = useState('');
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [soUmResponsavel, setSoUmResponsavel] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [note, setNote] = useState('');
 
@@ -29,6 +34,7 @@ export default function ParentsDashboard() {
         if (!f) return;
         setTotemUrl(`${window.location.origin}/totem?c=${f.totemCode}`);
         setTrialDaysLeft(f.trialDaysLeft ?? null);
+        setSoUmResponsavel(Array.isArray(f.members) && f.members.length === 1);
       });
   }, []);
 
@@ -191,7 +197,7 @@ export default function ParentsDashboard() {
         </div>
       ) : (
         <div className="order-2 md:order-4 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {pendingTasks.map((instance) => (
+          {pendingTasks.map((instance, idx) => (
             <article key={instance.id} className="tf-card flex flex-col gap-4 !p-5 md:!p-4">
               <div className="flex items-start md:items-center gap-3.5 md:gap-4">
                 <span className="tf-task__icon"><TfIcon name={instance.tasks.icon} size={40} /></span>
@@ -237,7 +243,10 @@ export default function ParentsDashboard() {
                 ) : (
                   <>
                     <button onClick={() => handleApprove(instance.id)} className="tf-btn tf-btn--approve order-2 md:order-1 !min-h-[52px] md:!min-h-12 !px-3"><Check className="tf-icon" /> Aprovar</button>
-                    <button onClick={() => { setRejectingId(instance.id); setNote(''); }} className="tf-btn tf-btn--return order-1 md:order-2 !min-h-[52px] md:!min-h-12 !px-3"><Undo2 className="tf-icon" /> Devolver</button>
+                    <button onClick={() => { setRejectingId(instance.id); setNote(''); }} className="tf-btn tf-btn--return relative order-1 md:order-2 !min-h-[52px] md:!min-h-12 !px-3">
+                      <Undo2 className="tf-icon" /> Devolver
+                      <ToqueAqui id="fila.devolver" prioridade={1} lado="baixo" alinhar="inicio" quando={idx === 0} />
+                    </button>
                   </>
                 )}
               </div>
@@ -245,6 +254,28 @@ export default function ParentsDashboard() {
           ))}
         </div>
       )}
+
+      {/* Dicas ficam por último: a aprovação vem primeiro. */}
+      <VoceSabia
+        id="fila.aprovar-tudo"
+        prioridade={1}
+        quando={pendingTasks.length >= 2}
+        className="order-5"
+        acao={{ rotulo: 'Experimentar', onClick: () => pedirAoAssistente(VOCE_SABIA['fila.aprovar-tudo'].pedido) }}
+      />
+      <VoceSabia
+        id="fila.assistente"
+        prioridade={2}
+        className="order-5"
+        acao={{ rotulo: 'Experimentar', onClick: () => pedirAoAssistente(VOCE_SABIA['fila.assistente'].pedido) }}
+      />
+      <VoceSabia
+        id="familia.convite"
+        prioridade={3}
+        quando={soUmResponsavel}
+        className="order-5"
+        acao={{ rotulo: 'Convidar', href: '/pais/familia' }}
+      />
     </div>
   )
 }

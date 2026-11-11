@@ -6,12 +6,33 @@ import { useAjudaChat } from './useAjudaChat';
 
 const SUGGESTIONS = ['Crie uma tarefa para uma criança', 'O que está na Fila?', 'Quais tarefas já existem?'];
 
+const PEDIDO_EVENT = 'tf-pedido';
+
+// Deixa um texto escrito na barra (sem enviar), para os cartões "Você sabia?" mostrarem como se pede.
+// O responsável lê, ajusta e toca em enviar.
+export function pedirAoAssistente(texto: string) {
+  window.dispatchEvent(new CustomEvent(PEDIDO_EVENT, { detail: texto }));
+}
+
 // Barra de comando no topo da Fila: o responsável pede em linguagem natural (criar tarefa,
 // aprovar, devolver…) e confirma no próprio cartão. onChanged atualiza a Fila após cada ação.
 export default function PromptBar({ onChanged }: { onChanged: () => void }) {
   const { msgs, busy, send, confirm, reset } = useAjudaChat([], onChanged);
   const [text, setText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onPedido = (e: Event) => {
+      setText(String((e as CustomEvent<string>).detail ?? '').slice(0, 500));
+      const campo = inputRef.current;
+      if (!campo) return;
+      campo.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      campo.focus({ preventScroll: true });
+    };
+    window.addEventListener(PEDIDO_EVENT, onPedido);
+    return () => window.removeEventListener(PEDIDO_EVENT, onPedido);
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'nearest' });
@@ -54,6 +75,7 @@ export default function PromptBar({ onChanged }: { onChanged: () => void }) {
       >
         <Sparkles size={20} className="shrink-0 text-brand ml-1" aria-hidden />
         <input
+          ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={500}

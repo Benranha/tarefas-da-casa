@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { Inbox, User, ListChecks, Gift, Users, Tablet, Sparkles } from 'lucide-react';
+import { reavaliarDicas } from '@/lib/dicas';
 
 const SEEN_KEY = 'tarefinha-tutorial-visto';
 
@@ -55,6 +56,7 @@ export default function Tutorial({ onClose }: { onClose: () => void }) {
 
   function finish() {
     try { localStorage.setItem(SEEN_KEY, '1'); } catch {}
+    reavaliarDicas(); // as dicas só começam depois do tutorial
     onClose();
   }
 

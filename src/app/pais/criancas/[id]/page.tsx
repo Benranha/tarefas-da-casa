@@ -3,6 +3,7 @@ import React, { use, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlarmClock, ArrowLeft, Check, CheckCheck, ChevronDown, Moon, Undo2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
+import ToqueAqui from '@/components/dicas/ToqueAqui'
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling, PAIS_IDLE_MS } from '@/lib/use-polling'
 
@@ -96,7 +97,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
         </p>
       ) : (
         <ul className="grid gap-3">
-          {tasks.map((t) => {
+          {tasks.map((t, idx) => {
             const isOpen = open === t.id
             const returned = t.status === 'pending' && Boolean(t.parent_note)
             const cls =
@@ -108,7 +109,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
                     type="button"
                     onClick={() => setOpen(isOpen ? null : t.id)}
                     aria-expanded={isOpen}
-                    className="flex items-center gap-4 text-left w-full"
+                    className="relative rounded-2xl flex items-center gap-4 text-left w-full"
                   >
                     <span className="tf-task__icon"><TfIcon name={t.tasks.icon} size={40} /></span>
                     <span className="flex-1 min-w-0">
@@ -116,6 +117,7 @@ export default function ChildTasksPage({ params }: { params: Promise<{ id: strin
                       <span className="tf-task__status">{STATUS_LABEL[t.status]}</span>
                     </span>
                     <ChevronDown size={22} className={`shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    <ToqueAqui id="crianca.tarefa" prioridade={3} lado="baixo" alinhar="inicio" quando={idx === 0 && !isOpen && t.status !== 'approved'} />
                   </button>
 
                   {isOpen && (

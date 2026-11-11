@@ -5,6 +5,7 @@ import { Check, Circle, Clock, ArrowLeft, Gift, Undo2, AlarmClock, Moon } from '
 import Link from 'next/link';
 import PinForm from '@/components/PinForm';
 import TfIcon from '@/components/TfIcon';
+import ToqueAqui from '@/components/dicas/ToqueAqui';
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling } from '@/lib/use-polling';
 
@@ -232,7 +233,7 @@ export default function TotemPage() {
     return (
       <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-6 p-8">
         <p className="text-2xl text-center text-ink max-w-lg">
-          Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
+          Link do totem inválido. Abra o painel dos pais e copie o link do totem na &quot;Fila&quot;.
         </p>
         <Link href="/abrir?trocar=1" className="text-xl font-bold text-brand underline">
           Configurar este aparelho
@@ -409,15 +410,17 @@ export default function TotemPage() {
             ) : (
               tasks.map((instance) => {
                 const st = instance.status;
+                const primeiraPendente = instance.id === tasks.find((t) => t.status === 'pending')?.id;
                 // Devolvida pelos pais: volta a "pending" com o recado em parent_note.
                 const returned = st === 'pending' && Boolean(instance.parent_note);
                 return (
                   <button
                     key={instance.id}
                     type="button"
-                    className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
+                    className={`tf-task relative ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
                     onClick={() => st === 'pending' && markTaskDone(instance.id)}
                   >
+                    <ToqueAqui id="totem.terminei" area="filho" prioridade={1} lado="baixo" alinhar="inicio" quando={primeiraPendente} />
                     <span className="tf-task__row">
                       <span className="tf-task__icon"><TfIcon name={instance.tasks.icon} size={66} /></span>
                       <span className="tf-task__pts">+{instance.tasks.points}<TfIcon name="estrela" size={26} className="ml-1" /></span>

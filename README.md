@@ -12,7 +12,7 @@ Web App PWA para controle de tarefas domésticas gamificadas para crianças.
 ### 1. Banco e Auth (Neon)
 1. No Vercel, em **Storage**, crie um banco **Neon** e conecte ao projeto (injeta `DATABASE_URL` e `NEON_AUTH_BASE_URL`).
 2. Rode `db/schema.sql` no banco (Neon SQL Editor). Se o banco já existia, rode só `db/migrations/002_familia_horarios_filho.sql` (idempotente).
-3. Cada responsável cria a própria conta em `/cadastro`, cadastra os filhos e as tarefas, e copia o link do totem no Dashboard para abrir no tablet.
+3. Cada responsável cria a própria conta em `/cadastro`, cadastra os filhos e as tarefas, e copia o link do totem na Fila para abrir no tablet.
 
 ### 2. Variáveis de Ambiente
 ```env
@@ -24,7 +24,7 @@ NEON_AUTH_COOKIE_SECRET=... # openssl rand -base64 32 (mínimo 32 caracteres); t
 VAPID_PUBLIC_KEY=...        # npx web-push generate-vapid-keys
 VAPID_PRIVATE_KEY=...
 VAPID_SUBJECT=mailto:voce@exemplo.com
-CRON_SECRET=...             # protege /api/cron/lembretes
+CRON_SECRET=...             # protege /api/cron/lembretes e /api/cron/emails
 
 # Ajuda por IA no painel dos pais (opcional; plano gratuito do Google AI Studio: aistudio.google.com/apikey)
 GEMINI_API_KEY=...
@@ -34,6 +34,8 @@ GEMINI_MODEL=gemini-3.5-flash-lite   # opcional
 # sem ele o Resend só entrega para o e-mail dono da conta.
 RESEND_API_KEY=...
 RESEND_FROM=Tarefinha <nao-responda@seudominio.com.br>
+EMAIL_TOKEN_SECRET=...      # assina o link "Parar de receber" dos e-mails de dica
+EMAIL_DICAS=1               # liga o envio das dicas por e-mail (veja "E-mails ao responsável" abaixo)
 
 # SEO (opcional): domínio público e códigos de verificação do Google Search Console / Bing Webmaster
 NEXT_PUBLIC_SITE_URL=https://tarefinha.app.br
@@ -45,6 +47,16 @@ ADMIN_EMAILS=voce@exemplo.com
 ```
 
 **Link da criança por e-mail:** rode `db/migrations/006_email_link_crianca.sql` e defina `RESEND_API_KEY` e `RESEND_FROM`.
+
+**E-mails ao responsável** (boas-vindas, aviso de alguns dias sem uso e dicas de funcionalidades, para quem criou a família):
+1. Rode `db/migrations/008_emails.sql` no Neon **antes** do deploy. Cria `email_log` e `email_preferencias`; não guarda endereço de e-mail.
+2. Defina `EMAIL_TOKEN_SECRET` (`openssl rand -base64 32`). Ele assina o link "Parar de receber"; sem ele nenhum e-mail de dica sai.
+3. Agende uma chamada **por dia** a `GET /api/cron/emails` com `Authorization: Bearer $CRON_SECRET`, no mesmo agendador de `/api/cron/lembretes`.
+4. Antes de ligar, chame `GET /api/cron/emails?dry=1`: devolve só quantos e-mails de cada tipo sairiam (sem enviar, sem endereços).
+5. Para ligar, defina `EMAIL_DICAS=1`. Desligado por padrão: assim o primeiro dia não manda para toda a base de uma vez. Cada rodada envia no máximo 50.
+
+Os limites estão em `src/lib/email/plano.ts`: no máximo um e-mail por semana, quatro dicas no total, um aviso de "sem uso" por mês, e nada para quem parou. Cada e-mail de dica tem o link "Parar de receber" e o cabeçalho `List-Unsubscribe`. Para ver os e-mails sem enviar, rode `npm run dev` e abra `/api/dev/email` (404 em produção).
+O envio usa `RESEND_API_KEY` e `RESEND_FROM`. A consulta usa a coluna `"emailVerified"` de `neon_auth."user"` (esquema do Better Auth): o `?dry=1` acusa erro se o nome for outro.
 
 **Painel admin:** rode `db/migrations/005_assinaturas.sql` e defina `ADMIN_EMAILS`. Quem não estiver na lista recebe 404 em `/admin`.
 A tabela `subscriptions` deve ser alimentada pelos webhooks do gateway de pagamento (ainda não integrado).

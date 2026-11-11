@@ -26,13 +26,17 @@ export default function RewardsPage() {
   const [icon, setIcon] = useState<string>(ICONS[0])
   const [cost, setCost] = useState(50)
   const [saving, setSaving] = useState(false)
+  const [loaded, setLoaded] = useState(false) // evita mostrar "nenhum prêmio" antes da primeira resposta
 
   async function load() {
     const [r, p] = await Promise.all([
       fetch('/api/pais/rewards', { cache: 'no-store' }),
       fetch('/api/pais/redemptions', { cache: 'no-store' }),
     ])
-    if (r.ok) setRewards(await r.json())
+    if (r.ok) {
+      setRewards(await r.json())
+      setLoaded(true)
+    }
     if (p.ok) setRedemptions(await p.json())
   }
   useEffect(() => {
@@ -148,6 +152,13 @@ export default function RewardsPage() {
           Adicionar prêmio
         </button>
       </form>
+
+      {loaded && rewards.length === 0 && (
+        <p className="bg-surface-raised p-6 rounded-[24px] border-2 border-dashed border-line text-center text-ink-muted">
+          Nenhum prêmio cadastrado. Combine com seus filhos o que vale pontos e cadastre o primeiro acima. Quando eles
+          pedirem, o pedido aparece aqui.
+        </p>
+      )}
 
       {rewards.length > 0 && (
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">

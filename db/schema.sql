@@ -156,3 +156,16 @@ CREATE TABLE IF NOT EXISTS user_phones (
     phone TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Versão 8: e-mails do app para o responsável (db/migrations/008_emails.sql).
+CREATE TABLE IF NOT EXISTS email_log (
+    owner_id UUID NOT NULL REFERENCES families(owner_id) ON DELETE CASCADE,
+    chave TEXT NOT NULL,
+    enviado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (owner_id, chave)
+);
+CREATE TABLE IF NOT EXISTS email_preferencias (
+    owner_id UUID PRIMARY KEY REFERENCES families(owner_id) ON DELETE CASCADE,
+    dicas BOOLEAN NOT NULL DEFAULT true,
+    atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now()
+);

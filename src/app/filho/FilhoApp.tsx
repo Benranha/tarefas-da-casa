@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti'
 import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, LogOut, Moon, Undo2 } from 'lucide-react'
 import PinForm from '@/components/PinForm'
 import TfIcon from '@/components/TfIcon'
+import ToqueAqui from '@/components/dicas/ToqueAqui'
 import PushToggle from '@/components/PushToggle'
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling } from '@/lib/use-polling'
@@ -200,6 +201,7 @@ function Filho() {
   }
 
   const approved = tasks.filter((t) => t.status === 'approved').length
+  const primeiraPendente = tasks.find((t) => t.status === 'pending')?.id
 
   return (
     <div className="tf-totem min-h-screen flex flex-col" style={kid}>
@@ -267,9 +269,10 @@ function Filho() {
                 <button
                   key={i.id}
                   type="button"
-                  className={`tf-task ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
+                  className={`tf-task relative ${st === 'approved' ? 'tf-task--approved' : st === 'awaiting_approval' ? 'tf-task--waiting' : returned ? 'tf-task--returned' : ''}`}
                   onClick={() => st === 'pending' && markDone(i.id)}
                 >
+                  <ToqueAqui id="filho.terminei" area="filho" prioridade={1} lado="dentro" quando={i.id === primeiraPendente} />
                   <span className="tf-task__icon"><TfIcon name={i.tasks.icon} size={40} /></span>
                   <span className="flex-1 min-w-0">
                     <p className="tf-task__title">{i.tasks.title}</p>
@@ -292,7 +295,10 @@ function Filho() {
           </div>
           <p className="text-center font-bold text-ink-muted">{approved} de {tasks.length} aprovadas</p>
           <div className="flex justify-center">
-            <button onClick={openRewards} className="tf-btn tf-btn--primary"><Gift className="tf-icon" /> Prêmios</button>
+            <button onClick={openRewards} className="tf-btn tf-btn--primary relative">
+              <Gift className="tf-icon" /> Prêmios
+              <ToqueAqui id="filho.premios" area="filho" prioridade={2} quando={(me?.points ?? 0) > 0} />
+            </button>
           </div>
           {token && <PushToggle endpoint="/api/filho/push" headers={headers(token)} className="text-center" />}
           <div className="flex flex-col items-center gap-3 pt-2">
