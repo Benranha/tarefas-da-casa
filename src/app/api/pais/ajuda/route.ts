@@ -8,10 +8,11 @@ export const dynamic = 'force-dynamic'
 // Cada pergunta pode ter até MAX_STEPS chamadas ao Gemini: dá folga para elas dentro do limite da função.
 export const maxDuration = 60
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+// Modelo principal e reserva (o alias "latest" sempre existe): se o principal travar ou sumir, usa o próximo.
+const MODELS = [...new Set([process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'])]
 // Orçamento total por pergunta e teto por chamada ao Gemini (o plano gratuito às vezes demora).
 const DEADLINE_MS = 50_000
-const CALL_TIMEOUT_MS = 25_000
+const CALL_TIMEOUT_MS = 15_000
 const MAX_MESSAGES = 10
 const MAX_CHARS = 500
 // Quantas vezes a IA pode pedir ferramentas numa mesma pergunta.
@@ -73,10 +74,12 @@ export async function POST(request: NextRequest) {
     const contents: Content[] = msgs.map((m) => ({ role: m.role, parts: [{ text: m.text }] }))
 
     const started = Date.now()
+    let modelIdx = 0
     const call = () => {
+      const model = MODELS[modelIdx]
       const left = DEADLINE_MS - (Date.now() - started)
       if (left < 3_000) throw new Error(`Tempo esgotado (${Date.now() - started}ms)`)
-      return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
+      return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({
@@ -93,17 +96,19 @@ export async function POST(request: NextRequest) {
     for (let step = 0; step < MAX_STEPS; step++) {
       // O Gemini às vezes responde 503 ou demora demais (alta demanda): tenta mais uma vez.
       let res = await call().catch((e: unknown) => {
-        console.error(`ajuda: passo ${step + 1}, tentativa 1 falhou após ${Date.now() - started}ms:`, e instanceof Error ? e.message : e)
+        console.error(`ajuda: passo ${step + 1}, ${MODELS[modelIdx]} falhou após ${Date.now() - started}ms:`, e instanceof Error ? e.message : e)
         return null
       })
-      if (!res || res.status === 503) {
-        await new Promise((r) => setTimeout(r, 1000))
+      if (!res || res.status === 503 || res.status === 404) {
+        // Troca para o modelo de reserva (se houver) e tenta de novo.
+        if (modelIdx < MODELS.length - 1) modelIdx++
+        else await new Promise((r) => setTimeout(r, 1000))
         res = await call()
       }
       if (res.status === 429) {
         return NextResponse.json({ error: 'A ajuda está muito procurada agora. Tente de novo daqui a pouco ou veja o Tutorial.' }, { status: 429 })
       }
-      if (!res.ok) throw new Error(`Gemini ${res.status} (${MODEL}) após ${Date.now() - started}ms`)
+      if (!res.ok) throw new Error(`Gemini ${res.status} (${MODELS[modelIdx]}) após ${Date.now() - started}ms`)
       const data = await res.json()
       const content: Content | undefined = data?.candidates?.[0]?.content
       const parts = content?.parts ?? []
