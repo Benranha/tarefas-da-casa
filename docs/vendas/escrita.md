@@ -65,8 +65,29 @@ Se a 5 for sim, ou a 6 ou a 7 for não, reescreva.
 - Lembrete no celular da criança no horário da tarefa, nunca fora do período entre acordar e dormir.
 - Dois responsáveis na mesma família.
 - Assistente com IA que cria e aprova tarefas a partir de uma frase, sempre com confirmação.
+- O painel mostra dicas aos poucos: balões "toque aqui" nos botões escondidos e cartões "Você sabia?". Dá para desligar em "Mais".
 - Funciona no navegador (Android, iPhone, tablet, computador), sem loja.
 - 30 dias grátis, sem cartão de crédito.
 
 Não use: preço depois do teste (ainda não está definido no app), número de famílias usando, depoimentos, resultados
 de estudos. Quando existirem de verdade, entram aqui.
+
+## Dicas dentro do app e e-mails ao responsável
+
+Os textos moram em três arquivos. Mude lá, não copie para outro lugar:
+
+- `src/lib/dicas.ts`: os balões "toque aqui" e os cartões "Você sabia?" do app.
+- `src/lib/email/modelos.ts`: o texto de cada e-mail.
+- `src/lib/email/plano.ts`: as dicas por e-mail (`NOVIDADES`) e os limites de quando cada e-mail sai.
+
+Além de tudo acima, vale:
+
+- **Balão:** uma frase que aponta para um botão que existe. "Toque em Devolver para escrever um recado."
+- **Cartão "Você sabia?":** o título já faz a pergunta e o texto afirma. Uma ideia e, no máximo, um botão.
+- **E-mail:** uma ideia só, no máximo uma exclamação e uma pergunta (o "Você sabia?" já é a pergunta). O botão vem com uma linha logo abaixo que diz o que fazer ao tocar. Sem preço depois do teste.
+- **E-mail ao responsável não traz o nome da criança.** Diga "seu filho" ou "a criança".
+- **Só dica de função que existe hoje.** Confira no próprio app e em `src/lib/ajuda.ts`. Se a dica mudar uma tela ou um fluxo, atualize o `ajuda.ts` no mesmo PR.
+- **Toda dica por e-mail declara** se a família já usa aquilo (`jaUsa`) e se o servidor suporta (`disponivel`). Nunca ensine o que a pessoa já faz, nem uma função que está desligada.
+- **Todo e-mail de dica tem "Parar de receber".** Veja o README do kit de vendas, regra 4.
+
+Antes de enviar qualquer e-mail novo, veja como ele fica em `npm run dev`, em `/api/dev/email` (só existe em desenvolvimento).

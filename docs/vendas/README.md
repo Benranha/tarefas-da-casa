@@ -20,3 +20,11 @@ para empresas (B2B); aqui as regras foram trazidas para o nosso caso: famílias 
 3. **Não mande e-mail frio para pais.** Família só recebe mensagem nossa se pediu (cadastro, contato, indicação).
    Prospecção ativa é só com profissionais e empresas, pelo e-mail profissional deles (veja `parceiros.md`).
 4. **Um "não" basta.** Pediu para parar, para. Em qualquer canal, para sempre.
+
+### E-mails do próprio app
+
+A regra 3 vale para prospecção. Quem já tem conta recebe as mensagens do próprio app: o link da criança, as
+boas-vindas, o aviso de alguns dias sem uso e as dicas de funcionalidades (`src/lib/email/`). Isso não abre a
+porta para campanha de venda, oferta ou preço. A regra 4 vale inteira: todo e-mail de dica tem "Parar de
+receber" (também um interruptor em Família), vai no máximo um por semana, e quem para não recebe mais nenhum.
+O envio só liga com `EMAIL_DICAS=1` (veja o README do projeto).
