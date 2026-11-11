@@ -232,7 +232,7 @@ export default function TotemPage() {
     return (
       <div className="tf-totem min-h-screen flex flex-col items-center justify-center gap-6 p-8">
         <p className="text-2xl text-center text-ink max-w-lg">
-          Link do totem inválido. Abra o painel dos pais e copie o link do totem em &quot;Dashboard&quot;.
+          Link do totem inválido. Abra o painel dos pais e copie o link do totem na &quot;Fila&quot;.
         </p>
         <Link href="/abrir?trocar=1" className="text-xl font-bold text-brand underline">
           Configurar este aparelho

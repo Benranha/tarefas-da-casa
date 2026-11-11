@@ -78,7 +78,7 @@ function Launcher() {
       localStorage.setItem(MODE_KEY, 'totem')
       router.replace('/totem')
     } catch {
-      setError('Não encontramos esse link. Copie de novo no painel dos pais, em Dashboard.')
+      setError('Não encontramos esse link. Copie de novo no painel dos pais, na Fila.')
       setChecking(false)
     }
   }
@@ -158,7 +158,7 @@ function Launcher() {
           <form onSubmit={savePanel} className="bg-surface-raised p-6 rounded-[32px] border-2 border-line space-y-4">
             <h2 className="text-xl font-bold text-ink">Link do totem</h2>
             <p className="text-sm text-ink-muted">
-              Abra o painel dos pais, vá em <strong>Dashboard</strong>, toque em <strong>Copiar link</strong> e cole aqui.
+              Abra o painel dos pais, vá em <strong>Fila</strong>, toque em <strong>Copiar link</strong> e cole aqui.
             </p>
             <input
               value={link}

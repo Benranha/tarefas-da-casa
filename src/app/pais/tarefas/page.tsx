@@ -1,8 +1,11 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Plus, Trash2, Calendar, AlarmClock, Pencil, Check, EllipsisVertical, Copy, X } from 'lucide-react'
 import TfIcon, { isCustomEmoji } from '@/components/TfIcon'
 import { TfLoader } from '@/components/TfLoader'
+import ToqueAqui from '@/components/dicas/ToqueAqui'
+import VoceSabia from '@/components/dicas/VoceSabia'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 import { track } from '@/lib/analytics'
 
@@ -256,6 +259,24 @@ function TaskForm({
   )
 }
 
+// O "+" da barra do celular chega aqui com ?nova=1 (ou avisa pelo evento, se a pessoa já estiver
+// nesta tela e a URL não mudar): leva o foco para o nome da nova tarefa.
+function FocarNovaTarefa({ pronto }: { pronto: boolean }) {
+  const nova = useSearchParams().get('nova') === '1'
+  useEffect(() => {
+    const focar = () => {
+      const campo = document.querySelector<HTMLInputElement>('input[aria-label="Nome da tarefa"]')
+      if (!campo) return
+      campo.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      campo.focus({ preventScroll: true })
+    }
+    if (nova && pronto) focar()
+    window.addEventListener('tf-nova-tarefa', focar)
+    return () => window.removeEventListener('tf-nova-tarefa', focar)
+  }, [nova, pronto])
+  return null
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [children, setChildren] = useState<Child[]>([])
@@ -354,6 +375,9 @@ export default function TasksPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <h1 className="text-3xl font-bold text-ink">Tarefas</h1>
+      <Suspense fallback={null}>
+        <FocarNovaTarefa pronto={children.length > 0} />
+      </Suspense>
 
       {children.length === 0 ? (
         <p className="bg-waiting-bg border border-waiting-border text-waiting-fg p-4 rounded-2xl">
@@ -371,6 +395,14 @@ export default function TasksPage() {
           />
         </div>
       )}
+
+      <VoceSabia
+        id="tarefas.copiar"
+        prioridade={1}
+        quando={children.length > 1 && tasks.length > 0}
+        acao={{ rotulo: 'Copiar tarefas', onClick: () => { setCopyPick(null); setCopyOpen(true) } }}
+      />
+      <VoceSabia id="tarefas.dias" prioridade={2} quando={tasks.length > 0 && !tasks.some((t) => t.recurrence === 'weekly')} />
 
       {children.length > 1 && tasks.length > 0 && (
         <div className="bg-surface-raised p-4 rounded-[24px] border-2 border-line space-y-3">
@@ -436,7 +468,7 @@ export default function TasksPage() {
 
       {tasks.length > 0 && (
         <div className="bg-surface-raised rounded-[24px] border-2 border-line divide-y divide-line shadow-sm">
-          {tasks.map((t) => (
+          {tasks.map((t, idx) => (
             <div key={t.id} className="p-4 space-y-3">
               <div className="grid grid-cols-[28px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 md:flex md:items-center">
                 <span className="mt-0.5 md:mt-0 shrink-0"><TfIcon name={t.icon} size={28} /></span>
@@ -463,9 +495,10 @@ export default function TasksPage() {
                     aria-label={`Ações de ${t.title}`}
                     aria-haspopup="menu"
                     aria-expanded={menuFor === t.id}
-                    className="size-11 grid place-items-center rounded-full text-ink-muted hover:text-brand"
+                    className="relative size-11 grid place-items-center rounded-full text-ink-muted hover:text-brand"
                   >
                     <EllipsisVertical size={22} />
+                    <ToqueAqui id="tarefas.menu" prioridade={2} lado="baixo" alinhar="fim" quando={idx === 0} />
                   </button>
                   {menuFor === t.id && (
                     <>

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Copy, KeyRound, ListChecks, Moon, Plus, Smartphone, Sun, Trash2 } from 'lucide-react'
 import TfIcon from '@/components/TfIcon'
+import VoceSabia from '@/components/dicas/VoceSabia'
 import { TF_GROUPS } from '@/lib/tf-icons-data'
 import { KID_COLORS } from '@/lib/kid-options'
 import EnviarLink from './EnviarLink'
@@ -158,6 +159,8 @@ export default function ChildrenPage() {
           Adicionar criança
         </button>
       </form>
+
+      <VoceSabia id="criancas.link" prioridade={1} quando={children.some((c) => !c.has_device)} />
 
       {children.length === 0 ? (
         <p className="text-center text-ink-muted">Nenhuma criança cadastrada ainda.</p>

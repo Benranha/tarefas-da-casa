@@ -172,13 +172,19 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
     <nav aria-label="Principal" className="tf-pill">
       <PillTab href="/pais" label="Fila" icon={Inbox} pathname={pathname} badge={pending} />
       <PillTab href="/pais/criancas" label="Crianças" icon={User} pathname={pathname} />
-      <NavLink pathname={pathname} href="/pais/tarefas?nova=1" aria-label="Adicionar tarefa" className="tf-pill__add">
+      <NavLink
+        pathname={pathname}
+        href="/pais/tarefas?nova=1"
+        aria-label="Adicionar tarefa"
+        className="tf-pill__add"
+        onClick={() => window.dispatchEvent(new Event('tf-nova-tarefa'))}
+      >
         <Plus size={30} />
-        <ToqueAqui id="pais.adicionar" prioridade={10} />
+        <ToqueAqui id="pais.adicionar" prioridade={10} fixo />
       </NavLink>
       <button type="button" onClick={() => setHelpOpen(true)} aria-label="Ajuda" aria-haspopup="dialog" className="tf-pill__item">
         <MessageCircleQuestion size={22} />
-        <ToqueAqui id="pais.ajuda" prioridade={11} />
+        <ToqueAqui id="pais.ajuda" prioridade={11} fixo />
       </button>
       <button
         type="button"
@@ -191,7 +197,7 @@ export default function Nav({ signOut, isAdmin = false }: { signOut: () => Promi
       >
         <Ellipsis size={22} />
         {moreActive && <span>Mais</span>}
-        <ToqueAqui id="pais.mais" prioridade={12} alinhar="fim" />
+        <ToqueAqui id="pais.mais" prioridade={12} alinhar="fim" fixo />
       </button>
     </nav>
 

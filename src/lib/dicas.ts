@@ -21,7 +21,7 @@ export const TOQUE_AQUI = {
   'pais.mais': 'Prêmios e histórico ficam em Mais.',
   'fila.devolver': 'Toque em Devolver para escrever um recado. A criança lê.',
   'tarefas.menu': 'Toque nos três pontinhos para editar, copiar ou remover.',
-  'crianca.tarefa': 'Toque em uma tarefa para marcar como feita.',
+  'crianca.tarefa': 'Toque na tarefa para marcar como feita ou aprovar.',
   'filho.terminei': 'Terminou? Toque aqui.',
   'filho.premios': 'Seus pontos viram prêmios. Toque aqui.',
   'totem.terminei': 'Terminou? Toque aqui.',
@@ -48,7 +48,7 @@ export const VOCE_SABIA = {
     texto: 'Seu filho pode ter o link dele e receber lembretes no celular. Marque “Tem celular ou computador”.',
   },
   'familia.convite': {
-    texto: 'Outro responsável pode usar a mesma família. Gere um convite aqui.',
+    texto: 'Outro responsável pode usar a mesma família. Gere o convite em Família.',
   },
 } as const
 export type VoceSabiaId = keyof typeof VOCE_SABIA
@@ -59,6 +59,7 @@ const ULTIMA = 'tarefinha-dicas-ultima' // quando o último cartão foi dispensa
 const TUTORIAL = 'tarefinha-tutorial-visto'
 const ESPERA_CARTAO = 24 * 60 * 60 * 1000
 const AUTO_DISPENSAR = 20_000
+const VISIVEL_MIN = 0.55 // quanto do alvo precisa estar na tela para o balão valer
 
 function ler(chave: string): string | null {
   try { return localStorage.getItem(chave) } catch { return null }
@@ -114,8 +115,17 @@ function dispensar(id: string, tipo: TipoDica) {
   avisar()
 }
 
-// Usado por ToqueAqui e VoceSabia. Com "alvo", só conta enquanto o elemento estiver visível na tela.
-export function useDica(id: string, tipo: TipoDica, prioridade: number, quando: boolean, alvo?: RefObject<HTMLElement | null>) {
+// Usado por ToqueAqui e VoceSabia. Com "alvo", só conta enquanto o elemento estiver visível na
+// tela (escondido por CSS, ou abaixo da dobra, não ocupa a vaga nem gasta o tempo do balão).
+// "margem" encolhe a área considerada visível, para sobrar espaço ao balão e não ficar sob a barra.
+export function useDica(
+  id: string,
+  tipo: TipoDica,
+  prioridade: number,
+  quando: boolean,
+  alvo?: RefObject<HTMLElement | null>,
+  margem = '0px',
+) {
   const escolha = useSyncExternalStore(assinar, escolhida, () => null)
 
   useEffect(() => {
@@ -133,16 +143,21 @@ export function useDica(id: string, tipo: TipoDica, prioridade: number, quando: 
       marcar(true)
       return () => marcar(false)
     }
-    const obs = new ResizeObserver(() => marcar(el.getClientRects().length > 0))
+    const obs = new IntersectionObserver(
+      (entradas) => marcar(entradas[entradas.length - 1].intersectionRatio >= VISIVEL_MIN),
+      { threshold: VISIVEL_MIN, rootMargin: margem },
+    )
     obs.observe(el)
     return () => {
       obs.disconnect()
       marcar(false)
     }
-  }, [id, tipo, prioridade, quando, alvo])
+  }, [id, tipo, prioridade, quando, alvo, margem])
 
   const fechar = useCallback(() => dispensar(id, tipo), [id, tipo])
-  return { visivel: escolha === id, dispensar: fechar }
+  // "quando" também vale aqui: com várias instâncias do mesmo id (uma por tarefa, por exemplo),
+  // só a que pediu para aparecer mostra o balão.
+  return { visivel: quando && escolha === id, dispensar: fechar }
 }
 
 // Some depois de um toque no alvo (a pessoa já achou) ou de 20 segundos na tela.
