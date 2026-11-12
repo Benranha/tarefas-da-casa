@@ -405,6 +405,7 @@ export default async function Home() {
           <Link href="/conheca">Conheça o app</Link>
           <Link href="/cadastro">Criar conta</Link>
           <Link href="/login">Entrar</Link>
+          <Link href="/privacidade">Privacidade</Link>
         </nav>
         <span>Feito para famílias brasileiras</span>
       </footer>
