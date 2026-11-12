@@ -59,7 +59,10 @@ export default function AuthShell({
       </main>
 
       <footer className="relative z-10 pb-6 text-center text-sm font-bold text-[#ffe6d8]">
-        Arrumou a cama? Ganhou ponto.
+        <p>Arrumou a cama? Ganhou ponto.</p>
+        <Link href="/privacidade" className="mt-1 inline-block min-h-8 underline underline-offset-4">
+          Privacidade
+        </Link>
       </footer>
     </div>
   )

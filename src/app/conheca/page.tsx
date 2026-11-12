@@ -389,6 +389,7 @@ export default function Conheca() {
           <Link href="/#faq">Perguntas frequentes</Link>
           <Link href="/cadastro">Criar conta</Link>
           <Link href="/login">Entrar</Link>
+          <Link href="/privacidade">Privacidade</Link>
         </nav>
         <span>Feito para famílias brasileiras</span>
       </footer>
