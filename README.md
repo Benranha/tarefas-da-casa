@@ -51,7 +51,7 @@ ADMIN_EMAILS=voce@exemplo.com
 **E-mails ao responsável** (boas-vindas, aviso de alguns dias sem uso e dicas de funcionalidades, para quem criou a família):
 1. Rode `db/migrations/008_emails.sql` no Neon **antes** do deploy. Cria `email_log` e `email_preferencias`; não guarda endereço de e-mail.
 2. Defina `EMAIL_TOKEN_SECRET` (`openssl rand -base64 32`). Ele assina o link "Parar de receber"; sem ele nenhum e-mail de dica sai.
-3. Agende uma chamada **por dia** a `GET /api/cron/emails` com `Authorization: Bearer $CRON_SECRET`, no mesmo agendador de `/api/cron/lembretes`.
+3. O `vercel.json` já agenda uma chamada **por dia** a `GET /api/cron/emails`, às 12:00 UTC (9h em Brasília). A Vercel Cron manda `Authorization: Bearer $CRON_SECRET` sozinha, desde que `CRON_SECRET` esteja definido no projeto, e só roda em produção. Em outro host, agende essa mesma chamada à mão. No plano Hobby a hora exata varia dentro da hora marcada.
 4. Antes de ligar, chame `GET /api/cron/emails?dry=1`: devolve só quantos e-mails de cada tipo sairiam (sem enviar, sem endereços).
 5. Para ligar, defina `EMAIL_DICAS=1`. Desligado por padrão: assim o primeiro dia não manda para toda a base de uma vez. Cada rodada envia no máximo 50.
 

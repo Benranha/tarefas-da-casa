@@ -3,8 +3,8 @@ import { rodarEmails } from '@/lib/email/rotina'
 
 export const dynamic = 'force-dynamic'
 
-// E-mails ao responsável (boas-vindas que não saíram na hora, "sem uso" e dicas). Chame uma vez por
-// dia, com o mesmo CRON_SECRET do /api/cron/lembretes. Só sai e-mail com EMAIL_DICAS=1.
+// E-mails ao responsável (boas-vindas que não saíram na hora, "sem uso" e dicas). A Vercel Cron chama
+// uma vez por dia (vercel.json), com o CRON_SECRET no cabeçalho. Só sai e-mail com EMAIL_DICAS=1.
 //
 // ?dry=1 não envia nada: devolve só quantos e-mails de cada tipo sairiam. Use antes de ligar o
 // EMAIL_DICAS. A resposta nunca traz endereço de e-mail nem id de família.
