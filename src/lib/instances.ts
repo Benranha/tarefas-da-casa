@@ -52,7 +52,10 @@ export async function listAwaitingApproval(ownerId: string) {
 // Aprova e credita os pontos numa única instrução (atômico), só da própria família.
 // Vale para a tarefa que a criança marcou (awaiting_approval) e também para os pais
 // aprovarem direto uma tarefa que ainda estava pendente ("feita e aprovada").
-export async function approveInstance(ownerId: string, userId: string, id: string) {
+// soNaFila: só aprova o que a criança marcou como feito (awaiting_approval). Serve para "aprovar" pedido por
+// sugestão: se a tarefa foi devolvida enquanto isso, ela não pode ser aprovada sem a criança refazer.
+export async function approveInstance(ownerId: string, userId: string, id: string, opts: { soNaFila?: boolean } = {}) {
+  const soNaFila = opts.soNaFila === true
   const rows = await sql`
     WITH approved AS (
       UPDATE task_instances ti
@@ -61,7 +64,7 @@ export async function approveInstance(ownerId: string, userId: string, id: strin
       FROM children c
       WHERE ti.id = ${id}::uuid AND c.id = ti.child_id
         AND c.owner_id = ${ownerId}::uuid
-        AND ti.status IN ('awaiting_approval', 'pending')
+        AND (ti.status = 'awaiting_approval' OR (ti.status = 'pending' AND NOT ${soNaFila}::boolean))
       RETURNING ti.child_id, ti.task_id
     )
     UPDATE children c

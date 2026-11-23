@@ -29,7 +29,7 @@ export default function FamilyPage() {
   }
 
   async function desconectar(c: Conexao) {
-    if (!confirm(`Desconectar o ${c.app}? Ele perde o acesso ao Tarefinha agora e as sugestões que ainda esperavam são descartadas.`)) return
+    if (!confirm(`Desconectar o ${c.app}? Ele perde o acesso ao Tarefinha agora e as sugestões dele que ainda esperavam são apagadas.`)) return
     const res = await fetch(`/api/pais/conexoes/${c.id}`, { method: 'DELETE' }).catch(() => null)
     if (res?.ok || res?.status === 404) await carregarConexoes()
     else alert('Não foi possível desconectar agora. Tente de novo.')

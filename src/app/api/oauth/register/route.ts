@@ -1,9 +1,11 @@
-import { oauthError, ipDe, json, limitador, nomeDoApp, preflight, redirectUriPermitida } from '@/lib/mcp/oauth'
+import { oauthError, ipDe, json, limitador, nomeDoCliente, preflight, redirectUriPermitida } from '@/lib/mcp/oauth'
 import { registrarCliente } from '@/lib/mcp/store'
 
 export const dynamic = 'force-dynamic'
 
-const muitos = limitador(20, 60 * 60_000)
+// O claude.ai registra a partir de poucos endereços compartilhados: o limite por IP é folgado de propósito.
+// O teto de verdade é o global, no banco (registrarCliente).
+const muitos = limitador(300, 60 * 60_000)
 
 // Registro dinâmico de clientes (RFC 7591): o Claude se registra sozinho na primeira conexão.
 // Só clientes públicos (sem segredo, com PKCE) e só com endereços de retorno do Claude ou do próprio computador.
@@ -29,8 +31,9 @@ export async function POST(request: Request) {
     return oauthError('invalid_client_metadata', 'grant_types precisa incluir authorization_code.')
   }
 
-  const nome = nomeDoApp(body.client_name)
+  const nome = nomeDoCliente(body.client_name, uris as string[])
   const clientId = await registrarCliente(nome, uris as string[])
+  if (!clientId) return oauthError('temporarily_unavailable', 'Muitos registros em pouco tempo. Tente de novo mais tarde.', 429)
   return json(
     {
       client_id: clientId,

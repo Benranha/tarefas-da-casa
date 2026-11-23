@@ -177,27 +177,32 @@ CREATE TABLE IF NOT EXISTS mcp_clients (
     redirect_uris TEXT[] NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS mcp_clients_created_idx ON mcp_clients (created_at);
 
 CREATE TABLE IF NOT EXISTS mcp_grants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id TEXT NOT NULL REFERENCES mcp_clients(client_id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+    family_owner_id UUID NOT NULL REFERENCES families(owner_id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_used_at TIMESTAMPTZ,
     revoked_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS mcp_grants_user_idx ON mcp_grants (user_id) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS mcp_grants_client_idx ON mcp_grants (client_id);
 
 CREATE TABLE IF NOT EXISTS mcp_codes (
     code_hash TEXT PRIMARY KEY,
     client_id TEXT NOT NULL REFERENCES mcp_clients(client_id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+    family_owner_id UUID NOT NULL REFERENCES families(owner_id) ON DELETE CASCADE,
     redirect_uri TEXT NOT NULL,
     code_challenge TEXT NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
     used_at TIMESTAMPTZ,
     grant_id UUID REFERENCES mcp_grants(id) ON DELETE CASCADE
 );
+CREATE INDEX IF NOT EXISTS mcp_codes_expires_idx ON mcp_codes (expires_at);
 
 CREATE TABLE IF NOT EXISTS mcp_tokens (
     token_hash TEXT PRIMARY KEY,
@@ -207,6 +212,7 @@ CREATE TABLE IF NOT EXISTS mcp_tokens (
     used_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS mcp_tokens_grant_idx ON mcp_tokens (grant_id);
+CREATE INDEX IF NOT EXISTS mcp_tokens_expires_idx ON mcp_tokens (expires_at);
 
 CREATE TABLE IF NOT EXISTS mcp_proposals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -223,3 +229,4 @@ CREATE TABLE IF NOT EXISTS mcp_proposals (
     decided_by UUID REFERENCES neon_auth."user"(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS mcp_proposals_owner_idx ON mcp_proposals (owner_id, status);
+CREATE INDEX IF NOT EXISTS mcp_proposals_grant_idx ON mcp_proposals (grant_id);

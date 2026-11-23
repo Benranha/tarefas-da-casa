@@ -3,7 +3,7 @@ import { revogarPorToken } from '@/lib/mcp/store'
 
 export const dynamic = 'force-dynamic'
 
-const muitos = limitador(60, 10 * 60_000)
+const muitos = limitador(600, 10 * 60_000)
 
 // RFC 7009: o app pede para encerrar a conexão. Responde 200 mesmo se o token não existir.
 export async function POST(request: Request) {

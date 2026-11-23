@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { auth } from '@/lib/auth/server'
+import { auth, familyOf } from '@/lib/auth/server'
 import { CAMPOS_PEDIDO, baseUrl, resourceUrl, validarPedido } from '@/lib/mcp/oauth'
 import { buscarCliente, criarCodigo } from '@/lib/mcp/store'
 
@@ -42,11 +42,15 @@ export async function POST(request: NextRequest) {
 
   const volta = new URL(redirectUri)
   if (form.get('decisao') === 'permitir') {
-    volta.searchParams.set('code', await criarCodigo({ clientId, userId, redirectUri, codeChallenge }))
+    // A conexão vale para a família que o responsável tem agora (se ele trocar de família, precisa permitir de novo).
+    const { ownerId } = await familyOf(userId)
+    volta.searchParams.set('code', await criarCodigo({ clientId, userId, familyOwnerId: ownerId, redirectUri, codeChallenge }))
   } else {
     volta.searchParams.set('error', 'access_denied')
     volta.searchParams.set('error_description', 'O responsável não permitiu o acesso.')
   }
   if (state) volta.searchParams.set('state', state)
+  // RFC 9207: o app confere de qual servidor a resposta veio.
+  volta.searchParams.set('iss', base)
   return NextResponse.redirect(volta.toString(), 303)
 }

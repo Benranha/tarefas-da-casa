@@ -65,10 +65,18 @@ export function redirectUriPermitida(uri: unknown): uri is string {
   return u.protocol === 'http:' && LOOPBACK.has(u.hostname) && !u.username && !u.password && !u.hash
 }
 
-// Nome mostrado na tela de permissão: texto simples, curto, sem caracteres de controle.
+// Nome mostrado na tela de permissão, em Família e no cartão de sugestões: texto simples, curto, sem caracteres
+// de controle, invisíveis nem de direção do texto.
 export function nomeDoApp(raw: unknown): string {
-  const s = typeof raw === 'string' ? raw.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim() : ''
+  const s = typeof raw === 'string' ? raw.replace(/[\p{Cc}\p{Cf}<>]/gu, ' ').replace(/\s+/g, ' ').trim() : ''
   return s.slice(0, 60) || 'Aplicativo'
+}
+
+// Quem se registra escolhe o próprio nome. Para quem volta ao endereço do Claude o nome é sempre "Claude":
+// ninguém consegue se passar por outro app nem escrever um título enganoso na tela de permissão.
+export function nomeDoCliente(raw: unknown, redirectUris: string[]): string {
+  if (redirectUris.length > 0 && redirectUris.every((u) => CALLBACKS_DO_CLAUDE.has(u))) return 'Claude'
+  return nomeDoApp(raw)
 }
 
 // Limite simples por chave, em memória (vale por instância do servidor, como o da ajuda por IA).
@@ -118,7 +126,7 @@ export type PedidoAuth = {
   state: string
 }
 
-export const CAMPOS_PEDIDO = ['client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'response_type', 'state', 'scope', 'resource'] as const
+export const CAMPOS_PEDIDO = ['client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'response_type', 'state', 'resource'] as const
 
 // Valida o que dá para validar sem banco. Erros aqui NUNCA redirecionam (o endereço ainda não é confiável).
 export function validarPedido(p: URLSearchParams | FormData, resource: string): { ok: true; pedido: PedidoAuth } | { ok: false } {

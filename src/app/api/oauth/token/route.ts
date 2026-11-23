@@ -3,7 +3,8 @@ import { buscarCliente, renovar, trocarCodigo } from '@/lib/mcp/store'
 
 export const dynamic = 'force-dynamic'
 
-const muitos = limitador(60, 10 * 60_000)
+// Folgado de propósito: o claude.ai troca tokens de muitas pessoas a partir de poucos endereços.
+const muitos = limitador(600, 10 * 60_000)
 
 // Troca o código (com PKCE) ou o token de renovação por tokens de acesso. Clientes públicos: sem segredo.
 export async function POST(request: Request) {

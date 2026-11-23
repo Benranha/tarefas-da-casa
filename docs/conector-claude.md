@@ -8,7 +8,8 @@ A regra do produto não muda: **a IA só propõe, o responsável confirma.** O C
 
 1. Rode `db/migrations/009_conector_claude.sql` no SQL Editor do Neon **antes** do deploy. É idempotente. Cria `mcp_clients`, `mcp_grants`, `mcp_codes`, `mcp_tokens` e `mcp_proposals`.
 2. Confira `NEXT_PUBLIC_SITE_URL` (ex.: `https://tarefinha.app.br`). É o endereço que o servidor escreve nos metadados do login e que o Claude confere. Sem a variável, ele usa o endereço da própria requisição, o que serve para dev e previews.
-3. Faça o deploy e confira:
+3. O `vercel.json` agenda `GET /api/cron/limpeza` uma vez por dia (6h30 UTC). Ele apaga sugestões com mais de 30 dias, códigos e tokens vencidos, conexões revogadas há mais de 30 dias e apps registrados que ninguém usou. É o que sustenta o prazo dito em `/privacidade`. Precisa do `CRON_SECRET`, como o dos e-mails.
+4. Faça o deploy e confira:
 
 ```bash
 curl https://tarefinha.app.br/.well-known/oauth-protected-resource
@@ -16,7 +17,7 @@ curl https://tarefinha.app.br/.well-known/oauth-authorization-server
 curl -i -X POST https://tarefinha.app.br/api/mcp   # 401 com WWW-Authenticate
 ```
 
-4. Teste o fluxo inteiro com uma conta de exemplo, no [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector) e depois como conector personalizado no Claude.
+5. Teste o fluxo inteiro com uma conta de exemplo, no [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector) e depois como conector personalizado no Claude.
 
 ## Como o responsável conecta
 
@@ -68,21 +69,29 @@ O que protege:
 
 - PKCE `S256` obrigatório. Clientes públicos, sem segredo.
 - Só recebem o código os endereços de retorno do Claude (`https://claude.ai/api/mcp/auth_callback` e `https://claude.com/api/mcp/auth_callback`) e `localhost`/`127.0.0.1` (Claude Code). Um app desconhecido não consegue se registrar para receber códigos em outro domínio. Para aceitar outro cliente MCP, mude `redirectUriPermitida` em `src/lib/mcp/oauth.ts`.
-- Código vale 5 minutos e uma vez. Usar o mesmo código de novo revoga a conexão.
-- Token de acesso vale 1 hora. Token de renovação vale 30 dias e troca a cada uso. Reusar um já usado revoga a conexão.
+- Código vale 5 minutos e uma vez. Token de acesso vale 1 hora. Token de renovação vale 30 dias e troca a cada uso.
+- Um código ou token de renovação já usado que reaparece mais de 30 segundos depois (e, no código, do mesmo app) indica cópia: a conexão é revogada e os tokens e sugestões dela são apagados. Dentro dos 30 segundos só é recusado, para não derrubar duas renovações simultâneas.
+- A conexão guarda a família que o responsável tinha ao permitir. Se ele mudar de família (aceitar outro convite), o conector responde 403 até ele permitir de novo.
+- A resposta do login traz `iss` (RFC 9207) e os metadados declaram isso.
+- O nome do app mostrado ao responsável é sempre "Claude" quando o endereço de retorno é o do Claude. Para um app local, o nome é limpo de caracteres de controle, invisíveis e de direção do texto. A tela de permissão avisa para só tocar em Permitir se a pessoa pediu a conexão agora.
+- `/api/mcp` não aceita lote de mensagens (array JSON-RPC) nem corpo acima de 100 KB, para o limite de chamadas valer por requisição.
 - Código e tokens ficam no banco só como SHA-256.
 - A tela de permissão só aceita o formulário vindo do próprio site (`Origin`) e não pode ser aberta dentro de outro site (`frame-ancestors 'none'` em `next.config.ts`).
-- Limite de chamadas por conexão e por IP, em memória (vale por instância do servidor, como o da ajuda por IA).
+- Limite de chamadas por conexão em memória (vale por instância do servidor, como o da ajuda por IA). Os limites por IP em `/register`, `/token` e `/revoke` são folgados de propósito, porque o claude.ai fala com o servidor a partir de poucos endereços compartilhados. O teto de verdade é o de registros por hora, no banco.
 - Quem entrou pelo login volta para a tela de permissão pelo cookie `tarefinha-oauth` (15 minutos), no mesmo jeito do convite da família.
 
 ## O que é guardado
 
-Só o necessário para o login e para as sugestões. Nada de dado de criança além do texto das sugestões, que some em 30 dias. Apagar a conta do responsável apaga tudo (`ON DELETE CASCADE`). A página `/privacidade` descreve isso na seção "Conector do Claude (opcional)".
+Só o necessário para o login e para as sugestões. Nada de dado de criança além do texto das sugestões, que é apagado em 30 dias (limpeza diária) ou na hora em que o responsável desconecta o app. Apagar a conta do responsável apaga tudo (`ON DELETE CASCADE`). A página `/privacidade` descreve isso na seção "Conector do Claude (opcional)".
 
 ## Limites conhecidos
 
 - Sem sessões MCP: cada chamada leva o token e é independente. `GET` e `DELETE` em `/api/mcp` respondem 405.
-- O limitador é em memória, por instância. Se precisar de limite global, mova para o banco.
+- O limitador por conexão é em memória, por instância. Se precisar de limite global, mova para o banco.
+- Quem inicia a conexão não é amarrado ao navegador de quem toca em Permitir (o OAuth não permite saber). Um golpe seria alguém mandar o link de permissão para um responsável logado. A tela avisa, mas o risco só some se o claude.ai amarrar o retorno à sessão de quem começou, o que não dá para verificar daqui. Considere um aviso por e-mail quando uma conexão nova é criada.
+- Em Família, cada responsável vê só as próprias conexões (não as de quem divide a família).
+- `listar_tarefas_de_hoje` está marcada como só leitura, mas cria as tarefas de hoje que ainda não existem (idempotente, igual a abrir o painel).
+- Erros de pedido de autorização com `redirect_uri` válido mas outro parâmetro inválido mostram a página de erro em vez de redirecionar com `error=invalid_request` (RFC 6749, 4.1.2.1).
 - O conector não olha o teste grátis nem a assinatura, como o painel hoje.
 - Não confirmado: se o conector adicionado na web aparece no app de celular do Claude. Teste antes de prometer.
 - Várias confirmações: uma rotina inteira usa `sugerir_criar_varias_tarefas` (até 10 tarefas, uma confirmação). Aprovar, devolver e entregar também aceitam várias de uma vez.

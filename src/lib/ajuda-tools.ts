@@ -219,10 +219,10 @@ const pontos = (n: number) => `${n} ${n === 1 ? 'ponto' : 'pontos'}`
 const tarefas = (n: number) => `${n} ${n === 1 ? 'tarefa' : 'tarefas'}`
 
 // Aprova em sequência; devolve o que deu certo e quantas já não podiam mais ser aprovadas.
-async function aprovarLote(ownerId: string, userId: string, ids: string[]) {
+async function aprovarLote(ownerId: string, userId: string, ids: string[], soNaFila = false) {
   const feitas: { childName: string; title: string; points: number }[] = []
   for (const id of ids) {
-    const r = await approveInstance(ownerId, userId, id)
+    const r = await approveInstance(ownerId, userId, id, { soNaFila })
     if (r) feitas.push(r)
   }
   return { feitas, falhas: ids.length - feitas.length }
@@ -266,8 +266,8 @@ const TOOLS: Record<string, ToolDef> = {
     commit: async (ownerId, userId, a) => {
       const ids = idsDe(a, 'instanceId')
       if (!ids) return { ok: false, status: 400, error: 'Requisição inválida' }
-      const { feitas, falhas } = await aprovarLote(ownerId, userId, ids)
-      if (feitas.length === 0) return { ok: false, status: 400, error: 'Essas tarefas não podem ser aprovadas agora (talvez já tenham sido aprovadas).' }
+      const { feitas, falhas } = await aprovarLote(ownerId, userId, ids, true)
+      if (feitas.length === 0) return { ok: false, status: 400, error: 'Essas tarefas não estão mais na Fila (talvez já tenham sido aprovadas ou devolvidas).' }
       const total = feitas.reduce((n, f) => n + f.points, 0)
       const detalhe = feitas.length === 1 ? `"${feitas[0].title}" de ${feitas[0].childName}` : tarefas(feitas.length)
       const aviso = falhas ? ` (${tarefas(falhas)} já não estava mais na Fila)` : ''
@@ -441,6 +441,7 @@ const TOOLS: Record<string, ToolDef> = {
       const criar = TOOLS.criar_tarefa as Extract<ToolDef, { confirm: true }>
       const itens: Record<string, unknown>[] = []
       const nomes: string[] = []
+      const nomesPorId = new Map((await listChildren(ownerId)).map((k) => [String(k.id), String(k.name)]))
       for (const [i, bruto] of lista.entries()) {
         const item = bruto && typeof bruto === 'object' && !Array.isArray(bruto) ? (bruto as Record<string, unknown>) : {}
         const r = await criar.prepare(ownerId, item)
@@ -450,10 +451,17 @@ const TOOLS: Record<string, ToolDef> = {
         nomes.push(`${r.args.childId}|${norm(titulo)}`)
         itens.push(r.args)
       }
+      // O cartão mostra TODAS as tarefas (no máximo MAX_VARIAS), cada uma com criança, pontos, horário e se é só de hoje,
+      // e o total de pontos: nada que será criado fica escondido atrás de "e mais".
       const quantas = itens.length
-      const mostradas = itens.slice(0, 6).map((i) => `"${String(i.title)}" (${pontos(Number(i.points))})`).join('; ')
-      const resto = quantas > 6 ? ` e mais ${quantas - 6}` : ''
-      return { ok: true, args: { itens }, resumo: `Criar ${tarefas(quantas)}: ${mostradas}${resto}.` }
+      const totalPontos = itens.reduce((n, i) => n + Number(i.points), 0)
+      const linhas = itens
+        .map((i) => {
+          const extras = [pontos(Number(i.points)), i.once === true ? 'só hoje' : 'todo dia', i.dueTime ? `às ${String(i.dueTime)}` : '']
+          return `"${String(i.title)}" para ${nomesPorId.get(String(i.childId)) ?? 'a criança'} (${extras.filter(Boolean).join(', ')})`
+        })
+        .join('; ')
+      return { ok: true, args: { itens }, resumo: `Criar ${tarefas(quantas)}, ${pontos(totalPontos)} no total: ${linhas}.` }
     },
     commit: async (ownerId, userId, a) => {
       const itens = Array.isArray(a.itens) ? (a.itens as unknown[]) : []

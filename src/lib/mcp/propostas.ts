@@ -66,7 +66,16 @@ export async function decidirSugestao(ownerId: string, userId: string, id: strin
   if (rows.length === 0) return { ok: false, status: 404, error: 'Essa sugestão não está mais esperando. Talvez já tenha sido confirmada ou tenha vencido.' }
   if (acao === 'recusar') return { ok: true, message: 'Sugestão recusada.' }
 
-  const result = await commitTool(ownerId, userId, rows[0].tool as string, (rows[0].args ?? {}) as Record<string, unknown>)
+  let result: Awaited<ReturnType<typeof commitTool>>
+  try {
+    result = await commitTool(ownerId, userId, rows[0].tool as string, (rows[0].args ?? {}) as Record<string, unknown>)
+  } catch (e) {
+    // Falha inesperada (por exemplo, o banco caiu no meio): a sugestão não fica "confirmada" sem ter sido feita.
+    console.error('propostas: commit falhou:', e instanceof Error ? e.message.slice(0, 300) : 'erro')
+    const error = 'Não foi possível executar agora. Confira a Fila e tente de novo.'
+    await sql`UPDATE mcp_proposals SET status = 'failed', result_message = ${error} WHERE id = ${id}::uuid`.catch(() => {})
+    return { ok: false, status: 409, error }
+  }
   if (!result || !result.ok) {
     const error = result && !result.ok ? result.error : 'Não foi possível executar essa sugestão.'
     await sql`UPDATE mcp_proposals SET status = 'failed', result_message = ${error} WHERE id = ${id}::uuid`

@@ -246,7 +246,7 @@ export default function Privacidade() {
               Guardamos o nome do app, a data da conexão e a do último uso. Os códigos de acesso ficam embaralhados (hash) e valem por 1 hora; os
               de renovação, por 30 dias.
             </li>
-            <li>Ao desconectar, o acesso termina na hora e as sugestões que esperavam são descartadas. Ao excluir a conta, apagamos tudo isso.</li>
+            <li>Ao desconectar, o acesso termina na hora e as sugestões dessa conexão são apagadas. Ao excluir a conta, apagamos tudo isso.</li>
           </Lista>
         </Secao>
 

@@ -19,18 +19,32 @@ export const INSTRUCOES = `O Tarefinha é um app em que pais e responsáveis org
 
 export type Contexto = { ownerId: string; grantId: string }
 
-const MAX_TEXTO = 200
+// Títulos do banco têm até 80 caracteres; o resumo de uma sugestão de 10 tarefas passa de 200, e o modelo precisa vê-lo inteiro.
+const MAX_TEXTO = 1500
 
 // Texto vindo do banco: sem caracteres de controle e com tamanho limitado antes de chegar ao modelo.
+// Também tira caracteres invisíveis e de direção do texto (zero-width, bidi, "tags" U+E0000): um título escrito por
+// uma criança não pode levar instruções que o responsável não vê.
 function limpar(v: unknown): unknown {
-  if (typeof v === 'string') return v.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').slice(0, MAX_TEXTO)
+  if (typeof v === 'string') return v.replace(/[\p{Cc}\p{Cf}]/gu, ' ').slice(0, MAX_TEXTO)
   if (Array.isArray(v)) return v.map(limpar)
   if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, limpar(x)]))
   return v
 }
 
 const ok = (dados: unknown): CallToolResult => ({ content: [{ type: 'text', text: JSON.stringify(limpar(dados)) }] })
-const erro = (mensagem: string): CallToolResult => ({ isError: true, content: [{ type: 'text', text: mensagem }] })
+// O texto dos erros também pode trazer títulos do banco (lista do que existe): passa pela mesma limpeza.
+const erro = (mensagem: string): CallToolResult => ({ isError: true, content: [{ type: 'text', text: String(limpar(mensagem)) }] })
+
+// Falha inesperada (banco fora do ar, por exemplo): o modelo recebe uma frase genérica; o detalhe fica só no log do servidor.
+async function seguro(ferramenta: string, fn: () => Promise<CallToolResult>): Promise<CallToolResult> {
+  try {
+    return await fn()
+  } catch (e) {
+    console.error(`mcp: ${ferramenta} falhou:`, e instanceof Error ? e.message.slice(0, 300) : 'erro')
+    return erro('Não consegui consultar o Tarefinha agora. Tente de novo em instantes.')
+  }
+}
 
 const LEITURA = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const
 // Sugerir não altera os dados da família: só cria um pedido de confirmação. Por isso não é "destrutiva".
@@ -55,10 +69,12 @@ export function criarServidor({ ownerId, grantId }: Contexto): McpServer {
 
   // Leitura: a mesma função do assistente do painel, sempre da família do responsável que autorizou.
   const ler = (nome: string, titulo: string, descricao: string, pos?: (r: Record<string, unknown>) => unknown) =>
-    server.registerTool(nome, { title: titulo, description: descricao, annotations: LEITURA }, async () => {
-      const r = await runTool(ownerId, nome, {})
-      return ok(pos ? pos(r.response) : r.response)
-    })
+    server.registerTool(nome, { title: titulo, description: descricao, annotations: LEITURA }, () =>
+      seguro(nome, async () => {
+        const r = await runTool(ownerId, nome, {})
+        return ok(pos ? pos(r.response) : r.response)
+      }),
+    )
 
   ler('listar_criancas', 'Listar crianças', 'Lista as crianças da família: nome, pontos e horários de acordar e dormir.', (r) => ({
     criancas: ((r.criancas as Record<string, unknown>[]) ?? []).map((c) => ({
@@ -76,7 +92,7 @@ export function criarServidor({ ownerId, grantId }: Contexto): McpServer {
   server.registerTool(
     'listar_premios',
     { title: 'Listar prêmios', description: 'Lista os prêmios cadastrados pela família e quanto cada um custa em pontos.', annotations: LEITURA },
-    async () => ok({ premios: await listarPremios(ownerId) }),
+    () => seguro('listar_premios', async () => ok({ premios: await listarPremios(ownerId) })),
   )
 
   server.registerTool(
@@ -87,7 +103,7 @@ export function criarServidor({ ownerId, grantId }: Contexto): McpServer {
         'Como foram os últimos 7 dias de cada criança: pontos, tarefas do período, quantas foram aprovadas, quantas esperam aprovação e quantas foram devolvidas.',
       annotations: LEITURA,
     },
-    async () => ok({ criancas: await resumoDaSemana(ownerId) }),
+    () => seguro('resumo_da_semana', async () => ok({ criancas: await resumoDaSemana(ownerId) })),
   )
 
   server.registerTool(
@@ -97,17 +113,18 @@ export function criarServidor({ ownerId, grantId }: Contexto): McpServer {
       description: 'Lista as sugestões feitas pelo conector que ainda esperam o responsável confirmar ou recusar no Tarefinha.',
       annotations: LEITURA,
     },
-    async () => ok({ sugestoes: (await listarSugestoes(ownerId)).map((s) => ({ resumo: s.resumo, feita_em: s.criadaEm })) }),
+    () => seguro('listar_sugestoes', async () => ok({ sugestoes: (await listarSugestoes(ownerId)).map((s) => ({ resumo: s.resumo, feita_em: s.criadaEm })) })),
   )
 
   // Escrita: valida como o painel (prepare) e guarda como sugestão pendente. Nunca executa.
-  const sugerir = async (ferramenta: string, args: Record<string, unknown>): Promise<CallToolResult> => {
-    const r = await runTool(ownerId, ferramenta, args)
-    if (!r.proposal) return erro(String(r.response.erro ?? 'Não consegui preparar essa sugestão.'))
-    const g = await guardarSugestao(ownerId, grantId, r.proposal)
-    if (!g.ok) return erro(g.error)
-    return ok({ status: 'aguardando_confirmacao_do_responsavel', sugestao: r.proposal.resumo, repetida: g.repetida, aviso: AVISO_SUGESTAO })
-  }
+  const sugerir = (ferramenta: string, args: Record<string, unknown>): Promise<CallToolResult> =>
+    seguro(ferramenta, async () => {
+      const r = await runTool(ownerId, ferramenta, args)
+      if (!r.proposal) return erro(String(r.response.erro ?? 'Não consegui preparar essa sugestão.'))
+      const g = await guardarSugestao(ownerId, grantId, r.proposal)
+      if (!g.ok) return erro(g.error)
+      return ok({ status: 'aguardando_confirmacao_do_responsavel', sugestao: r.proposal.resumo, repetida: g.repetida, aviso: AVISO_SUGESTAO })
+    })
 
   server.registerTool(
     'sugerir_criar_tarefa',
