@@ -138,7 +138,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Listar tarefas',
       description:
-        'Lista as tarefas ativas da família com todos os campos: id, título, descrição, ícone, pontos, criança, horário e repetição (todo_dia, so_hoje ou dias_da_semana, com os dias). Use o id para alterar ou apagar.',
+        'Lista as tarefas ativas da família com todos os campos: id, título, descrição, ícone, pontos, criança, horário e repetição (todo_dia, so_hoje ou dias_da_semana, com os dias). O id é o que as ferramentas de alterar e apagar usam.',
       annotations: LEITURA,
     },
     () => seguro('listar_tarefas', async () => ok({ tarefas: await listarTarefasCompleto(ownerId) })),
@@ -181,7 +181,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Criar tarefa',
       description:
-        'Cria uma tarefa para uma criança, com todas as opções: título, pontos, descrição, ícone, horário e repetição (todo dia, só hoje ou dias da semana). A tarefa é criada na hora. Se faltar criança, título ou pontos, pergunte antes.',
+        'Cria uma tarefa para uma criança, com todas as opções: criança, título e pontos (obrigatórios), mais descrição, ícone, horário e repetição (todo dia, só hoje ou dias da semana). A tarefa é criada na hora.',
       inputSchema: novaTarefa,
       annotations: CRIA,
     },
@@ -204,7 +204,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Alterar tarefa',
       description:
-        'Altera uma tarefa que já existe. Mande só o que muda; o resto fica como está. Dá para mudar título, descrição, ícone, pontos, criança, horário (null tira o horário) e repetição. Use o id de listar_tarefas.',
+        'Altera uma tarefa que já existe, identificada pelo id (vem de listar_tarefas). Só os campos enviados mudam; o resto fica como está. Dá para mudar título, descrição, ícone, pontos, criança, horário (null tira o horário) e repetição.',
       inputSchema: {
         id: tarefaId,
         titulo: campoTitulo.optional(),
@@ -226,7 +226,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Apagar tarefa',
       description:
-        'Apaga uma tarefa e o histórico dela. Não dá para desfazer. Use o id de listar_tarefas e, se o pedido for vago, confirme com o responsável qual tarefa antes.',
+        'Apaga uma tarefa, identificada pelo id (vem de listar_tarefas), junto com o histórico dela. Não dá para desfazer.',
       inputSchema: { id: tarefaId },
       annotations: ALTERA,
     },
@@ -259,7 +259,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'aprovar_tarefa',
     {
       title: 'Aprovar tarefas da Fila',
-      description: 'Aprova tarefas que estão na Fila e soma os pontos para a criança. Consulte listar_fila antes. Uma tarefa (criança e título) ou várias com todas=true.',
+      description: 'Aprova tarefas que estão na Fila e soma os pontos para a criança. Aceita uma tarefa (criança e título) ou várias com todas=true.',
       inputSchema: lote,
       annotations: ALTERA,
     },
@@ -271,7 +271,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Devolver uma tarefa',
       description:
-        'Devolve uma tarefa da Fila para a criança tentar de novo, com um recado curto e gentil que ela vai ler. Se o responsável não disse o motivo, pergunte. Não invente um.',
+        'Devolve uma tarefa da Fila para a criança tentar de novo, com um recado curto que ela vai ler. O recado não pode ter links nem e-mails.',
       inputSchema: {
         crianca,
         titulo: z.string().min(1).max(80).describe('Título da tarefa na Fila (pode ser parte dele).'),
@@ -287,7 +287,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     {
       title: 'Marcar tarefas como feitas',
       description:
-        'Marca como feitas, pela criança, tarefas pendentes de hoje. Elas vão para a Fila e os pontos só entram quando forem aprovadas. Consulte listar_tarefas_de_hoje antes.',
+        'Marca como feitas, pela criança, tarefas pendentes de hoje. Elas vão para a Fila e os pontos só entram quando forem aprovadas.',
       inputSchema: lote,
       annotations: ALTERA,
     },
@@ -310,7 +310,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'entregar_recompensa',
     {
       title: 'Entregar prêmios',
-      description: 'Marca como entregues prêmios que as crianças pediram. Consulte listar_pedidos_recompensa antes. Um prêmio (criança e nome) ou vários com todas=true.',
+      description: 'Marca como entregues prêmios que as crianças pediram. Aceita um prêmio (criança e nome) ou vários com todas=true.',
       inputSchema: lote,
       annotations: ALTERA,
     },
@@ -321,7 +321,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'recusar_pedido_recompensa',
     {
       title: 'Recusar pedido de prêmio',
-      description: 'Recusa um pedido de prêmio e devolve os pontos reservados para a criança. Use o id de listar_pedidos_recompensa.',
+      description: 'Recusa um pedido de prêmio, identificado pelo id (vem de listar_pedidos_recompensa), e devolve os pontos reservados para a criança.',
       inputSchema: { id: pedidoId },
       annotations: ALTERA,
     },
@@ -332,7 +332,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'criar_premio',
     {
       title: 'Cadastrar prêmio',
-      description: 'Cadastra um prêmio que as crianças podem pedir com os pontos. O nome é lido pela criança: sem links nem e-mails.',
+      description: 'Cadastra um prêmio que as crianças podem pedir com os pontos. O nome não pode ter links nem e-mails.',
       inputSchema: {
         titulo: z.string().min(1).max(80).describe('Nome do prêmio, até 80 caracteres.'),
         custo_pontos: z.number().int().min(1).max(100000).describe('Quanto custa, em pontos.'),
@@ -347,7 +347,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'atualizar_premio',
     {
       title: 'Alterar prêmio',
-      description: 'Altera nome, custo ou ícone de um prêmio. Mande só o que muda. Use o id de listar_premios.',
+      description: 'Altera nome, custo ou ícone de um prêmio, identificado pelo id (vem de listar_premios). Só os campos enviados mudam.',
       inputSchema: {
         id: premioId,
         titulo: z.string().min(1).max(80).optional().describe('Novo nome do prêmio.'),
@@ -363,7 +363,7 @@ export function criarServidor({ ownerId, userId }: Contexto): McpServer {
     'apagar_premio',
     {
       title: 'Apagar prêmio',
-      description: 'Apaga um prêmio cadastrado. Pedidos que as crianças já fizeram dele continuam na lista. Use o id de listar_premios.',
+      description: 'Apaga um prêmio cadastrado, identificado pelo id (vem de listar_premios). Pedidos que as crianças já fizeram dele continuam na lista.',
       inputSchema: { id: premioId },
       annotations: ALTERA,
     },
