@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, LayoutDashboard, Activity, CreditCard, Lightbulb } from 'lucide-react';
+import { User, ListChecks, History, Inbox, Moon, Gift, Users, Plus, Ellipsis, X, ChevronRight, LogOut, CircleHelp, MessageCircleQuestion, LayoutDashboard, Activity, CreditCard, Lightbulb, Mail } from 'lucide-react';
 import Tutorial, { tutorialSeen } from './Tutorial';
 import Ajuda from './Ajuda';
 import ToqueAqui from '@/components/dicas/ToqueAqui';
@@ -29,6 +29,7 @@ const ADMIN_ITEMS = [
   { name: 'Assinantes', href: '/admin/assinantes', icon: Users },
   { name: 'Engajamento', href: '/admin/engajamento', icon: Activity },
   { name: 'Receita', href: '/admin/receita', icon: CreditCard },
+  { name: 'E-mails', href: '/admin/emails', icon: Mail },
 ];
 
 const THEME_KEY = 'tarefinha-theme';

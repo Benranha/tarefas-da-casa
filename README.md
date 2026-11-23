@@ -57,6 +57,7 @@ ADMIN_EMAILS=voce@exemplo.com
 
 Os limites estão em `src/lib/email/plano.ts`: no máximo um e-mail por semana, quatro dicas no total, um aviso de "sem uso" por mês, e nada para quem parou. Cada e-mail de dica tem o link "Parar de receber" e o cabeçalho `List-Unsubscribe`. Para ver os e-mails sem enviar, rode `npm run dev` e abra `/api/dev/email` (404 em produção).
 O envio usa `RESEND_API_KEY` e `RESEND_FROM`. A consulta usa a coluna `"emailVerified"` de `neon_auth."user"` (esquema do Better Auth): o `?dry=1` acusa erro se o nome for outro.
+Para testar o envio, abra `/admin/emails` e toque em "Enviar e-mail de teste": manda uma mensagem só para o seu endereço de admin e mostra a resposta do Resend se ele recusar. A página também mostra o que está configurado (chave, remetente, `EMAIL_DICAS`, `EMAIL_TOKEN_SECRET`).
 
 **Painel admin:** rode `db/migrations/005_assinaturas.sql` e defina `ADMIN_EMAILS`. Quem não estiver na lista recebe 404 em `/admin`.
 A tabela `subscriptions` deve ser alimentada pelos webhooks do gateway de pagamento (ainda não integrado).

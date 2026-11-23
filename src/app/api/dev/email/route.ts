@@ -1,4 +1,4 @@
-import { boasVindas, linkCrianca, novidade, semUsoAprovacao, semUsoDica } from '@/lib/email/modelos'
+import { boasVindas, emailTeste, linkCrianca, novidade, semUsoAprovacao, semUsoDica } from '@/lib/email/modelos'
 import { NOVIDADES } from '@/lib/email/plano'
 
 export const dynamic = 'force-dynamic'
@@ -24,6 +24,7 @@ const EXEMPLOS: Record<string, () => { assunto: string; html: string; text: stri
   'sem-uso-aprovacao': () => semUsoAprovacao({ abrir: ABRIR, parar: PARAR }),
   'sem-uso-dica': () => semUsoDica({ abrir: ABRIR, parar: PARAR, novidade: { ...PREMIOS, url: 'https://exemplo.com.br/pais/recompensas' } }),
   novidade: () => novidade({ novidade: PREMIOS, url: 'https://exemplo.com.br/pais/recompensas', parar: PARAR }),
+  teste: () => emailTeste({ abrir: 'https://exemplo.com.br/admin', remetente: 'Tarefinha <nao-responda@exemplo.com.br>' }),
 }
 
 export async function GET(request: Request) {
