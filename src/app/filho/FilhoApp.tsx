@@ -4,13 +4,14 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
-import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, LogOut, Moon, Undo2 } from 'lucide-react'
+import { AlarmClock, ArrowLeft, Check, Circle, Clock, Gift, LogOut, Moon, Plus, Undo2 } from 'lucide-react'
 import PinForm from '@/components/PinForm'
 import TfIcon from '@/components/TfIcon'
 import ToqueAqui from '@/components/dicas/ToqueAqui'
 import PushToggle from '@/components/PushToggle'
 import { TfLoading } from '@/components/TfLoader'
 import { usePolling } from '@/lib/use-polling'
+import { TF_DEFS, TF_GROUPS } from '@/lib/tf-icons-data'
 
 type Info = { name: string; avatar: string; color: string; has_pin: boolean }
 type Instance = {
@@ -25,6 +26,8 @@ type Reward = { id: string; title: string; icon: string | null; cost_points: num
 const tokenKey = (code: string) => `filhoToken:${code}`
 const MODE_KEY = 'tarefinhaMode'
 const CHILD_KEY = 'filhoCode'
+// "brilho" (Outra tarefa) vem primeiro e já marcado: é o desenho quando a criança não escolhe nenhum.
+const OWN_ICONS = ['brilho', ...TF_GROUPS.tarefas]
 
 function readToken(code: string) {
   try {
@@ -52,6 +55,12 @@ function Filho() {
   const [message, setMessage] = useState<string | null>(null)
   const [confirmExit, setConfirmExit] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  // Nova tarefa que a própria criança adiciona.
+  const [adding, setAdding] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const [newIcon, setNewIcon] = useState<string>('brilho')
+  const [addError, setAddError] = useState<string | null>(null)
+  const [savingNew, setSavingNew] = useState(false)
   const prevStatus = useRef<Map<string, string>>(new Map())
 
   const headers = useCallback((t: string): Record<string, string> => ({ 'x-child-token': t }), [])
@@ -149,6 +158,40 @@ function Filho() {
     if (!token) return
     const res = await fetch(`/api/filho/tasks/${id}/done`, { method: 'POST', headers: headers(token) })
     if (res.ok || res.status === 409) await load(token)
+  }
+
+  function closeAdd() {
+    setAdding(false)
+    setNewTitle('')
+    setNewIcon('brilho')
+    setAddError(null)
+  }
+
+  async function addTask(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token || savingNew) return
+    const title = newTitle.trim()
+    if (!title) return setAddError('Escreva o nome da tarefa.')
+    setSavingNew(true)
+    setAddError(null)
+    try {
+      const res = await fetch('/api/filho/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers(token) },
+        body: JSON.stringify({ title, icon: newIcon }),
+      })
+      if (res.status === 401) return await load(token) // acesso vencido: volta para o código
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        return setAddError(data.error || 'Não deu certo. Tente de novo.')
+      }
+      closeAdd()
+      await load(token)
+    } catch {
+      setAddError('Sem internet agora. Tente de novo.')
+    } finally {
+      setSavingNew(false)
+    }
   }
 
   async function openRewards() {
@@ -288,7 +331,9 @@ function Filho() {
                     </span>
                     {returned && <span className="tf-task__note !text-base"><TfIcon name="recado" size={30} color="var(--returned-border)" className="mr-2" /> Papais: {i.parent_note}</span>}
                   </span>
-                  <span className="tf-task__pts">+{i.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
+                  {i.tasks.points > 0 && (
+                    <span className="tf-task__pts">+{i.tasks.points}<TfIcon name="estrela" size={20} className="ml-1" /></span>
+                  )}
                 </button>
               )
             })}
@@ -300,6 +345,48 @@ function Filho() {
               <ToqueAqui id="filho.premios" area="filho" prioridade={2} quando={(me?.points ?? 0) > 0} />
             </button>
           </div>
+          {adding ? (
+            <form onSubmit={addTask} className="rounded-3xl border-2 border-line-strong bg-surface-raised p-4 space-y-4">
+              <h2 className="font-display text-2xl font-semibold text-ink">Nova tarefa</h2>
+              <input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                maxLength={80}
+                autoFocus
+                placeholder="O que você vai fazer?"
+                aria-label="Nome da tarefa"
+                className="w-full text-lg rounded-full border-2 border-line-strong px-5 py-3"
+              />
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Escolha um desenho">
+                {OWN_ICONS.map((ic) => (
+                  <button
+                    type="button"
+                    key={ic}
+                    onClick={() => setNewIcon(ic)}
+                    aria-label={TF_DEFS[ic]?.label ?? ic}
+                    aria-pressed={newIcon === ic}
+                    className={`p-2 rounded-2xl border-2 ${newIcon === ic ? 'border-brand bg-surface-sunken' : 'border-transparent'}`}
+                  >
+                    <TfIcon name={ic} size={34} />
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm font-bold text-ink-muted">Vale só hoje e não dá pontos. Os papais podem mudar isso.</p>
+              {addError && <p role="alert" className="font-bold text-returned-fg">{addError}</p>}
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={closeAdd} disabled={savingNew} className="tf-btn tf-btn--secondary">Cancelar</button>
+                <button type="submit" disabled={savingNew || !newTitle.trim()} className="tf-btn tf-btn--primary">
+                  <Plus className="tf-icon" /> Adicionar
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex justify-center">
+              <button onClick={() => setAdding(true)} className="tf-btn tf-btn--secondary">
+                <Plus className="tf-icon" /> Nova tarefa
+              </button>
+            </div>
+          )}
           {token && <PushToggle endpoint="/api/filho/push" headers={headers(token)} className="text-center" />}
           <div className="flex flex-col items-center gap-3 pt-2">
             {confirmExit ? (
