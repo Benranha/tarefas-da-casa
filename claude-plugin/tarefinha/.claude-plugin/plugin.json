@@ -1,0 +1,20 @@
+{
+  "name": "tarefinha",
+  "description": "Conecta o Claude ao Tarefinha, o app de tarefas da casa para crianças. Veja como foi a semana, esvazie a Fila de aprovação e monte a rotina das crianças. O Claude só sugere: nada acontece até você confirmar no app.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Tarefinha",
+    "url": "https://tarefinha.app.br"
+  },
+  "homepage": "https://tarefinha.app.br",
+  "license": "UNLICENSED",
+  "keywords": [
+    "tarefinha",
+    "tarefas",
+    "crianças",
+    "família",
+    "rotina"
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "privacyPolicyUrl": "https://tarefinha.app.br/privacidade"
+}

@@ -171,6 +171,8 @@ async function findInFila(ownerId: string, args: Record<string, unknown>) {
 
 // Quantos itens uma ação em lote pode atingir de uma vez.
 const MAX_BULK = 25
+// Quantas tarefas novas uma única sugestão pode criar (criar_varias_tarefas).
+const MAX_VARIAS = 10
 
 // Acha um ou vários itens por criança e/ou título (parte do título serve). Mais de um item só com todas=true.
 // Erros ensinam a IA a se corrigir.
@@ -426,6 +428,47 @@ const TOOLS: Record<string, ToolDef> = {
       })
       if (!result.ok) return result
       return { ok: true, message: `Pronto! Criei a tarefa "${String(a.title)}" para ${result.childName}.` }
+    },
+  },
+  // Várias tarefas de uma vez (uma rotina inteira), com uma só confirmação. Só o conector do Claude usa:
+  // cada item passa pelas mesmas regras de criar_tarefa, na proposta e de novo ao confirmar.
+  criar_varias_tarefas: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const lista = Array.isArray(args.tarefas) ? (args.tarefas as unknown[]) : []
+      if (lista.length === 0) return { ok: false, error: 'Informe as tarefas.' }
+      if (lista.length > MAX_VARIAS) return { ok: false, error: `Até ${MAX_VARIAS} tarefas por vez. Envie o resto numa segunda sugestão.` }
+      const criar = TOOLS.criar_tarefa as Extract<ToolDef, { confirm: true }>
+      const itens: Record<string, unknown>[] = []
+      const nomes: string[] = []
+      for (const [i, bruto] of lista.entries()) {
+        const item = bruto && typeof bruto === 'object' && !Array.isArray(bruto) ? (bruto as Record<string, unknown>) : {}
+        const r = await criar.prepare(ownerId, item)
+        if (!r.ok) return { ok: false, error: `Tarefa ${i + 1} (${String(item.titulo ?? '').slice(0, 40)}): ${r.error}` }
+        const titulo = String(r.args.title)
+        if (nomes.includes(`${r.args.childId}|${norm(titulo)}`)) return { ok: false, error: `A tarefa "${titulo}" aparece duas vezes para a mesma criança.` }
+        nomes.push(`${r.args.childId}|${norm(titulo)}`)
+        itens.push(r.args)
+      }
+      const quantas = itens.length
+      const mostradas = itens.slice(0, 6).map((i) => `"${String(i.title)}" (${pontos(Number(i.points))})`).join('; ')
+      const resto = quantas > 6 ? ` e mais ${quantas - 6}` : ''
+      return { ok: true, args: { itens }, resumo: `Criar ${tarefas(quantas)}: ${mostradas}${resto}.` }
+    },
+    commit: async (ownerId, userId, a) => {
+      const itens = Array.isArray(a.itens) ? (a.itens as unknown[]) : []
+      if (itens.length === 0 || itens.length > MAX_VARIAS) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const criar = TOOLS.criar_tarefa as Extract<ToolDef, { confirm: true }>
+      let feitas = 0
+      const falhas: string[] = []
+      for (const item of itens) {
+        const r = await criar.commit(ownerId, userId, item && typeof item === 'object' ? (item as Record<string, unknown>) : {})
+        if (r.ok) feitas++
+        else falhas.push(r.error)
+      }
+      if (feitas === 0) return { ok: false, status: 400, error: falhas[0] ?? 'Não foi possível criar essas tarefas.' }
+      const aviso = falhas.length ? ` (${tarefas(falhas.length)} não ${falhas.length === 1 ? 'pôde' : 'puderam'} ser criada${falhas.length === 1 ? '' : 's'}: ${falhas[0]})` : ''
+      return { ok: true, message: `Pronto! Criei ${tarefas(feitas)}.${aviso}` }
     },
   },
 }

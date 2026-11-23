@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tarefinha": {
+      "type": "http",
+      "url": "https://tarefinha.app.br/api/mcp"
+    }
+  }
+}

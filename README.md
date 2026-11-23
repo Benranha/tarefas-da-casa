@@ -65,6 +65,10 @@ A tabela `subscriptions` deve ser alimentada pelos webhooks do gateway de pagame
 (Vercel Cron em plano Pro, ou qualquer agendador externo). Ele avisa a criança das tarefas cujo horário chegou,
 só entre a hora de acordar e a de dormir dela.
 
+**Conector do Claude** (servidor MCP em `/api/mcp`, com login OAuth): rode `db/migrations/009_conector_claude.sql` no Neon **antes** do deploy
+e confira que `NEXT_PUBLIC_SITE_URL` é o endereço público (ele vai nos metadados do login). Não precisa de variável nova. O Claude só
+sugere; o responsável confirma na Fila. Passo a passo, segurança e plugin em [`docs/conector-claude.md`](docs/conector-claude.md).
+
 ## 👨‍👩‍👧 Família, crianças e aparelhos
 - **Convite**: em *Família*, gere um link para outro pai/mãe entrar na mesma família.
 - **Horários**: cada criança tem hora de acordar e de dormir; as tarefas podem ter horário dentro desse período.

@@ -169,3 +169,57 @@ CREATE TABLE IF NOT EXISTS email_preferencias (
     dicas BOOLEAN NOT NULL DEFAULT true,
     atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Versão 9: conector do Claude, servidor MCP com login OAuth (db/migrations/009_conector_claude.sql).
+CREATE TABLE IF NOT EXISTS mcp_clients (
+    client_id TEXT PRIMARY KEY,
+    client_name TEXT NOT NULL,
+    redirect_uris TEXT[] NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS mcp_grants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id TEXT NOT NULL REFERENCES mcp_clients(client_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_used_at TIMESTAMPTZ,
+    revoked_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS mcp_grants_user_idx ON mcp_grants (user_id) WHERE revoked_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS mcp_codes (
+    code_hash TEXT PRIMARY KEY,
+    client_id TEXT NOT NULL REFERENCES mcp_clients(client_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+    redirect_uri TEXT NOT NULL,
+    code_challenge TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    grant_id UUID REFERENCES mcp_grants(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mcp_tokens (
+    token_hash TEXT PRIMARY KEY,
+    kind TEXT NOT NULL CHECK (kind IN ('access', 'refresh')),
+    grant_id UUID NOT NULL REFERENCES mcp_grants(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS mcp_tokens_grant_idx ON mcp_tokens (grant_id);
+
+CREATE TABLE IF NOT EXISTS mcp_proposals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID NOT NULL REFERENCES families(owner_id) ON DELETE CASCADE,
+    grant_id UUID REFERENCES mcp_grants(id) ON DELETE SET NULL,
+    tool TEXT NOT NULL,
+    args JSONB NOT NULL,
+    resumo TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected', 'failed')),
+    result_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '24 hours'),
+    decided_at TIMESTAMPTZ,
+    decided_by UUID REFERENCES neon_auth."user"(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS mcp_proposals_owner_idx ON mcp_proposals (owner_id, status);

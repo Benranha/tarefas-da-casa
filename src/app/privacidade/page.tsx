@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 const EMAIL = 'contato@tarefinha.app.br'
-const ATUALIZADA = '12 de novembro de 2026'
+const ATUALIZADA = '23 de novembro de 2026'
 
 const mailto = (assunto: string) => `mailto:${EMAIL}?subject=${encodeURIComponent(assunto)}`
 
@@ -49,6 +49,7 @@ const SECOES = [
   ['criancas', 'Dados de crianças'],
   ['compartilhamos', 'Com quem compartilhamos'],
   ['assistente', 'Assistente de IA do painel'],
+  ['conector', 'Conector do Claude (opcional)'],
   ['cookies', 'Cookies e armazenamento no aparelho'],
   ['retencao', 'Por quanto tempo guardamos'],
   ['seguranca', 'Segurança'],
@@ -197,6 +198,9 @@ export default function Privacidade() {
             </li>
             <li><strong>Meta</strong>: o Instagram, onde atendemos e publicamos.</li>
             <li><strong>Um serviço de inteligência artificial</strong>: lê as mensagens do Instagram e ajuda a responder.</li>
+            <li>
+              <strong>Anthropic</strong>: só se você ligar o conector do Claude. Veja &quot;Conector do Claude (opcional)&quot;.
+            </li>
           </Lista>
           <p>Não vendemos dados pessoais. Também podemos compartilhar dados se uma lei ou uma ordem judicial exigir.</p>
           <p>
@@ -218,6 +222,32 @@ export default function Privacidade() {
             <li>Não digite senhas nem códigos no chat.</li>
           </Lista>
           <p>O Google trata o que recebe conforme os próprios termos.</p>
+        </Secao>
+
+        <Secao id="conector" titulo="Conector do Claude (opcional)">
+          <p>
+            Você pode ligar o Tarefinha ao Claude, o assistente da Anthropic. Isso só acontece se você tocar em Permitir na tela de conexão. Para
+            desligar, abra Família no painel e toque em Desconectar.
+          </p>
+          <Lista>
+            <li>
+              Quando você pede algo ao Claude, ele consulta o Tarefinha e recebe os nomes das crianças, títulos de tarefas, pontos, horários, a
+              Fila, os prêmios e os pedidos de prêmio.
+            </li>
+            <li>
+              Ele não recebe o seu e-mail, o seu telefone, a sua senha, o código secreto das crianças, o código parental nem o link do totem.
+            </li>
+            <li>Esses dados vão para a Anthropic, que trata o que recebe conforme os próprios termos.</li>
+            <li>
+              O Claude só sugere. Nada muda enquanto você não tocar em Confirmar na Fila. Guardamos cada sugestão, com os nomes e títulos que ela
+              cita, por até 30 dias.
+            </li>
+            <li>
+              Guardamos o nome do app, a data da conexão e a do último uso. Os códigos de acesso ficam embaralhados (hash) e valem por 1 hora; os
+              de renovação, por 30 dias.
+            </li>
+            <li>Ao desconectar, o acesso termina na hora e as sugestões que esperavam são descartadas. Ao excluir a conta, apagamos tudo isso.</li>
+          </Lista>
         </Secao>
 
         <Secao id="cookies" titulo="Cookies e armazenamento no aparelho">

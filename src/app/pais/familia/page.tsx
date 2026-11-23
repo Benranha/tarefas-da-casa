@@ -1,11 +1,12 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Copy, KeyRound, Link2, Mail, Plus, UserPlus } from 'lucide-react'
+import { Copy, KeyRound, Link2, Mail, Plug, Plus, UserPlus } from 'lucide-react'
 import PushToggle from '@/components/PushToggle'
 import { track } from '@/lib/analytics'
 
 type Member = { id: string; name: string; email: string; is_owner: boolean }
 type Invite = { code: string; expires_at: string }
+type Conexao = { id: string; app: string; criadaEm: string; usadaEm: string | null }
 
 export default function FamilyPage() {
   const [members, setMembers] = useState<Member[]>([])
@@ -19,6 +20,20 @@ export default function FamilyPage() {
   const [parentalMsg, setParentalMsg] = useState<string | null>(null)
   // Dicas por e-mail: null = ainda não carregou ou o app não manda esses e-mails (a seção não aparece).
   const [emailDicas, setEmailDicas] = useState<boolean | null>(null)
+  // Apps (o Claude) que este responsável deixou usar o Tarefinha. Sem nenhum, a seção não aparece.
+  const [conexoes, setConexoes] = useState<Conexao[]>([])
+
+  async function carregarConexoes() {
+    const res = await fetch('/api/pais/conexoes', { cache: 'no-store' }).catch(() => null)
+    if (res?.ok) setConexoes((await res.json()).conexoes ?? [])
+  }
+
+  async function desconectar(c: Conexao) {
+    if (!confirm(`Desconectar o ${c.app}? Ele perde o acesso ao Tarefinha agora e as sugestões que ainda esperavam são descartadas.`)) return
+    const res = await fetch(`/api/pais/conexoes/${c.id}`, { method: 'DELETE' }).catch(() => null)
+    if (res?.ok || res?.status === 404) await carregarConexoes()
+    else alert('Não foi possível desconectar agora. Tente de novo.')
+  }
 
   async function load() {
     const res = await fetch('/api/pais/family', { cache: 'no-store' })
@@ -32,6 +47,7 @@ export default function FamilyPage() {
   }
   useEffect(() => {
     load()
+    carregarConexoes()
     fetch('/api/pais/email-dicas', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d?.ativo && setEmailDicas(Boolean(d.dicas)))
@@ -199,6 +215,33 @@ export default function FamilyPage() {
         <p className="text-ink-muted">Receba um aviso neste aparelho quando uma criança terminar uma tarefa.</p>
         <PushToggle endpoint="/api/pais/push" />
       </section>
+
+      {conexoes.length > 0 && (
+        <section className="tf-card space-y-3">
+          <h2 className="font-display text-2xl font-semibold text-ink flex items-center gap-2">
+            <Plug size={24} /> Apps conectados
+          </h2>
+          <p className="text-ink-muted">
+            Estes apps podem ver as tarefas da família e sugerir ações. Nada acontece sem o seu Confirmar na Fila. Desconecte quando quiser.
+          </p>
+          <ul className="divide-y divide-line">
+            {conexoes.map((c) => (
+              <li key={c.id} className="py-3 flex items-center gap-3">
+                <span className="flex-1 min-w-0">
+                  <span className="font-bold text-ink">{c.app}</span>
+                  <span className="block text-sm text-ink-muted">
+                    Conectado em {new Date(c.criadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                    {c.usadaEm ? `, usado pela última vez em ${new Date(c.usadaEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
+                  </span>
+                </span>
+                <button type="button" onClick={() => desconectar(c)} className="tf-btn tf-btn--secondary !min-h-10">
+                  Desconectar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {emailDicas !== null && (
         <section className="tf-card space-y-3">

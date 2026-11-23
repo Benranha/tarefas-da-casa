@@ -1,0 +1,17 @@
+{
+  "name": "tarefinha",
+  "description": "Plugins do Tarefinha para o Claude.",
+  "owner": {
+    "name": "Tarefinha",
+    "email": "contato@tarefinha.app.br"
+  },
+  "plugins": [
+    {
+      "name": "tarefinha",
+      "description": "Conecta o Claude ao Tarefinha: resumo da semana, Fila de aprovação e rotina das crianças, sempre com a sua confirmação no app.",
+      "version": "1.0.0",
+      "source": "./claude-plugin/tarefinha",
+      "category": "productivity"
+    }
+  ]
+}
