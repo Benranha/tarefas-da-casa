@@ -38,4 +38,5 @@
 
 - [Página inicial](https://tarefinha.app.br/): apresentação, como funciona e perguntas frequentes.
 - [Criar conta grátis](https://tarefinha.app.br/cadastro)
+- [Tarefinha no Claude](https://tarefinha.app.br/conector): como conectar o Tarefinha ao Claude para ver a semana das crianças, aprovar a Fila e montar a rotina.
 - [Entrar](https://tarefinha.app.br/login)
