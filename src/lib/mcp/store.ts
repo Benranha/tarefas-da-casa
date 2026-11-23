@@ -55,7 +55,8 @@ async function emitirTokens(grantId: string): Promise<Tokens> {
   return { access_token: access, refresh_token: refresh, token_type: 'Bearer', expires_in: ACCESS_TTL_S }
 }
 
-// Depois de revogar conexões: tokens e sugestões pendentes delas somem (as sugestões citam nomes e títulos).
+// Depois de revogar conexões: os tokens somem. As sugestões antigas (mcp_proposals) são do tempo em que o Claude só sugeria:
+// a tabela já não recebe linhas novas, mas o que sobrou continua sendo apagado aqui e na limpeza diária.
 async function apagarRestosDasConexoes(ids: string[]) {
   if (ids.length === 0) return
   await Promise.all([
@@ -178,7 +179,7 @@ export async function listarConexoes(userId: string): Promise<Conexao[]> {
   }))
 }
 
-// Desconectar: o app perde o acesso na hora e as sugestões dele que ainda esperavam são apagadas.
+// Desconectar: o app perde o acesso na hora e os tokens dele são apagados.
 export async function desconectar(userId: string, grantId: string): Promise<boolean> {
   const rows = await sql`
     UPDATE mcp_grants SET revoked_at = now()

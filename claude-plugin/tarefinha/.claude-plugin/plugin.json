@@ -1,7 +1,7 @@
 {
   "name": "tarefinha",
-  "description": "Conecta o Claude ao Tarefinha, o app de tarefas da casa para crianças. Veja como foi a semana, esvazie a Fila de aprovação e monte a rotina das crianças. O Claude só sugere: nada acontece até você confirmar no app.",
-  "version": "1.0.0",
+  "description": "Conecta o Claude ao Tarefinha, o app de tarefas da casa para crianças. Veja como foi a semana, esvazie a Fila de aprovação, monte a rotina e ajuste tarefas e prêmios. O Claude faz as mudanças na hora, a seu pedido.",
+  "version": "1.1.0",
   "author": {
     "name": "Tarefinha",
     "url": "https://tarefinha.app.br"

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return respostaJson({ error: 'A sua família mudou desde que você conectou. Desconecte e conecte o Tarefinha de novo.' }, 403)
   }
 
-  const server = criarServidor({ ownerId: family.ownerId, grantId: acesso.grantId })
+  const server = criarServidor({ ownerId: family.ownerId, userId: acesso.userId })
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true })
   await server.connect(transport)
   try {
