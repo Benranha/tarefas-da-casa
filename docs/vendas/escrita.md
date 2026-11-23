@@ -60,6 +60,7 @@ Se a 5 for sim, ou a 6 ou a 7 for não, reescreva.
 
 - Os pais criam as tarefas com ícone, pontos e horário opcional; elas se repetem sozinhas.
 - A criança marca a tarefa no tablet da casa (totem) ou no próprio celular, com um código secreto só dela.
+- No próprio celular, a criança pode adicionar uma tarefa só para hoje. Ela não dá pontos, a não ser que um responsável mude.
 - Ponto só vale depois que um responsável aprova. Dá para devolver com recado.
 - Os pontos viram prêmios que a família combina.
 - Lembrete no celular da criança no horário da tarefa, nunca fora do período entre acordar e dormir.

@@ -1,6 +1,8 @@
 import { sql } from '@/lib/db'
 import { CODE } from '@/lib/http'
 import { childFromRequest, type AuthedChild } from '@/lib/child-auth'
+import { createTask } from '@/lib/tarefas'
+import { TF_GROUPS } from '@/lib/tf-icons-data'
 
 // Criança autenticada num totem: o token é dela e o código do totem é da família dela.
 export async function childForTotem(request: Request): Promise<AuthedChild | null> {
@@ -32,6 +34,37 @@ export function todayTasks(childId: string) {
       AND ti.date = (now() at time zone 'America/Manaus')::date
     ORDER BY t.due_time NULLS LAST, t.created_at
   `
+}
+
+// Limite de tarefas "só de hoje" que uma criança tem por dia. Segura abuso e toque repetido.
+export const OWN_TASKS_PER_DAY = 10
+
+// A criança adiciona uma tarefa para ela mesma, pela tela dela. Vale só hoje e não dá pontos:
+// quem decide se ela vira pontos são os pais (eles podem editar a tarefa no mesmo dia).
+// Usa createTask, então passa pela mesma validação das tarefas dos pais.
+export async function createOwnTask(child: AuthedChild, input: { title: string; icon?: string }) {
+  const title = input.title.trim().slice(0, 80)
+  if (!title) return { ok: false as const, status: 400 as const, error: 'Escreva o nome da tarefa.' }
+  // Só ícones do app: a criança não escolhe emoji livre.
+  const icon = input.icon && (TF_GROUPS.tarefas as readonly string[]).includes(input.icon) ? input.icon : 'brilho'
+
+  const [today] = await sql`
+    SELECT
+      (SELECT count(*) FROM tasks
+        WHERE assigned_child_id = ${child.id}::uuid AND recurrence = 'none'
+          AND (created_at at time zone 'America/Manaus')::date = (now() at time zone 'America/Manaus')::date)::int AS made,
+      EXISTS (SELECT 1 FROM task_instances ti JOIN tasks t ON t.id = ti.task_id
+        WHERE ti.child_id = ${child.id}::uuid AND ti.date = (now() at time zone 'America/Manaus')::date
+          AND lower(btrim(t.title)) = lower(btrim(${title}))) AS dup
+  `
+  if (today.dup) return { ok: false as const, status: 409 as const, error: 'Você já tem essa tarefa hoje.' }
+  if ((today.made as number) >= OWN_TASKS_PER_DAY) {
+    return { ok: false as const, status: 409 as const, error: 'Hoje já tem tarefa demais. Peça aos papais para ajudar.' }
+  }
+
+  const result = await createTask(child.owner_id, { title, icon, points: 0, childId: child.id, once: true })
+  if (!result.ok) return { ok: false as const, status: 400 as const, error: 'Não deu certo. Tente de novo.' }
+  return { ok: true as const, id: result.id }
 }
 
 // pending -> awaiting_approval, só de hoje e só da própria criança.
