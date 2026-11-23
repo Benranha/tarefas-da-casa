@@ -10,12 +10,16 @@ export type Envio = {
   headers?: Record<string, string> // por exemplo List-Unsubscribe
 }
 
-export type Resultado = { ok: true } | { ok: false; motivo: 'sem-chave' | 'falhou' }
+// "detalhe" é a resposta do Resend (sem o endereço de quem recebe). Só o botão de teste do /admin mostra
+// isso, para quem administra ver o motivo; os outros envios mostram uma frase simples.
+export type Resultado = { ok: true } | { ok: false; motivo: 'sem-chave' | 'falhou'; detalhe?: string }
+
+export const remetente = () => process.env.RESEND_FROM || 'Tarefinha <onboarding@resend.dev>'
 
 export async function enviarEmail(e: Envio): Promise<Resultado> {
   const key = process.env.RESEND_API_KEY
   if (!key) return { ok: false, motivo: 'sem-chave' }
-  const from = process.env.RESEND_FROM || 'Tarefinha <onboarding@resend.dev>'
+  const from = remetente()
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -27,7 +31,8 @@ export async function enviarEmail(e: Envio): Promise<Resultado> {
     return { ok: true }
   } catch (err) {
     // Sem o endereço de quem recebe no log.
-    console.error('enviarEmail:', err instanceof Error ? err.message : err)
-    return { ok: false, motivo: 'falhou' }
+    const detalhe = err instanceof Error ? err.message : String(err)
+    console.error('enviarEmail:', detalhe)
+    return { ok: false, motivo: 'falhou', detalhe }
   }
 }

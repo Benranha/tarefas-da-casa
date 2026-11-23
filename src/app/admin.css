@@ -117,6 +117,17 @@ a.ad-tr:hover { background: var(--surface); }
 .ad-confirm p { margin: 0; font: 800 14px/20px var(--font-nunito), system-ui, sans-serif; color: var(--returned-fg); }
 .ad-confirm div { display: grid; gap: 8px; }
 .ad-error { margin: 0; font: 800 13px/18px var(--font-nunito), system-ui, sans-serif; color: var(--returned-fg); }
+.ad-ok { margin: 0; font: 800 13px/18px var(--font-nunito), system-ui, sans-serif; color: var(--approved-fg); }
+
+/* E-mails */
+.ad-teste { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 16px; }
+.ad-teste .tf-btn { min-height: 48px; padding: 0 20px; font-size: 15px; }
+.ad-teste__sub { margin-top: 8px; }
+.ad-status { margin: 16px 0 0; padding: 0; list-style: none; }
+.ad-status li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 12px 0; border-top: 2px solid var(--line); font: 700 14px/20px var(--font-nunito), system-ui, sans-serif; color: var(--ink); }
+.ad-status li:first-child { border-top: 0; }
+.ad-status__nome { display: flex; flex-direction: column; flex: 1 1 180px; min-width: 0; }
+.ad-status small { font: 500 13px/18px var(--font-nunito), system-ui, sans-serif; color: var(--ink-muted); }
 
 /* Menos de 1200px a ficha vira gaveta sobre a lista */
 @media (max-width: 1199px) {

@@ -25,6 +25,26 @@ export function linkCrianca(d: { nomeCrianca: string; nomeResponsavel: string; l
   return { assunto, html, text }
 }
 
+// Teste de envio, pedido pelo botão do /admin/emails. Vai só para o endereço de quem está logado como
+// admin, por isso não leva "parar de receber".
+export function emailTeste(d: { abrir: string; remetente: string }) {
+  const assunto = 'Teste de e-mail do Tarefinha'
+  const { html, text } = montarEmail({
+    assunto,
+    preheader: 'Se este e-mail chegou, o envio está funcionando.',
+    titulo: 'O envio está funcionando',
+    paragrafos: [
+      'Este é um e-mail de teste, enviado pelo painel admin do Tarefinha.',
+      `Remetente usado: ${d.remetente}. Veja se ele chegou na caixa de entrada e não no spam.`,
+    ],
+    botao: { texto: 'Abrir o painel admin', url: d.abrir },
+    apoioBotao: 'Toque no botão para conferir se o link abre.',
+    apoioBotaoTexto: 'Toque no link para conferir se ele abre.',
+    rodape: ['Você recebeu este e-mail porque pediu um teste no painel admin do Tarefinha.'],
+  })
+  return { assunto, html, text }
+}
+
 // ---- E-mails ao responsável (boas-vindas, "sem uso" e dicas) ----
 // Todos levam o link para parar de receber. Cada um tem uma ideia só (docs/vendas/escrita.md).
 
