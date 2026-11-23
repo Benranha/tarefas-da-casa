@@ -1,12 +1,40 @@
 import { sql } from '@/lib/db'
+import { listRequestedRedemptions } from '@/lib/recompensas'
+import { listTasks } from '@/lib/tarefas'
+import { descreverRepeticao } from '@/lib/mcp/acoes'
 
-// Consultas só de leitura que o conector do Claude tem além das do assistente do painel.
-// Sempre filtradas pela família (ownerId) do responsável que autorizou. Sem códigos, links nem e-mails.
+// Consultas só de leitura do conector do Claude, sempre filtradas pela família (ownerId) do responsável que autorizou.
+// Sem códigos secretos, links nem e-mails. Os ids são só para o Claude apontar qual tarefa ou prêmio mudar.
+
+// Tarefas ativas com todos os campos que dá para mudar.
+export async function listarTarefasCompleto(ownerId: string) {
+  const rows = await listTasks(ownerId)
+  return rows.map((t) => {
+    const rep = descreverRepeticao((t.recurrence as string | null) ?? 'daily', (t.recurrence_days as string[] | null) ?? null)
+    return {
+      id: t.id as string,
+      titulo: t.title as string,
+      descricao: (t.description as string | null) ?? '',
+      icone: (t.icon as string | null) ?? 'brilho',
+      pontos: t.points as number,
+      crianca: t.child_name as string,
+      horario: (t.due_time as string | null) ?? null,
+      repeticao: rep.repeticao,
+      dias: rep.dias,
+    }
+  })
+}
 
 // Prêmios cadastrados pela família e quanto custam em pontos.
 export async function listarPremios(ownerId: string) {
-  const rows = await sql`SELECT title, cost_points FROM rewards WHERE owner_id = ${ownerId}::uuid ORDER BY cost_points, created_at`
-  return rows.map((r) => ({ premio: r.title as string, pontos: r.cost_points as number }))
+  const rows = await sql`SELECT id, title, icon, cost_points FROM rewards WHERE owner_id = ${ownerId}::uuid ORDER BY cost_points, created_at`
+  return rows.map((r) => ({ id: r.id as string, premio: r.title as string, icone: (r.icon as string | null) ?? 'presente', pontos: r.cost_points as number }))
+}
+
+// Pedidos de prêmio que esperam o responsável.
+export async function listarPedidos(ownerId: string) {
+  const rows = await listRequestedRedemptions(ownerId)
+  return rows.map((r) => ({ id: r.id as string, crianca: r.child_name as string, premio: r.title as string, pontos: r.cost_points as number }))
 }
 
 // Os últimos 7 dias de cada criança (dia de hoje no fuso da casa, America/Manaus).

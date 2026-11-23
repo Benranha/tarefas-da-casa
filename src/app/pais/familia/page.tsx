@@ -29,7 +29,7 @@ export default function FamilyPage() {
   }
 
   async function desconectar(c: Conexao) {
-    if (!confirm(`Desconectar o ${c.app}? Ele perde o acesso ao Tarefinha agora e as sugestões dele que ainda esperavam são apagadas.`)) return
+    if (!confirm(`Desconectar o ${c.app}? Ele perde o acesso ao Tarefinha agora.`)) return
     const res = await fetch(`/api/pais/conexoes/${c.id}`, { method: 'DELETE' }).catch(() => null)
     if (res?.ok || res?.status === 404) await carregarConexoes()
     else alert('Não foi possível desconectar agora. Tente de novo.')
@@ -222,7 +222,7 @@ export default function FamilyPage() {
             <Plug size={24} /> Apps conectados
           </h2>
           <p className="text-ink-muted">
-            Estes apps podem ver as tarefas da família e sugerir ações. Nada acontece sem o seu Confirmar na Fila. Desconecte quando quiser.
+            Estes apps podem ver as tarefas e os prêmios da família e mudar tudo isso na hora, a seu pedido. Desconecte quando quiser.
           </p>
           <ul className="divide-y divide-line">
             {conexoes.map((c) => (

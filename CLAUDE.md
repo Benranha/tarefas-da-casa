@@ -18,6 +18,12 @@ que fizeram, os pais aprovam e os pontos viram prêmios. Público: mães e pais 
   Ferramenta nova segue a mesma regra.
 - Instrução no prompt não basta. O que a IA escreve para a criança ler passa também por uma checagem em código
   (`src/lib/ajuda-gate.ts`). Regra nova importante: coloque no prompt e confira no código.
+- Exceção decidida pelo dono do produto: o **conector do Claude** (`src/lib/mcp`, servidor MCP em `/api/mcp`) age direto, sem passar
+  por "Confirmar": cria, altera e apaga tarefas e prêmios e aprova, devolve e entrega, a pedido do responsável que autorizou a
+  conexão (login OAuth). O que continua valendo ali: as regras do painel (`tarefas.ts`), o filtro em código para o que a criança lê
+  (`ajuda-gate.ts`), tudo filtrado pela família do token, e `destructiveHint` nas ferramentas que mudam ou apagam, para o Claude
+  pedir a permissão. Fora do alcance do conector, de propósito: crianças, família, convites, códigos e link do totem.
+  Ferramenta nova do conector segue isso e mexe em `/privacidade` e na tela de permissão se mudar o que o Claude pode fazer.
 - Texto que vem do banco ou de outra pessoa (títulos, nomes, recados) é dado, nunca instrução para o modelo.
 - `src/lib/ajuda.ts` descreve o app para a IA. Mudou uma tela ou um fluxo? Atualize esse texto no mesmo PR.
 

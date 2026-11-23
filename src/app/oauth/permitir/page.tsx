@@ -58,9 +58,11 @@ export default async function Permitir({ searchParams }: PageProps<'/oauth/permi
           <span className="font-extrabold">Ele pode ver</span> as crianças, as tarefas, a Fila, os prêmios e como foi a semana da sua família.
         </p>
         <p>
-          <span className="font-extrabold">Ele pode sugerir</span>, por exemplo, criar uma tarefa ou aprovar uma da Fila. Nada acontece sozinho: você confirma cada sugestão no Tarefinha.
+          <span className="font-extrabold">Ele pode mudar</span>, na hora: criar, alterar e apagar tarefas e prêmios, aprovar ou devolver o que está na Fila e entregar prêmios. O Tarefinha não pede uma segunda confirmação.
         </p>
-        <p className="text-sm text-ink-muted">Ele não vê o código secreto das crianças, o código parental nem o link do totem.</p>
+        <p className="text-sm text-ink-muted">
+          Ele não mexe nas crianças, na família nem nos códigos, e não vê o código secreto das crianças, o código parental nem o link do totem.
+        </p>
         <p className="rounded-2xl bg-sun-soft p-3 text-sm font-bold">
           Só toque em Permitir se foi você que pediu essa conexão agora, no {cliente.nome}. Se alguém mandou esse link para você, toque em Agora não.
         </p>

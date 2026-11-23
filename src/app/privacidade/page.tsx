@@ -231,22 +231,23 @@ export default function Privacidade() {
           </p>
           <Lista>
             <li>
-              Quando você pede algo ao Claude, ele consulta o Tarefinha e recebe os nomes das crianças, títulos de tarefas, pontos, horários, a
-              Fila, os prêmios e os pedidos de prêmio.
+              Quando você pede algo ao Claude, ele consulta o Tarefinha e recebe os nomes das crianças, títulos e descrições de tarefas, pontos,
+              horários, a Fila, os prêmios e os pedidos de prêmio.
             </li>
             <li>
-              Ele não recebe o seu e-mail, o seu telefone, a sua senha, o código secreto das crianças, o código parental nem o link do totem.
+              Ele não recebe o seu e-mail, o seu telefone, a sua senha, o código secreto das crianças, o código parental nem o link do totem. Também
+              não mexe nas crianças nem na família.
             </li>
             <li>Esses dados vão para a Anthropic, que trata o que recebe conforme os próprios termos.</li>
             <li>
-              O Claude só sugere. Nada muda enquanto você não tocar em Confirmar na Fila. Guardamos cada sugestão, com os nomes e títulos que ela
-              cita, por até 30 dias.
+              O Claude faz o que você pedir, na hora: cria, altera e apaga tarefas e prêmios, aprova, devolve e entrega. O Tarefinha não pede uma
+              segunda confirmação. Apagar uma tarefa apaga também o histórico dela.
             </li>
             <li>
               Guardamos o nome do app, a data da conexão e a do último uso. Os códigos de acesso ficam embaralhados (hash) e valem por 1 hora; os
               de renovação, por 30 dias.
             </li>
-            <li>Ao desconectar, o acesso termina na hora e as sugestões dessa conexão são apagadas. Ao excluir a conta, apagamos tudo isso.</li>
+            <li>Ao desconectar, o acesso termina na hora. Ao excluir a conta, apagamos tudo isso.</li>
           </Lista>
         </Secao>
 
