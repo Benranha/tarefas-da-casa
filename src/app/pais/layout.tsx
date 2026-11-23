@@ -8,6 +8,7 @@ import { getAdmin } from '@/lib/admin';
 import { hasPhone } from '@/lib/telefone';
 import Nav from './Nav';
 import { privatePage } from '@/lib/noindex';
+import { COOKIE_RETORNO } from '@/lib/mcp/oauth';
 
 export const metadata = privatePage('Painel dos pais');
 
@@ -15,6 +16,10 @@ export default async function ParentsLayout({ children }: { children: React.Reac
   // Veio de um convite e acabou de entrar/criar a conta: volta para aceitar o convite.
   const invite = (await cookies()).get('tarefinha-convite')?.value;
   if (invite && /^[0-9a-f]{32}$/i.test(invite)) redirect(`/convite?c=${invite}`);
+
+  // Veio do conector do Claude e acabou de entrar: volta para a tela "Deixar o Claude usar o Tarefinha?".
+  const retornoOauth = (await cookies()).get(COOKIE_RETORNO)?.value;
+  if (retornoOauth?.startsWith('/api/oauth/authorize?')) redirect('/api/oauth/retomar');
 
   // Conta nova: só libera o painel depois da primeira criança e da primeira tarefa.
   const family = await getFamily()

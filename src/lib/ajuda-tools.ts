@@ -171,6 +171,8 @@ async function findInFila(ownerId: string, args: Record<string, unknown>) {
 
 // Quantos itens uma ação em lote pode atingir de uma vez.
 const MAX_BULK = 25
+// Quantas tarefas novas uma única sugestão pode criar (criar_varias_tarefas).
+const MAX_VARIAS = 10
 
 // Acha um ou vários itens por criança e/ou título (parte do título serve). Mais de um item só com todas=true.
 // Erros ensinam a IA a se corrigir.
@@ -217,10 +219,10 @@ const pontos = (n: number) => `${n} ${n === 1 ? 'ponto' : 'pontos'}`
 const tarefas = (n: number) => `${n} ${n === 1 ? 'tarefa' : 'tarefas'}`
 
 // Aprova em sequência; devolve o que deu certo e quantas já não podiam mais ser aprovadas.
-async function aprovarLote(ownerId: string, userId: string, ids: string[]) {
+async function aprovarLote(ownerId: string, userId: string, ids: string[], soNaFila = false) {
   const feitas: { childName: string; title: string; points: number }[] = []
   for (const id of ids) {
-    const r = await approveInstance(ownerId, userId, id)
+    const r = await approveInstance(ownerId, userId, id, { soNaFila })
     if (r) feitas.push(r)
   }
   return { feitas, falhas: ids.length - feitas.length }
@@ -264,8 +266,8 @@ const TOOLS: Record<string, ToolDef> = {
     commit: async (ownerId, userId, a) => {
       const ids = idsDe(a, 'instanceId')
       if (!ids) return { ok: false, status: 400, error: 'Requisição inválida' }
-      const { feitas, falhas } = await aprovarLote(ownerId, userId, ids)
-      if (feitas.length === 0) return { ok: false, status: 400, error: 'Essas tarefas não podem ser aprovadas agora (talvez já tenham sido aprovadas).' }
+      const { feitas, falhas } = await aprovarLote(ownerId, userId, ids, true)
+      if (feitas.length === 0) return { ok: false, status: 400, error: 'Essas tarefas não estão mais na Fila (talvez já tenham sido aprovadas ou devolvidas).' }
       const total = feitas.reduce((n, f) => n + f.points, 0)
       const detalhe = feitas.length === 1 ? `"${feitas[0].title}" de ${feitas[0].childName}` : tarefas(feitas.length)
       const aviso = falhas ? ` (${tarefas(falhas)} já não estava mais na Fila)` : ''
@@ -426,6 +428,55 @@ const TOOLS: Record<string, ToolDef> = {
       })
       if (!result.ok) return result
       return { ok: true, message: `Pronto! Criei a tarefa "${String(a.title)}" para ${result.childName}.` }
+    },
+  },
+  // Várias tarefas de uma vez (uma rotina inteira), com uma só confirmação. Só o conector do Claude usa:
+  // cada item passa pelas mesmas regras de criar_tarefa, na proposta e de novo ao confirmar.
+  criar_varias_tarefas: {
+    confirm: true,
+    prepare: async (ownerId, args) => {
+      const lista = Array.isArray(args.tarefas) ? (args.tarefas as unknown[]) : []
+      if (lista.length === 0) return { ok: false, error: 'Informe as tarefas.' }
+      if (lista.length > MAX_VARIAS) return { ok: false, error: `Até ${MAX_VARIAS} tarefas por vez. Envie o resto numa segunda sugestão.` }
+      const criar = TOOLS.criar_tarefa as Extract<ToolDef, { confirm: true }>
+      const itens: Record<string, unknown>[] = []
+      const nomes: string[] = []
+      const nomesPorId = new Map((await listChildren(ownerId)).map((k) => [String(k.id), String(k.name)]))
+      for (const [i, bruto] of lista.entries()) {
+        const item = bruto && typeof bruto === 'object' && !Array.isArray(bruto) ? (bruto as Record<string, unknown>) : {}
+        const r = await criar.prepare(ownerId, item)
+        if (!r.ok) return { ok: false, error: `Tarefa ${i + 1} (${String(item.titulo ?? '').slice(0, 40)}): ${r.error}` }
+        const titulo = String(r.args.title)
+        if (nomes.includes(`${r.args.childId}|${norm(titulo)}`)) return { ok: false, error: `A tarefa "${titulo}" aparece duas vezes para a mesma criança.` }
+        nomes.push(`${r.args.childId}|${norm(titulo)}`)
+        itens.push(r.args)
+      }
+      // O cartão mostra TODAS as tarefas (no máximo MAX_VARIAS), cada uma com criança, pontos, horário e se é só de hoje,
+      // e o total de pontos: nada que será criado fica escondido atrás de "e mais".
+      const quantas = itens.length
+      const totalPontos = itens.reduce((n, i) => n + Number(i.points), 0)
+      const linhas = itens
+        .map((i) => {
+          const extras = [pontos(Number(i.points)), i.once === true ? 'só hoje' : 'todo dia', i.dueTime ? `às ${String(i.dueTime)}` : '']
+          return `"${String(i.title)}" para ${nomesPorId.get(String(i.childId)) ?? 'a criança'} (${extras.filter(Boolean).join(', ')})`
+        })
+        .join('; ')
+      return { ok: true, args: { itens }, resumo: `Criar ${tarefas(quantas)}, ${pontos(totalPontos)} no total: ${linhas}.` }
+    },
+    commit: async (ownerId, userId, a) => {
+      const itens = Array.isArray(a.itens) ? (a.itens as unknown[]) : []
+      if (itens.length === 0 || itens.length > MAX_VARIAS) return { ok: false, status: 400, error: 'Requisição inválida' }
+      const criar = TOOLS.criar_tarefa as Extract<ToolDef, { confirm: true }>
+      let feitas = 0
+      const falhas: string[] = []
+      for (const item of itens) {
+        const r = await criar.commit(ownerId, userId, item && typeof item === 'object' ? (item as Record<string, unknown>) : {})
+        if (r.ok) feitas++
+        else falhas.push(r.error)
+      }
+      if (feitas === 0) return { ok: false, status: 400, error: falhas[0] ?? 'Não foi possível criar essas tarefas.' }
+      const aviso = falhas.length ? ` (${tarefas(falhas.length)} não ${falhas.length === 1 ? 'pôde' : 'puderam'} ser criada${falhas.length === 1 ? '' : 's'}: ${falhas[0]})` : ''
+      return { ok: true, message: `Pronto! Criei ${tarefas(feitas)}.${aviso}` }
     },
   },
 }

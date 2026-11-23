@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Check, Undo2, Copy } from 'lucide-react';
 import TfIcon from '@/components/TfIcon';
 import PromptBar from './PromptBar';
+import SugestoesDoClaude, { type Sugestao } from './SugestoesDoClaude';
 import InstalarAviso from './InstalarAviso';
 import { pedirAoAssistente } from './PromptBar';
 import ToqueAqui from '@/components/dicas/ToqueAqui';
@@ -19,6 +20,7 @@ const inFlight = new Set<string>();
 export default function ParentsDashboard() {
   const [pendingTasks, setPendingTasks] = useState<any[]>([]);
   const [today, setToday] = useState<any[]>([]);
+  const [sugestoes, setSugestoes] = useState<Sugestao[]>([]);
   const [loading, setLoading] = useState(true);
   const [totemUrl, setTotemUrl] = useState('');
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
@@ -52,10 +54,13 @@ export default function ParentsDashboard() {
 
   async function fetchPendingTasks(silent = false) {
     if (!silent) setLoading(true);
-    const [res, todayRes] = await Promise.all([
+    const [res, todayRes, sugestoesRes] = await Promise.all([
       fetch('/api/pais/pending', { cache: 'no-store' }),
       fetch('/api/pais/today', { cache: 'no-store' }),
+      // Sugestões do Claude (conector). Se falhar, a Fila segue normal, só sem o cartão.
+      fetch('/api/pais/propostas', { cache: 'no-store' }).catch(() => null),
     ]);
+    if (sugestoesRes?.ok) setSugestoes((await sugestoesRes.json()).sugestoes ?? []);
     if (res.ok) {
       const list = await res.json();
       setPendingTasks(list);
@@ -187,6 +192,8 @@ export default function ParentsDashboard() {
           </div>
         </section>
       )}
+
+      <SugestoesDoClaude sugestoes={sugestoes} onChanged={() => fetchPendingTasks(true)} />
 
       {pendingTasks.length === 0 ? (
         <div className="order-2 md:order-4 bg-surface-raised px-5 py-8 md:p-12 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-line text-center space-y-4">
